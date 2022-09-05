@@ -7,13 +7,13 @@ Two Contratcs:
 
 Factory that Deploys a bounty pool for frontend to fetch values from.
 
-//###################################\\
+---
 
 Pool Factory + Registry or Factory already registers all pools deployed?:
 
 - Only we can deploy a bounty pool
 
-//###################################\\
+---
 
 Bounty Pool= Bounty Pool Proxy + Implementation Contract
 
@@ -23,7 +23,8 @@ Bounty Pool= Bounty Pool Proxy + Implementation Contract
 - Pool funds staking mechanism
 
 - Bounty Pools implementations will change in the future to accomodate Options + NFTs.
-  //###################################\\
+
+---
 
 Considerations:
 
