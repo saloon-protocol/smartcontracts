@@ -16,6 +16,16 @@ BountyProxyFactory + Registry?:
 
 - Only we can deploy a bounty pool
 
+MIMO references:
+
+- ProxyFactory: https://github.com/code-423n4/2022-08-mimo/blob/main/contracts/proxy/MIMOProxyFactory.sol
+
+- ProxyRegistry: https://github.com/code-423n4/2022-08-mimo/blob/main/contracts/proxy/MIMOProxyRegistry.sol
+
+- Proxy: https://github.com/code-423n4/2022-08-mimo/blob/main/contracts/proxy/MIMOProxy.sol
+
+- Findings: https://docs.google.com/spreadsheets/d/1F95EzhI8vIE5X4JLH39MYI-t2y4ndRxu3yh568H1fV0/edit#gid=0
+
 ---
 
 Bounty Pool= BountyProxy + Implementation Contract (Bounty.sol)
