@@ -1,6 +1,9 @@
-What am i trying to build?
+BountyProxyFactory deploys bounty proxies which all look to the same upgradeable beacon.
+We can upgrade all proxies by changing which contract the beacon is looking to.
 
-Two Contratcs:
+---
+
+Two main Contratcs:
 
 - Bounty Pool factory - All bounties are going to be pools.
 - Pool contract
@@ -9,13 +12,13 @@ Factory that Deploys a bounty pool for frontend to fetch values from.
 
 ---
 
-Pool Factory + Registry or Factory already registers all pools deployed?:
+BountyProxyFactory + Registry?:
 
 - Only we can deploy a bounty pool
 
 ---
 
-Bounty Pool= Bounty Pool Proxy + Implementation Contract
+Bounty Pool= BountyProxy + Implementation Contract (Bounty.sol)
 
 - Project needs to be able to set APY
 - Investors need to be able to invest in pool
@@ -24,7 +27,7 @@ Bounty Pool= Bounty Pool Proxy + Implementation Contract
 
 - Bounty Pools implementations will change in the future to accomodate Options + NFTs.
 
----
+Use Beacon Proxy: https://docs.openzeppelin.com/contracts/4.x/api/proxy
 
 Considerations:
 
