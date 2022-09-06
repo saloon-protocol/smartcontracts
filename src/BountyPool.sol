@@ -7,4 +7,30 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract BountyPool is ReentrancyGuard, Ownable {
     //#################### State Variables *****************\\
+    //#################### State Variables End *****************\\
+
+    constructor(address _projectWallet) {}
+
+    ////FUNCTIONS //////
+
+    // ADMIN WITHDRAWAL
+
+    // PROJECT DEPOSIT
+    // PROJECT SET APY
+    // PROJECT SET CAP
+    // PROJECT WITHDRAWAL
+
+    // STAKING
+    // STAKING WITHDRAWAL
+
+    ///// VIEW FUNCTIONS /////
+
+    // View total balance
+    // View staking balance
+    // View deposit balance
+    // View APY
+    // View Cap
+    // View user staking balance
+
+    ///// VIEW FUNCTIONS END /////
 }
