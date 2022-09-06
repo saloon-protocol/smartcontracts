@@ -9,20 +9,21 @@ pragma solidity >=0.8.4;
 // import { CustomErrors } from "../libraries/CustomErrors.sol";
 
 /// @title MIMOProxyRegistry
-contract BountyProxyRegistry is IBountyProxyRegistry {
+contract BountyProxyManager is IBountyProxyRegistry {
     /// PUBLIC STORAGE ///
 
     /// @inheritdoc IMIMOProxyRegistry
     IBountyProxyFactory public override factory;
 
-    _currentProxies[] public proxiesRegister;
+    struct Addresses {
+        string projectName;
+        address projectWallet;
+        address proxyAddress;
+    }
 
-    /// INTERNAL STORAGE ///
-
-    /// @notice Internal mapping of projects address to current proxies.
-    mapping(address => IBountyProxy) internal _currentProxies;
-
-    /// CONSTRUCTOR ///
+    Addresses[] public bountiesList;
+    // Project name => project auth address => proxy address
+    mapping(string => Addresses) public nameToBounty;
 
     /// @param factory_ The base contract of the factory
     constructor(IBountyProxyFactory factory_) {
@@ -30,35 +31,33 @@ contract BountyProxyRegistry is IBountyProxyRegistry {
     }
 
     ///// DEPLOY NEW BOUNTY //////
-    function deployBounty(address projectsAddress, string projectsName)
+    function deployNewBounty(string memory _projectName, address _projectWallet)
         public
-        override
-        returns (IMIMOProxy proxy)
     {
-        IMIMOProxy currentProxy = _currentProxies[owner];
+        // added access control (only owner can deploy new bounty
+        // revert if project name already has bounty
 
-        // Do not deploy if the proxy already exists and the owner is the same.
-        if (
-            address(currentProxy) != address(0) && currentProxy.owner() == owner
-        ) {
-            revert CustomErrors.PROXY_ALREADY_EXISTS(owner);
-        }
+        Addresses memory newBounty;
+        newBounty.projectName = _projectName;
+        newBounty.projectWallet = _projectWallet;
 
-        // Deploy the proxy via the factory.
-        proxy = factory.deployFor(owner);
+        // call factory to deploy bounty
+        _proxyAddress = factory.deployBounty();
 
-        // increment proxies Register by one and add make it equal to this mapping
+        newBounty.proxyAddress = _proxyAddress;
 
-        // @audit This should be its own function
-        // Set or override the current proxy for the owner.
-        _currentProxies[owner] = IMIMOProxy(proxy);
+        // Push new bounty to storage array
+        bountiesList.push(newBounty);
+
+        // Create new mapping so we can look up bounty details by their name
+        nameToBounty[_projectName] = newBounty;
     }
 
     ////////// VIEW FUNCTIONS ////////////
 
     // Function to view all bounties name string //
 
-    // Function to view TVL of all pools together //
+    // Function to view TVL , average APY and remaining  amount to reach total CAP of all pools together //
 
     // Function to view Total Balance of Pool By Project Name //
 
@@ -80,18 +79,24 @@ contract BountyProxyRegistry is IBountyProxyRegistry {
 
     ////    VIEW FUNCTIONS END  ///////
 
-    //////// PROJECTS FUNCTION TO CHANGE APY /////
+    /// ADMIN WITHDRAWAL FROM POOL  TO PAY BOUNTY ///
+
+    //////// PROJECTS FUNCTION TO CHANGE APY by NAME/////
     // time locked
     // fails if msg.sender != project owner
 
-    /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL ///////
-    // fails if msg.sender != project owner
-
-    /////// PROJECT FUNCTION TO WITHDRAWAL FROM POOL /////
+    //////// PROJECTS FUNCTION TO CHANGE CAP by NAME/////
     // time locked
     // fails if msg.sender != project owner
 
-    ////// STAKER FUNCTION TO STAKE INTO POOL//////
+    /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL by NAME///////
+    // fails if msg.sender != project owner
+
+    /////// PROJECT FUNCTION TO WITHDRAWAL FROM POOL  by PROJECT NAME/////
+    // time locked
+    // fails if msg.sender != project owner
+
+    ////// STAKER FUNCTION TO STAKE INTO POOL by PROJECT NAME//////
 
     ////// STAKER FUNCTION TO WITHDRAWAL FROM POOL ///////
     // time locked
