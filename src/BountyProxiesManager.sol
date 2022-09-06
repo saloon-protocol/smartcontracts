@@ -2,18 +2,18 @@
 pragma solidity >=0.8.4;
 
 // import "./interfaces/IMIMOProxy.sol";
-// import "./interfaces/IMIMOProxyFactory.sol";
+// import "./interfaces/IBountyProxyFactory.sol";
 // import "./interfaces/IMIMOProxyRegistry.sol";
 // import "../core/interfaces/IAddressProvider.sol";
 // import "../core/interfaces/IAccessController.sol";
 // import { CustomErrors } from "../libraries/CustomErrors.sol";
 
 /// @title MIMOProxyRegistry
-contract BountyProxyManager is IBountyProxyRegistry {
+contract BountyProxiesManager {
     /// PUBLIC STORAGE ///
 
     /// @inheritdoc IMIMOProxyRegistry
-    IBountyProxyFactory public override factory;
+    IBountyProxyFactory public factory;
 
     struct Addresses {
         string projectName;
@@ -33,6 +33,7 @@ contract BountyProxyManager is IBountyProxyRegistry {
     ///// DEPLOY NEW BOUNTY //////
     function deployNewBounty(string memory _projectName, address _projectWallet)
         public
+        returns (newProxyAddress)
     {
         // added access control (only owner can deploy new bounty
         // revert if project name already has bounty
@@ -42,9 +43,9 @@ contract BountyProxyManager is IBountyProxyRegistry {
         newBounty.projectWallet = _projectWallet;
 
         // call factory to deploy bounty
-        _proxyAddress = factory.deployBounty();
+        address newProxyAddress = factory.deployBounty();
 
-        newBounty.proxyAddress = _proxyAddress;
+        newBounty.proxyAddress = newProxyAddress;
 
         // Push new bounty to storage array
         bountiesList.push(newBounty);
@@ -68,24 +69,15 @@ contract BountyProxyManager is IBountyProxyRegistry {
     // Function to view individual Staker Balance in Pool by Project Name //
 
     // Function to find bounty proxy and wallet address by Name
-    function getBountyAddressesByName(address owner)
-        external
-        view
-        override
-        returns (IMIMOProxy proxy)
-    {
-        proxy = _currentProxies[owner];
-    }
+    function getBountyAddressesByName(address owner) external view returns () {}
 
     ////    VIEW FUNCTIONS END  ///////
 
     /// ADMIN WITHDRAWAL FROM POOL  TO PAY BOUNTY ///
 
-    //////// PROJECTS FUNCTION TO CHANGE APY by NAME/////
-    // time locked
-    // fails if msg.sender != project owner
+    /// ADMIN CHANNGE IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON ///
 
-    //////// PROJECTS FUNCTION TO CHANGE CAP by NAME/////
+    //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME/////
     // time locked
     // fails if msg.sender != project owner
 
@@ -97,6 +89,8 @@ contract BountyProxyManager is IBountyProxyRegistry {
     // fails if msg.sender != project owner
 
     ////// STAKER FUNCTION TO STAKE INTO POOL by PROJECT NAME//////
+
+    ////// STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
 
     ////// STAKER FUNCTION TO WITHDRAWAL FROM POOL ///////
     // time locked
