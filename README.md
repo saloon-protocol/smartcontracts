@@ -74,6 +74,15 @@ Considerations:
 - Options/NFTs should be able to read pool value, easy.
 - Insurance Pool we be its own thing. With its own factory.
 
+Managing APY Payments:
+
+Project must have sufficient balance to pay maximum APY cost at all times.
+We will transferFrom() the APY amount from projects regularly to top up their current balances.
+If transfer fails the APY will be set as the current premiumBalance to insuranceCAP ratio.
+
+- APY is always set based on premiumBalance/insuranceCap
+- If projects want to keep a high APY they must keep the premiumBalance up to date
+
 ---
 
 General Flow:
