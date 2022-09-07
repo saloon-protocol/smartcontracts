@@ -80,8 +80,21 @@ Project must have sufficient balance to pay maximum APY cost at all times.
 We will transferFrom() the APY amount from projects regularly to top up their current balances.
 If transfer fails the APY will be set as the current premiumBalance to insuranceCAP ratio.
 
+- projects can increase APY at any time and it will be recorded in the APYperiods array including the time stamp. This array will be reference when stakers are claiming their premium.
+- Keep track of stakers balance during different time stamps so we can calculate their balance at each APY period.
+
 - APY is always set based on premiumBalance/insuranceCap
 - If projects want to keep a high APY they must keep the premiumBalance up to date
+
+- premiumBalance can never exceed monthly insuranceCAP
+
+- how to keep track of APY through premium balance and still be able to handle interest claims at the same time?
+- If pool fails to PAY desired APY current APY is set as default.
+
+TODO:
+
+- Finish all functions.
+- Implement events
 
 ---
 

@@ -53,7 +53,7 @@ contract BountyProxiesManager {
         // added access control (only owner can deploy new bounty
         // revert if project name already has bounty
 
-        require(tokenWhitelist[_token] != 0, "Token not approved");
+        require(tokenWhitelist[_token] == true, "Token not approved");
 
         Addresses memory newBounty;
         newBounty.projectName = _projectName;
@@ -134,6 +134,13 @@ contract BountyProxiesManager {
     //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME/////
     // time locked
     // fails if msg.sender != project owner
+    function setBountyCapAndAPY() external {
+        // look for project address
+        // require msg.sender == projectWAllet
+        // set cap
+        
+        // set APY
+    }
 
     /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL by NAME///////
     // fails if msg.sender != project owner
