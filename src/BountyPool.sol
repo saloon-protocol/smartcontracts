@@ -25,11 +25,13 @@ contract BountyPool is ReentrancyGuard, Ownable {
     uint256 public lastTimePremiumWasPaid;
     uint256 public requiredPremiumBalancePerPeriod;
     // Total APY % divided per fortnight.
-    uint256 public APYPaymentPerPeriodSplit = 24; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
+    uint256 public fortnightlyAPYPayment = 24; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
     uint256 public poolPremiumPaymentPeriod = 2 weeks;
 
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
+    // staker address => staker balance
+    mapping(address => uint256) public stakerBalance;
 
     struct APYperiods {
         uint256 timeStamp;
@@ -90,7 +92,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
         // ensure there is enough premium balance to pay stakers new APY for a month
         uint256 currentPremiumBalance = premiumBalance;
         uint256 newRequiredPremiumBalancePerPeriod = (poolCap / _desiredAPY) /
-            APYPaymentPerPeriodSplit;
+            fortnightlyAPYPayment;
         // this might lead to leftover premium if project decreases APY, we will see what to do about that later
         if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
             // calculate difference to be paid
@@ -185,18 +187,16 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // decrease stakersDeposit
 
     // claim premium
-    function claimPremium() external onlyManager {
+    function claimPremium() external onlyManager nonReentrant {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         lastTimeClaimed = lastClaimed[msg.sender];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
-
-        if (sinceLastClaimed > poolPremiumPaymentPeriod) {
+        uint256 paymentPeriod = poolPremiumPaymentPeriod;
+        if (sinceLastClaimed > paymentPeriod) {
             // calculate how many chunks of period have been missed
+            timeChuncks = sinceLastClaimed / paymentPeriod;
             // calculate average APY of that time
             ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
-            // for loop iterating through APY changes and checking
-            // if timestamp is >= to lastClaimed:
-            // add to sum and divide by total length up until current
             uint256 APYsum;
             uint256 count;
             for (i; i < APYrecords.length(); ++i) {
@@ -205,12 +205,27 @@ contract BountyPool is ReentrancyGuard, Ownable {
                     count += 1;
                 }
             }
-
             uint256 APYaverage = APYsum / count;
             ////////////
-            // Pay msg.sender balance % of that time
+
+            // Caculate owedPremium times how many periods were missed
+            uint256 owedPremium = ((stakerBalance[msg.sender] / APYaverage) /
+                fortnightlyAPYPayment) * timeChuncks;
+
+            // Pay
+            token.safeTransfer(msg.sender, owedPremium);
+
             // update premiumBalance
-        } else {}
+            premiumBalance -= owedPremium;
+        } else {
+            // calculate currently owed for the week
+            uint256 owedPremium = (stakerBalance[msg.sender] / desiredAPY) /
+                fortnightlyAPYPayment;
+            // pay current period owed
+            token.safeTransfer(msg.sender, owedPremium);
+            // update premium
+            premiumBalance -= owedPremium;
+        }
 
         // update last time claimed
         lastClaimed[msg.sender] = block.timestamp;
