@@ -7,6 +7,9 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 //  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
 
+// TODO Solve APY / TIME calcualtion parade -> how to manipulate these units?
+// TODO How to handle staking + APY records for premium claim calculation
+
 contract BountyPool is ReentrancyGuard, Ownable {
     //#################### State Variables *****************\\
     address public immutable projectWallet;
@@ -78,7 +81,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
         returns (bool)
     {
         // transfer from project account
-        token.safetransferFrom(projectWallet, address(this), _amount);
+        token.safeTransferFrom(projectWallet, address(this), _amount);
 
         // update deposit variable
         projectDeposit += _amount;
@@ -136,53 +139,57 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // PROJECT PAY weekly/monthly PREMIUM to this address
     // this address needs to be approved
     // base this off stakersDeposit
+    // TODO REVERT TO TOP UP METHOD
     function payFortnightlyPremium() public onlyManagerOrSelf returns (bool) {
-        uint256 lastPaid = lastTimePaid;
-        uint256 paymentPeriod = poolPremiumPaymentPeriod;
-        // TODO make sure function can only be called once every two weeks
-        require(lastPaid >= paymentPeriod, "Premium already paid");
+        uint256 currentPremiumBalance = premiumBalance;
+        uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
+        // check if current premium balance is less than required
+        if (currentPremiumBalance < minimumRequiredBalance) {
+            uint256 lastPaid = lastTimePaid;
+            uint256 paymentPeriod = poolPremiumPaymentPeriod;
 
-        // TODO check when function was called last time and pay premium according to how much time has passed since then.
-        uint256 sinceLastPaid = block.timestamp - lastPaid;
+            // TODO check when function was called last time and pay premium according to how much time has passed since then.
+            uint256 sinceLastPaid = block.timestamp - lastPaid;
 
-        // calculate how many chunks of period have been missed
-        uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
-        if (timeChuncks > 2) {
-            // calculate average APY of that time
-            ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
-            uint256 APYsum;
-            uint256 count;
-            for (i; i < APYrecords.length(); ++i) {
-                if (APYrecords.timeStamp >= lastPaid) {
-                    APYsum += APYrecords.periodAPY;
-                    count += 1;
+            // calculate how many chunks of period have been missed
+            uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
+            if (timeChuncks > 2) {
+                // calculate average APY of that time
+                ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
+                uint256 APYsum;
+                uint256 count;
+                for (i; i < APYrecords.length(); ++i) {
+                    if (APYrecords.timeStamp >= lastPaid) {
+                        APYsum += APYrecords.periodAPY;
+                        count += 1;
+                    }
                 }
+                // TODO is averaging this the right thing to do?
+                uint256 stakersDepositAverage;
+                uint256 APYaverage = APYsum / count;
+
+                // TODO stakersDeposit has to be recorded in APY records so premium
+                // can be paid for the right values in the past.
+                fortnightlyPremiumOwed =
+                    ((stakersDeposit / APYaverage) / fortnightlyPremiumOwed) *
+                    timeChuncks;
+
+                // Pay
+                token.safeTransferFrom(projectWallet, fortnightlyPremiumOwed);
+
+                // update premiumBalance
+                premiumBalance += fortnightlyPremiumOwed;
+            } else {
+                fortnightlyPremiumOwed =
+                    (stakersDeposit / desiredAPY) /
+                    fortnightlyAPYSplit;
+
+                token.safeTransferFrom(
+                    projectWallet,
+                    address(this),
+                    fortnightlyPremiumOwed
+                );
             }
-            // TODO is averaging this the right thing to do?
-            uint256 stakersDepositAverage;
-            uint256 APYaverage = APYsum / count;
-
-            // TODO stakersDeposit has to be recorded in APY records so premium
-            // can be paid for the right values in the past.
-            fortnightlyPremiumOwed =
-                ((stakersDeposit / APYaverage) / fortnightlyPremiumOwed) *
-                timeChuncks;
-
-            // Pay
-            token.safeTransferFrom(projectWallet, fortnightlyPremiumOwed);
-
-            // update premiumBalance
-            premiumBalance += fortnightlyPremiumOwed;
-        } else {
-            fortnightlyPremiumOwed =
-                (stakersDeposit / desiredAPY) /
-                fortnightlyAPYSplit;
-
-            token.safeTransferFrom(
-                projectWallet,
-                address(this),
-                fortnightlyPremiumOwed
-            );
         }
         // if premium isnt paid, reset APY
 

@@ -100,6 +100,29 @@ We would be transferring TO A LOT OF USERS, not gas efficient and would need man
   Project would only ever need to pay waht is necessary instead of full APY....
   But what happens if they dont pay?
   - Premium is paid on what APY the current premiumBalance allows, APY is reset to whatever premiumBalance dictates
+
+ClaimPremium:
+
+- if last time premium was called > 1 period
+
+  - calculate size of APY periods
+  - iterate through APY periods
+    - check state balance of that period
+    - calculate APYperday
+      -multiply by period length
+  - sum to Total accruedpremium
+
+- transfer to staker
+- if transfer fails:
+  - call payPremium to top up address balance
+  - transfer to staker
+  - if this transfer fails:
+    - decrease APY to premium balance and pay him whatever we can?
+
+PayPremium:
+
+- what if full pool goes a full period without payment?
+  - payPremium is called if claimPremium drains contract out of balance!!
 -
 
 TODO:
