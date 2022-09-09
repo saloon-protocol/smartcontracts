@@ -27,8 +27,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     uint256 public lastTimePaid;
     uint256 public requiredPremiumBalancePerPeriod;
     // Total APY % divided per fortnight.
-    uint256 public APYPerDay = desiredAPY / 365 days; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
-    uint256 public poolPremiumPaymentPeriod = 2 weeks;
+    uint256 public APYPerDay = desiredAPY / 365 days;
 
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
