@@ -5,6 +5,8 @@ import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
+//  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
+
 contract BountyPool is ReentrancyGuard, Ownable {
     //#################### State Variables *****************\\
     address public immutable projectWallet;
@@ -25,7 +27,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     uint256 public lastTimePremiumWasPaid;
     uint256 public requiredPremiumBalancePerPeriod;
     // Total APY % divided per fortnight.
-    uint256 public fortnightlyAPYPayment = 24; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
+    uint256 public fortnightlyAPYSplit = 24; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
     uint256 public poolPremiumPaymentPeriod = 2 weeks;
 
     // staker => last time premium was claimed
@@ -82,6 +84,10 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
     // PROJECT SET APY
     // project must approve this address first.
+    // project will have to pay upfront cost of full period on the first time.
+    // this will serve two purposes:
+    // 1. sign of good faith and working payment system
+    // 2. if theres is ever a problem with payment the initial premium deposit can be used as a buffer so users can still be paid while issue is fixed.
     function setDesiredAPY(uint256 _desiredAPY)
         external
         onlyManager
@@ -92,7 +98,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
         // ensure there is enough premium balance to pay stakers new APY for a month
         uint256 currentPremiumBalance = premiumBalance;
         uint256 newRequiredPremiumBalancePerPeriod = (poolCap / _desiredAPY) /
-            fortnightlyAPYPayment;
+            fortnightlyAPYSplit;
         // this might lead to leftover premium if project decreases APY, we will see what to do about that later
         if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
             // calculate difference to be paid
@@ -102,17 +108,6 @@ contract BountyPool is ReentrancyGuard, Ownable {
             token.safeTransferFrom(projectWallet, address(this), difference);
             // increase premium
             premiumBalance += difference;
-        }
-
-        // if APY is decreased and value is higher than needed, project gets a refund.
-        if (currentPremiumBalance > newRequiredPremiumBalancePerPeriod) {
-            // calculate difference to be paid
-            uint256 difference = currentPremiumBalance -
-                newRequiredPremiumBalancePerPeriod;
-            // transfer to this address
-            token.safeTransfe(projectWallet, difference);
-            // decrease premium
-            premiumBalance -= difference;
         }
 
         requiredPremiumBalancePerPeriod = newRequiredPremiumBalancePerPeriod;
@@ -130,66 +125,48 @@ contract BountyPool is ReentrancyGuard, Ownable {
     }
 
     // PROJECT PAY weekly/monthly PREMIUM to this address
-    // Current issue: if function doesnt get called in a month, premiuns wont be paid for that month.
-    // could fix it to pay retroactively seeing how long since last time it has been paid... but seems like a waist of gas
-    // we should be calling this every month in the manager collectPremiumForAll() function
-    function payPremium() external onlyManager returns (bool) {
-        uint256 currentPremiumBalance = premiumBalance;
-        uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
-        // check if current premium balance is less than required
-        if (currentPremiumBalance < minimumRequiredBalance) {
-            // if its less try transfer the difference to this address
-            // calculate difference
-            uint256 difference = minimumRequiredBalance - currentPremiumBalance;
-            // try transfer, if it fails, set desired APY as current APY
+    // this address needs to be approved
+    // base this off stakersDeposit
+    function payFortnightlyPremium() external onlyManager returns (bool) {
+        // TODO make sure function can only be called once every two weeks
+        // TODO check when function was called last time and pay premium according to how much time has passed since then.
+        fortnightlyPremiumOwed =
+            (stakersDeposit / desiredAPY) /
+            fortnightlyAPYSplit;
 
-            if (
-                !token.safeTransferFrom(
-                    projectWallet,
-                    address(this),
-                    difference
-                )
-            ) {
-                desiredAPY = currentAPY;
-
-                // update APYperiods
-                APYperiods memory newAPYperiod;
-                newAPYperiod.timeStamp = block.timestamp;
-                newAPYperiod.periodAPY = desiredAPY;
-
-                APYrecords.push(newAPYperiod);
-
-                return false;
-            } else {
-                // update premiumBalance
-                premiumBalance += difference;
-            }
-        }
+        token.safeTransferFrom(
+            projectWallet,
+            address(this),
+            fortnightlyPremiumOwed
+        );
 
         return true;
-
-        // emit event?
-        // update last time paid ???
-        // lastTimePremiumWasPaid = block.timestamp;
     }
 
     // PROJECT WITHDRAWAL
 
     // STAKING
-    // dont allow staking if stakerDeposit >= poolCap
-    // increase stakerBalance
-    // increase stakersDeposit
+    // staker needs to approve this address first
+    function stake(address _staker, uint256 _amount) external onlyManager {
+        // dont allow staking if stakerDeposit >= poolCap
+        require(stakersDeposit >= poolCap, "Staking Pool already full");
+        // transferFrom to this address
+        // increase stakerBalance
+        stakerBalance[_staker] += _amount;
+        // increase stakersDeposit
+        stakersDeposit += _amount;
+    }
 
     // STAKING WITHDRAWAL
-    // allow instant withdraw if stakerDeposit >= poolCap
+    // allow instant withdraw if stakerDeposit >= poolCap or APY = 0%
     // otherwise have to wait for timelock period
     // decrease staker balance
     // decrease stakersDeposit
 
     // claim premium
-    function claimPremium() external onlyManager nonReentrant {
+    function claimPremium(address _staker) external onlyManager nonReentrant {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
-        lastTimeClaimed = lastClaimed[msg.sender];
+        lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
         uint256 paymentPeriod = poolPremiumPaymentPeriod;
         if (sinceLastClaimed > paymentPeriod) {
@@ -209,26 +186,28 @@ contract BountyPool is ReentrancyGuard, Ownable {
             ////////////
 
             // Caculate owedPremium times how many periods were missed
-            uint256 owedPremium = ((stakerBalance[msg.sender] / APYaverage) /
-                fortnightlyAPYPayment) * timeChuncks;
+            uint256 owedPremium = ((stakerBalance[_staker] / APYaverage) /
+                fortnightlyAPYSplit) * timeChuncks;
 
             // Pay
-            token.safeTransfer(msg.sender, owedPremium);
+            // TODO if transfer fails update APY to 0%
+            token.safeTransfer(_staker, owedPremium);
 
             // update premiumBalance
             premiumBalance -= owedPremium;
         } else {
             // calculate currently owed for the week
-            uint256 owedPremium = (stakerBalance[msg.sender] / desiredAPY) /
-                fortnightlyAPYPayment;
+            uint256 owedPremium = (stakerBalance[_staker] / desiredAPY) /
+                fortnightlyAPYSplit;
             // pay current period owed
-            token.safeTransfer(msg.sender, owedPremium);
+            // TODO if transfer fails update APY to 0%
+            token.safeTransfer(_staker, owedPremium);
             // update premium
             premiumBalance -= owedPremium;
         }
 
         // update last time claimed
-        lastClaimed[msg.sender] = block.timestamp;
+        lastClaimed[_staker] = block.timestamp;
 
         return true;
     }

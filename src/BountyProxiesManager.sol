@@ -87,7 +87,7 @@ contract BountyProxiesManager {
     // Function to view individual Staker Balance in Pool by Project Name //
 
     // Function to find bounty proxy and wallet address by Name
-    function getBountyAddressesByName(address owner) external view returns () {}
+    function getBountyAddressByName(string _projectName) external view returns () {}
 
     ////    VIEW FUNCTIONS END  ///////
 

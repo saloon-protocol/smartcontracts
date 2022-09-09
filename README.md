@@ -91,6 +91,17 @@ If transfer fails the APY will be set as the current premiumBalance to insurance
 - how to keep track of APY through premium balance and still be able to handle interest claims at the same time?
 - If pool fails to PAY desired APY current APY is set as default.
 
+What happens if project decides to decrease full poolCap?
+
+-- What if I implement paypremium based on stakerDeposit, APY and poolCap and transfer premium directly to stakers so they dont have to claim anything...
+We would be transferring TO A LOT OF USERS, not gas efficient and would need many transactions to get it done to avoid gas limits.
+
+- What if I still use stakerDeposit, APY and poolCap and transfer it to contracts address? How is this different from using premiumBalance?
+  Project would only ever need to pay waht is necessary instead of full APY....
+  But what happens if they dont pay?
+  - Premium is paid on what APY the current premiumBalance allows, APY is reset to whatever premiumBalance dictates
+-
+
 TODO:
 
 - Finish all functions.
