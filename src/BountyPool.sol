@@ -24,10 +24,10 @@ contract BountyPool is ReentrancyGuard, Ownable {
     uint256 public currentAPY = premiumBalance / poolCap;
     uint256 public desiredAPY;
     uint256 public poolCap;
-    uint256 public lastTimePremiumWasPaid;
+    uint256 public lastTimePaid;
     uint256 public requiredPremiumBalancePerPeriod;
     // Total APY % divided per fortnight.
-    uint256 public fortnightlyAPYSplit = 24; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
+    uint256 public APYPerDay = desiredAPY / 365 days; // maybe change where this is used so only poolPremiumPaymentPeriod is necessary.
     uint256 public poolPremiumPaymentPeriod = 2 weeks;
 
     // staker => last time premium was claimed
@@ -50,6 +50,14 @@ contract BountyPool is ReentrancyGuard, Ownable {
         _;
     }
 
+    modifier onlyManagerorSelf() {
+        require(
+            msg.sender == manager || msg.sender == address(this),
+            "Only manager allowed"
+        );
+        _;
+    }
+
     //#################### Modifiers *****************\\
 
     constructor(address _projectWallet, address _manager) {
@@ -60,6 +68,8 @@ contract BountyPool is ReentrancyGuard, Ownable {
     ////FUNCTIONS //////
 
     // ADMIN WITHDRAWAL
+    // decrease stakerDeposit
+    // descrease project deposit
 
     // PROJECT DEPOSIT
     // project must approve this address first.
@@ -127,18 +137,57 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // PROJECT PAY weekly/monthly PREMIUM to this address
     // this address needs to be approved
     // base this off stakersDeposit
-    function payFortnightlyPremium() external onlyManager returns (bool) {
+    function payFortnightlyPremium() public onlyManagerOrSelf returns (bool) {
+        uint256 lastPaid = lastTimePaid;
+        uint256 paymentPeriod = poolPremiumPaymentPeriod;
         // TODO make sure function can only be called once every two weeks
-        // TODO check when function was called last time and pay premium according to how much time has passed since then.
-        fortnightlyPremiumOwed =
-            (stakersDeposit / desiredAPY) /
-            fortnightlyAPYSplit;
+        require(lastPaid >= paymentPeriod, "Premium already paid");
 
-        token.safeTransferFrom(
-            projectWallet,
-            address(this),
-            fortnightlyPremiumOwed
-        );
+        // TODO check when function was called last time and pay premium according to how much time has passed since then.
+        uint256 sinceLastPaid = block.timestamp - lastPaid;
+
+        // calculate how many chunks of period have been missed
+        uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
+        if (timeChuncks > 2) {
+            // calculate average APY of that time
+            ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
+            uint256 APYsum;
+            uint256 count;
+            for (i; i < APYrecords.length(); ++i) {
+                if (APYrecords.timeStamp >= lastPaid) {
+                    APYsum += APYrecords.periodAPY;
+                    count += 1;
+                }
+            }
+            // TODO is averaging this the right thing to do?
+            uint256 stakersDepositAverage;
+            uint256 APYaverage = APYsum / count;
+
+            // TODO stakersDeposit has to be recorded in APY records so premium
+            // can be paid for the right values in the past.
+            fortnightlyPremiumOwed =
+                ((stakersDeposit / APYaverage) / fortnightlyPremiumOwed) *
+                timeChuncks;
+
+            // Pay
+            token.safeTransferFrom(projectWallet, fortnightlyPremiumOwed);
+
+            // update premiumBalance
+            premiumBalance += fortnightlyPremiumOwed;
+        } else {
+            fortnightlyPremiumOwed =
+                (stakersDeposit / desiredAPY) /
+                fortnightlyAPYSplit;
+
+            token.safeTransferFrom(
+                projectWallet,
+                address(this),
+                fortnightlyPremiumOwed
+            );
+        }
+        // if premium isnt paid, reset APY
+
+        lastTimePaid = block.timestamp;
 
         return true;
     }
@@ -150,28 +199,31 @@ contract BountyPool is ReentrancyGuard, Ownable {
     function stake(address _staker, uint256 _amount) external onlyManager {
         // dont allow staking if stakerDeposit >= poolCap
         require(stakersDeposit >= poolCap, "Staking Pool already full");
-        // transferFrom to this address
+        // TODO transferFrom to this address
         // increase stakerBalance
         stakerBalance[_staker] += _amount;
         // increase stakersDeposit
         stakersDeposit += _amount;
     }
 
-    // STAKING WITHDRAWAL
+    // TODO STAKING WITHDRAWAL
     // allow instant withdraw if stakerDeposit >= poolCap or APY = 0%
     // otherwise have to wait for timelock period
     // decrease staker balance
     // decrease stakersDeposit
 
     // claim premium
+    // TODO doesnt take into account fluctuations in stakers Balance...
+    // it uses current balance for all APY periods, however he could have had 10k at 12% and 100k at 2%
     function claimPremium(address _staker) external onlyManager nonReentrant {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
         uint256 paymentPeriod = poolPremiumPaymentPeriod;
-        if (sinceLastClaimed > paymentPeriod) {
-            // calculate how many chunks of period have been missed
-            timeChuncks = sinceLastClaimed / paymentPeriod;
+        // calculate how many chunks of period have been missed
+        uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
+        // if more than 2 have been missed it means that a at least one week hasnt been paid
+        if (timeChuncks > 2) {
             // calculate average APY of that time
             ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
             uint256 APYsum;
@@ -190,8 +242,9 @@ contract BountyPool is ReentrancyGuard, Ownable {
                 fortnightlyAPYSplit) * timeChuncks;
 
             // Pay
-            // TODO if transfer fails update APY to 0%
             token.safeTransfer(_staker, owedPremium);
+            // TODO if transfer fails call payPremium
+            // TODO if payPremium fails update APY to 0%
 
             // update premiumBalance
             premiumBalance -= owedPremium;
@@ -200,8 +253,11 @@ contract BountyPool is ReentrancyGuard, Ownable {
             uint256 owedPremium = (stakerBalance[_staker] / desiredAPY) /
                 fortnightlyAPYSplit;
             // pay current period owed
-            // TODO if transfer fails update APY to 0%
+
             token.safeTransfer(_staker, owedPremium);
+            // TODO if transfer fails call payPremium
+            // TODO if payPremium fails update APY to 0%
+
             // update premium
             premiumBalance -= owedPremium;
         }

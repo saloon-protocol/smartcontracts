@@ -87,12 +87,12 @@ contract BountyProxiesManager {
     // Function to view individual Staker Balance in Pool by Project Name //
 
     // Function to find bounty proxy and wallet address by Name
-    function getBountyAddressByName(string _projectName) external view returns () {}
+    function getBountyAddressByName(string memory _projectName) external view returns () {}
 
     ////    VIEW FUNCTIONS END  ///////
 
     ///// PUBLIC PAY PREMIUM FOR ONE BOUNTY
-    function collectPremiumForOnePool(string _projectName) external returns(bool) {
+    function collectPremiumForOnePool(string memory _projectName) external returns(bool) {
         // check if premium has already been paid
         if (bountyDetails){
             // if it hasnt pay premium
