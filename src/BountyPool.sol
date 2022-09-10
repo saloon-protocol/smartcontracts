@@ -7,8 +7,6 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 //  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
 
-// TODO Solve APY / TIME calcualtion charade -> how to manipulate these units?
-
 contract BountyPool is ReentrancyGuard, Ownable {
     //#################### State Variables *****************\\
     address public immutable projectWallet;
@@ -16,22 +14,27 @@ contract BountyPool is ReentrancyGuard, Ownable {
     address public immutable token;
 
     uint256 public constant VERSION = 1;
+    uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
+    uint256 public constant PREMIUM_COMMISSION = 2 * 1e18;
+    uint256 public constant DENOMINATOR = 100 * 1e18;
+    uint256 public constant YEAR = 365 days;
+
     uint256 public projectDeposit;
     uint256 public stakersDeposit;
-    uint256 public premiumBalance;
     uint256 public bountyBalance = projectDeposit + stakersDeposit;
+
+    uint256 public saloonBountyCommission =
+        (bountyBalance * BOUNTY_COMMISSION) / DENOMINATOR;
     // bountyBalance - % commission
-    uint256 public bountyPayout = bountyBalance - saloonCommission;
-    uint256 public saloonCommission = (bountyBalance / commissionRate);
-    uint256 public commissionRate = 12; // 12% ?
+    uint256 public bountyHackerPayout = bountyBalance - saloonBountyCommission;
+
+    uint256 public premiumBalance;
     uint256 public currentAPY = premiumBalance / poolCap;
     uint256 public desiredAPY;
     uint256 public poolCap;
     uint256 public lastTimePaid;
     uint256 public requiredPremiumBalancePerPeriod;
-    uint256 public poolPremiumPaymentPeriod = 2 weeks;
-    // Total APY % divided per day.
-    uint256 public APYPerDay = desiredAPY / 365 days;
+    uint256 public poolPeriod = 2 weeks;
 
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
@@ -111,12 +114,12 @@ contract BountyPool is ReentrancyGuard, Ownable {
         onlyManager
         returns (bool)
     {
-        // make sure APY has right amount of decimals
+        // make sure APY has right amount of decimals (1e18)
 
         // ensure there is enough premium balance to pay stakers new APY for a month
         uint256 currentPremiumBalance = premiumBalance;
-        uint256 newRequiredPremiumBalancePerPeriod = (poolCap / _desiredAPY) /
-            fortnightlyAPYSplit;
+        uint256 newRequiredPremiumBalancePerPeriod = ((poolCap * _desiredAPY) /
+            YEAR) * poolPeriod;
         // this might lead to leftover premium if project decreases APY, we will see what to do about that later
         if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
             // calculate difference to be paid
@@ -145,37 +148,37 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // PROJECT PAY weekly/monthly PREMIUM to this address
     // this address needs to be approved
     // base this off stakersDeposit
-    // TODO REVERT TO TOP UP METHOD
     function payFortnightlyPremium() public onlyManagerOrSelf returns (bool) {
         uint256 currentPremiumBalance = premiumBalance;
         uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
         // check if current premium balance is less than required
         if (currentPremiumBalance < minimumRequiredBalance) {
             uint256 lastPaid = lastTimePaid;
-            uint256 paymentPeriod = poolPremiumPaymentPeriod;
+            uint256 paymentPeriod = poolPeriod;
 
-            // TODO check when function was called last time and pay premium according to how much time has passed since then.
+            // check when function was called last time and pay premium according to how much time has passed since then.
             uint256 sinceLastPaid = block.timestamp - lastPaid;
 
             // calculate how many chunks of period have been missed
             uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
-            if (timeChuncks > 2) {
-                // calculate average APY of that time
-                ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
-                uint256 APYsum;
-                uint256 count;
-                for (i; i < APYrecords.length(); ++i) {
-                    if (APYrecords.timeStamp >= lastPaid) {
-                        APYsum += APYrecords.periodAPY;
-                        count += 1;
-                    }
-                }
-                uint256 APYaverage = APYsum / count;
+            if (sinceLastPaid > poolPeriod) {
+                // NOTE This part is not needed as everytime APY is changed the premium balance is already topped up
+                // // calculate average APY of that time
+                // ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
+                // uint256 APYsum;
+                // uint256 count;
+                // for (i; i < APYrecords.length(); ++i) {
+                //     if (APYrecords.timeStamp >= lastPaid) {
+                //         APYsum += APYrecords.periodAPY;
+                //         count += 1;
+                //     }
+                // }
+                // uint256 APYaverage = APYsum / count;
 
-                // can be paid for the right values in the past.
-                fortnightlyPremiumOwed =
-                    ((poolcap / APYaverage) / fortnightlyPremiumOwed) *
-                    timeChuncks;
+                // // can be paid for the right values in the past.
+                // fortnightlyPremiumOwed =
+                //     ((poolcap / APYaverage) / fortnightlyPremiumOwed) *
+                //     timeChuncks;
 
                 // Pay
                 token.safeTransferFrom(projectWallet, fortnightlyPremiumOwed);
@@ -194,6 +197,9 @@ contract BountyPool is ReentrancyGuard, Ownable {
                 );
             }
         }
+        // TODO Calculate saloon  fee
+        // TODO subbstract saloon fee
+        // TODO update saloon claimable fee
         //TODO if premium isnt paid, reset APY
 
         lastTimePaid = block.timestamp;
@@ -202,6 +208,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     }
 
     // PROJECT WITHDRAWAL
+    // timelock on this.
 
     // STAKING
     // staker needs to approve this address first
@@ -239,7 +246,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
-        uint256 paymentPeriod = poolPremiumPaymentPeriod;
+        uint256 paymentPeriod = poolPeriod;
         StakerInfo[] memory stakerInfo = staker[_staker];
         // if last time premium was called > 1 period
 
@@ -281,8 +288,9 @@ contract BountyPool is ReentrancyGuard, Ownable {
                     (periodTotalBalance / APYPerDay) *
                     periodLength;
             }
-
-            // Pay
+            // TODO Calculate saloon  fee
+            // TODO subbstract saloon fee
+            // TODO update saloon claimable fee
             token.safeTransfer(_staker, totalPremiumToClaim);
             // TODO if transfer fails call payPremium
             // TODO if payPremium fails update APY to 0%
@@ -292,9 +300,12 @@ contract BountyPool is ReentrancyGuard, Ownable {
         } else {
             // calculate currently owed for the week
             uint256 owedPremium = (stakerInfo[-1].stakerBalance / APYPerDay) *
-                poolPremiumPaymentPeriod;
+                poolPeriod;
             // pay current period owed
 
+            // TODO Calculate saloon  fee
+            // TODO subbstract saloon fee
+            // TODO update saloon claimable fee
             token.safeTransfer(_staker, owedPremium);
             // TODO if transfer fails call payPremium
             // TODO if payPremium fails update APY to 0%
