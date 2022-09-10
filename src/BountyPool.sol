@@ -82,11 +82,13 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
     ////FUNCTIONS //////
 
-    // ADMIN PAY BOUNTY
+    // ADMIN PAY BOUNTY AND HARVEST FEES
+
+    // ADMIN PAY BOUNTY public
     // decrease stakerDeposit
     // descrease project deposit
 
-    // ADMIN HARVEST FEES
+    // ADMIN HARVEST FEES public
 
     // PROJECT DEPOSIT
     // project must approve this address first.
