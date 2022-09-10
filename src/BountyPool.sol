@@ -93,6 +93,8 @@ contract BountyPool is ReentrancyGuard, Ownable {
         if (stakersDeposit >= _amount) {
             // decrease stakerDeposit
             stakersDeposit -= _amount;
+            // TODO calculate percentage of stakersDeposit
+            // TODO loop through all stakers and deduct percentage from their balances
             // deduct saloon commission
             uint saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
             uint hunterPayout = _amount - saloonCommission;
