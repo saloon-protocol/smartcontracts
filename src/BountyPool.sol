@@ -28,6 +28,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // bountyBalance - % commission
     uint256 public bountyHackerPayout = bountyBalance - saloonBountyCommission;
 
+    uint256 public saloonPremiumFees;
     uint256 public premiumBalance;
     uint256 public currentAPY = premiumBalance / poolCap;
     uint256 public desiredAPY;
@@ -78,9 +79,11 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
     ////FUNCTIONS //////
 
-    // ADMIN WITHDRAWAL
+    // ADMIN PAY BOUNTY
     // decrease stakerDeposit
     // descrease project deposit
+
+    // ADMIN HARVEST FEES
 
     // PROJECT DEPOSIT
     // project must approve this address first.
@@ -100,6 +103,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
     // PROJECT SET CAP
     function setPoolCap(uint256 _amount) external onlyManager {
+        // two weeks time lock?
         poolCap = _amount;
     }
 
@@ -159,47 +163,44 @@ contract BountyPool is ReentrancyGuard, Ownable {
             // check when function was called last time and pay premium according to how much time has passed since then.
             uint256 sinceLastPaid = block.timestamp - lastPaid;
 
-            // calculate how many chunks of period have been missed
-            uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
             if (sinceLastPaid > poolPeriod) {
-                // NOTE This part is not needed as everytime APY is changed the premium balance is already topped up
-                // // calculate average APY of that time
-                // ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
-                // uint256 APYsum;
-                // uint256 count;
-                // for (i; i < APYrecords.length(); ++i) {
-                //     if (APYrecords.timeStamp >= lastPaid) {
-                //         APYsum += APYrecords.periodAPY;
-                //         count += 1;
-                //     }
-                // }
-                // uint256 APYaverage = APYsum / count;
+                // multiple by `sinceLastPaid` instead of two weeks
+                uint256 fortnightlyPremiumOwed = ((
+                    ((stakersDeposit * desiredAPY) / DENOMINATOR)
+                ) / YEAR) * sinceLastPaid;
 
-                // // can be paid for the right values in the past.
-                // fortnightlyPremiumOwed =
-                //     ((poolcap / APYaverage) / fortnightlyPremiumOwed) *
-                //     timeChuncks;
+                token.safeTransferFrom(projectWallet, fortnightlyPremiumOwed); // Pay
+                // Calculate saloon fee
+                uint256 saloonFee = (fortnightlyPremiumOwed *
+                    PREMIUM_COMMISSION) / DENOMINATOR;
 
-                // Pay
-                token.safeTransferFrom(projectWallet, fortnightlyPremiumOwed);
+                // update saloon claimable fee
+                saloonPremiumFees += saloonFee;
 
                 // update premiumBalance
                 premiumBalance += fortnightlyPremiumOwed;
             } else {
-                fortnightlyPremiumOwed =
-                    (stakersDeposit / desiredAPY) /
-                    fortnightlyAPYSplit;
+                uint256 fortnightlyPremiumOwed = (((stakersDeposit *
+                    desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
 
                 token.safeTransferFrom(
                     projectWallet,
                     address(this),
                     fortnightlyPremiumOwed
                 );
+
+                // Calculate saloon fee
+                uint256 saloonFee = (fortnightlyPremiumOwed *
+                    PREMIUM_COMMISSION) / DENOMINATOR;
+
+                // update saloon claimable fee
+                saloonPremiumFees += saloonFee;
+
+                // update premiumBalance
+                premiumBalance += fortnightlyPremiumOwed;
             }
         }
-        // TODO Calculate saloon  fee
-        // TODO subbstract saloon fee
-        // TODO update saloon claimable fee
+
         //TODO if premium isnt paid, reset APY
 
         lastTimePaid = block.timestamp;
@@ -207,7 +208,10 @@ contract BountyPool is ReentrancyGuard, Ownable {
         return true;
     }
 
-    // PROJECT WITHDRAWAL
+    // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
+    // timelock on this?
+
+    // PROJECT DEPOSIT WITHDRAWAL
     // timelock on this.
 
     // STAKING
@@ -283,32 +287,36 @@ contract BountyPool is ReentrancyGuard, Ownable {
                     }
                 }
 
-                //TODO calcualte owed APY for that period: (Balance / APYPerDay) * number of days in that period
+                //calcualte owed APY for that period: (APY * amount / Seconds in a year) * number of seconds in X period
                 totalPremiumToClaim +=
-                    (periodTotalBalance / APYPerDay) *
+                    (((periodTotalBalance * desiredAPY) / DENOMINATOR) / YEAR) *
                     periodLength;
             }
-            // TODO Calculate saloon  fee
-            // TODO subbstract saloon fee
-            // TODO update saloon claimable fee
+            // Calculate saloon fee
+            uint256 saloonFee = (totalPremiumToClaim * PREMIUM_COMMISSION) /
+                DENOMINATOR;
+            // subtract saloon fee
+            totalPremiumToClaim -= saloonFee;
             token.safeTransfer(_staker, totalPremiumToClaim);
             // TODO if transfer fails call payPremium
-            // TODO if payPremium fails update APY to 0%
 
             // update premiumBalance
             premiumBalance -= totalPremiumToClaim;
         } else {
             // calculate currently owed for the week
-            uint256 owedPremium = (stakerInfo[-1].stakerBalance / APYPerDay) *
-                poolPeriod;
+
+            uint256 owedPremium = (((stakerInfo[-1].stakerBalance *
+                desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
             // pay current period owed
 
-            // TODO Calculate saloon  fee
-            // TODO subbstract saloon fee
-            // TODO update saloon claimable fee
+            // Calculate saloon fee
+            uint256 saloonFee = (owedPremium * PREMIUM_COMMISSION) /
+                DENOMINATOR;
+            // subtract saloon fee
+            owedPremium -= saloonFee;
+
             token.safeTransfer(_staker, owedPremium);
             // TODO if transfer fails call payPremium
-            // TODO if payPremium fails update APY to 0%
 
             // update premium
             premiumBalance -= owedPremium;
