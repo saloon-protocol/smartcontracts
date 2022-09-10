@@ -12,6 +12,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     address public immutable projectWallet;
     address public immutable manager;
     address public immutable token;
+    address public immutable saloonWallet
 
     uint256 public constant VERSION = 1;
     uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
@@ -85,8 +86,29 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // ADMIN PAY BOUNTY AND HARVEST FEES
 
     // ADMIN PAY BOUNTY public
-    // decrease stakerDeposit
-    // descrease project deposit
+    // this implementation uses investors funds first before project deposit,
+    // future implementation might use a more hybrid and sophisticated splitting of costs.
+    function payBounty(address _hunter, uint256 _amount) public onlyManager {
+        // check if stakersDeposit is enough
+        if (stakersDeposit >= _amount) {
+            // decrease stakerDeposit
+            stakersDeposit -= _amount;
+            // deduct saloon commission
+            uint saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
+            uint hunterPayout = _amount - saloonCommission;
+            // transfer to hunter
+            token.safeTransfer(_hunter, hunterPayout);
+            // transfer commission to saloon address
+            token.safeTransfer(saloonWallet, saloonCommission);
+        } else {
+            // if stakersDeposit not enough use projectDeposit to pay the rest
+            // decrease stakerDeposit
+            // descrease project deposit
+            // deduct saloon commission
+            // transfer to hunter
+            // transfer commission to saloon address
+        }
+    }
 
     // ADMIN HARVEST FEES public
 
