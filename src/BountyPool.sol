@@ -7,8 +7,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 //  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
 
-// TODO Solve APY / TIME calcualtion parade -> how to manipulate these units?
-// TODO How to handle staking + APY records for premium claim calculation
+// TODO Solve APY / TIME calcualtion charade -> how to manipulate these units?
 
 contract BountyPool is ReentrancyGuard, Ownable {
     //#################### State Variables *****************\\
@@ -16,6 +15,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     address public immutable manager;
     address public immutable token;
 
+    uint256 public constant VERSION = 1;
     uint256 public projectDeposit;
     uint256 public stakersDeposit;
     uint256 public premiumBalance;
@@ -29,20 +29,26 @@ contract BountyPool is ReentrancyGuard, Ownable {
     uint256 public poolCap;
     uint256 public lastTimePaid;
     uint256 public requiredPremiumBalancePerPeriod;
-    // Total APY % divided per fortnight.
+    uint256 public poolPremiumPaymentPeriod = 2 weeks;
+    // Total APY % divided per day.
     uint256 public APYPerDay = desiredAPY / 365 days;
 
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
-    // staker address => staker balance
-    mapping(address => uint256) public stakerBalance;
+    // staker address => stakerInfo array
+    mapping(address => StakerInfo[]) public staker;
+
+    struct StakerInfo {
+        uint256 stakerBalance;
+        uint256 balanceTimeStamp;
+    }
 
     struct APYperiods {
         uint256 timeStamp;
         uint256 periodAPY;
     }
 
-    APYperiods public APYrecords;
+    APYperiods[] public APYrecords;
     //#################### State Variables End *****************\\
 
     //#################### Modifiers *****************\\
@@ -52,7 +58,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
         _;
     }
 
-    modifier onlyManagerorSelf() {
+    modifier onlyManagerOrSelf() {
         require(
             msg.sender == manager || msg.sender == address(this),
             "Only manager allowed"
@@ -164,14 +170,11 @@ contract BountyPool is ReentrancyGuard, Ownable {
                         count += 1;
                     }
                 }
-                // TODO is averaging this the right thing to do?
-                uint256 stakersDepositAverage;
                 uint256 APYaverage = APYsum / count;
 
-                // TODO stakersDeposit has to be recorded in APY records so premium
                 // can be paid for the right values in the past.
                 fortnightlyPremiumOwed =
-                    ((stakersDeposit / APYaverage) / fortnightlyPremiumOwed) *
+                    ((poolcap / APYaverage) / fortnightlyPremiumOwed) *
                     timeChuncks;
 
                 // Pay
@@ -191,7 +194,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
                 );
             }
         }
-        // if premium isnt paid, reset APY
+        //TODO if premium isnt paid, reset APY
 
         lastTimePaid = block.timestamp;
 
@@ -202,17 +205,28 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
     // STAKING
     // staker needs to approve this address first
-    function stake(address _staker, uint256 _amount) external onlyManager {
+    function stake(address _staker, uint256 _amount)
+        external
+        onlyManager
+        nonReentrant
+    {
         // dont allow staking if stakerDeposit >= poolCap
         require(stakersDeposit >= poolCap, "Staking Pool already full");
         // TODO transferFrom to this address
-        // increase stakerBalance
-        stakerBalance[_staker] += _amount;
-        // increase stakersDeposit
+
+        // update stakerInfo struct
+        StakerInfo memory newInfo;
+        newInfo.balanceTimeStamp = block.timestamp;
+        newInfo.stakerBalance = staker[_staker][-1].stakerBalance + _amount;
+
+        // save info to storage
+        staker[_staker].push(newInfo);
+
+        // increase global stakersDeposit
         stakersDeposit += _amount;
     }
 
-    // TODO STAKING WITHDRAWAL
+    // TODO UNSTAKING
     // allow instant withdraw if stakerDeposit >= poolCap or APY = 0%
     // otherwise have to wait for timelock period
     // decrease staker balance
@@ -226,38 +240,59 @@ contract BountyPool is ReentrancyGuard, Ownable {
         lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
         uint256 paymentPeriod = poolPremiumPaymentPeriod;
-        // calculate how many chunks of period have been missed
-        uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
-        // if more than 2 have been missed it means that a at least one week hasnt been paid
-        if (timeChuncks > 2) {
-            // calculate average APY of that time
-            ///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
-            uint256 APYsum;
-            uint256 count;
-            for (i; i < APYrecords.length(); ++i) {
-                if (APYrecords.timeStamp >= lastTimeClaimed) {
-                    APYsum += APYrecords.periodAPY;
-                    count += 1;
+        StakerInfo[] memory stakerInfo = staker[_staker];
+        // if last time premium was called > 1 period
+
+        if (sinceLastClaimed > paymentPeriod) {
+            uint256 length = APYrecords.length();
+            // loop through APY periods (reversely) until last missed period is found
+            uint256 lastMissed;
+            uint256 totalPremiumToClaim;
+            for (uint256 i = length - 1; i == 0; --i) {
+                if (APYrecords.timeStamp[i] < lastTimeClaimed) {
+                    lastMissed = i + 1;
                 }
             }
-            uint256 APYaverage = APYsum / count;
-            ////////////
+            // loop through all missed periods
+            for (uint256 i = lastMissed; i < length; ++i) {
+                uint256 periodStart = APYrecords[i].timeStamp;
+                // period end end is equal NOW for last APY that has been set
+                uint256 periodEnd = APYrecords[i + 1].timeStamp != 0
+                    ? APYrecords[i + 1].timeStamp
+                    : block.timestamp;
+                uint256 periodLength = periodEnd - periodStart;
+                // loop through stakers balance fluctiation during this period
 
-            // Caculate owedPremium times how many periods were missed
-            uint256 owedPremium = ((stakerBalance[_staker] / APYaverage) /
-                fortnightlyAPYSplit) * timeChuncks;
+                uint256 stakerLength = stakerInfo.length();
+                uint256 periodTotalBalance;
+                for (uint256 j; j < stakerLength; ++j) {
+                    // check staker balance at that moment
+                    if (
+                        stakerInfo[j].balanceTimeStamp > periodStart &&
+                        stakerInfo[j].balanceTimeStamp < periodEnd
+                    ) {
+                        // add it to that period total
+                        periodTotalBalance += stakerInfo[j].stakerBalance;
+                    }
+                }
+
+                //TODO calcualte owed APY for that period: (Balance / APYPerDay) * number of days in that period
+                totalPremiumToClaim +=
+                    (periodTotalBalance / APYPerDay) *
+                    periodLength;
+            }
 
             // Pay
-            token.safeTransfer(_staker, owedPremium);
+            token.safeTransfer(_staker, totalPremiumToClaim);
             // TODO if transfer fails call payPremium
             // TODO if payPremium fails update APY to 0%
 
             // update premiumBalance
-            premiumBalance -= owedPremium;
+            premiumBalance -= totalPremiumToClaim;
         } else {
             // calculate currently owed for the week
-            uint256 owedPremium = (stakerBalance[_staker] / desiredAPY) /
-                fortnightlyAPYSplit;
+            uint256 owedPremium = (stakerInfo[-1].stakerBalance / APYPerDay) *
+                poolPremiumPaymentPeriod;
             // pay current period owed
 
             token.safeTransfer(_staker, owedPremium);

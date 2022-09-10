@@ -105,12 +105,14 @@ ClaimPremium:
 
 - if last time premium was called > 1 period
 
-  - calculate size of APY periods
-  - iterate through APY periods
-    - check state balance of that period
-    - calculate APYperday
-      -multiply by period length
-  - sum to Total accruedpremium
+- loop through APY periods (reversely) until missed period is found
+
+  - calculate size of missed APY periods
+    - iterate through missed APY periods
+      - check state balance of that period
+      - calculate APYperday
+        -multiply by period length
+    - sum to Total accruedpremium
 
 - transfer to staker
 - if transfer fails:
@@ -154,3 +156,55 @@ Saloon Global Staking (Future Feature):
 
 - Pool #2 pays bounty and now instead of holding a total of 100K, it only has 50K
 - User staking amount decreases from 10 to 9.5
+
+function claimPremium(address \_staker) external onlyManager nonReentrant {
+// how many chunks of time (currently = 2 weeks) since lastclaimed?
+lastTimeClaimed = lastClaimed[_staker];
+uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
+uint256 paymentPeriod = poolPremiumPaymentPeriod;
+// calculate how many chunks of period have been missed
+uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
+// if more than 2 have been missed it means that a at least one week hasnt been paid
+if (timeChuncks > 2) {
+// calculate average APY of that time
+///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
+uint256 APYsum;
+uint256 count;
+for (i; i < APYrecords.length(); ++i) {
+if (APYrecords.timeStamp >= lastTimeClaimed) {
+APYsum += APYrecords.periodAPY;
+count += 1;
+}
+}
+uint256 APYaverage = APYsum / count;
+////////////
+
+            // Caculate owedPremium times how many periods were missed
+            uint256 owedPremium = ((staker[_staker] / APYaverage) /
+                fortnightlyAPYSplit) * timeChuncks;
+
+            // Pay
+            token.safeTransfer(_staker, owedPremium);
+            // TODO if transfer fails call payPremium
+            // TODO if payPremium fails update APY to 0%
+
+            // update premiumBalance
+            premiumBalance -= owedPremium;
+        } else {
+            // calculate currently owed for the week
+            uint256 owedPremium = (staker[_staker] / desiredAPY) /
+                fortnightlyAPYSplit;
+            // pay current period owed
+
+            token.safeTransfer(_staker, owedPremium);
+            // TODO if transfer fails call payPremium
+            // TODO if payPremium fails update APY to 0%
+
+            // update premium
+            premiumBalance -= owedPremium;
+        }
+
+        // update last time claimed
+        lastClaimed[_staker] = block.timestamp;
+
+        return true;
