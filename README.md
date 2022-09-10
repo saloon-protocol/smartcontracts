@@ -1,11 +1,13 @@
 TODO:
 
-- Check mapping array storage in REMIX
-  have mapping array
-  OR
-  have struct with three arrays for counting, project and bounty addresses
-  OR
-  have mapping of mapping with the key being a uint incremented with number of bounties. constructors could loop through all mappings by referencing the total number of bounty proxies
+- ADMIN PAY BOUNTY
+- ADMIN HARVEST FEES
+- PROJECT DEPOSIT WITHDRAWAL
+- FINISH ALL TODOs
+- VIEW FUNCTIONS
+- EVENTS
+
+---
 
 BountyProxyFactory deploys bounty proxies which all look to the same upgradeable beacon.
 We can upgrade all proxies by changing which contract the beacon is looking to.
@@ -144,6 +146,12 @@ How to retroactively deploy insurance pool for all bountyproxies?
 
 ---
 
+Unstake():
+
+- include timelock in staker struct
+
+---
+
 Saloon Global Staking (Future Feature):
 
 - Average APY from all Pools
@@ -156,55 +164,3 @@ Saloon Global Staking (Future Feature):
 
 - Pool #2 pays bounty and now instead of holding a total of 100K, it only has 50K
 - User staking amount decreases from 10 to 9.5
-
-function claimPremium(address \_staker) external onlyManager nonReentrant {
-// how many chunks of time (currently = 2 weeks) since lastclaimed?
-lastTimeClaimed = lastClaimed[_staker];
-uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
-uint256 paymentPeriod = poolPremiumPaymentPeriod;
-// calculate how many chunks of period have been missed
-uint256 timeChuncks = sinceLastClaimed / paymentPeriod;
-// if more than 2 have been missed it means that a at least one week hasnt been paid
-if (timeChuncks > 2) {
-// calculate average APY of that time
-///////////// current solution has to go through all changes in APY, maybe not the most optimal solution.
-uint256 APYsum;
-uint256 count;
-for (i; i < APYrecords.length(); ++i) {
-if (APYrecords.timeStamp >= lastTimeClaimed) {
-APYsum += APYrecords.periodAPY;
-count += 1;
-}
-}
-uint256 APYaverage = APYsum / count;
-////////////
-
-            // Caculate owedPremium times how many periods were missed
-            uint256 owedPremium = ((staker[_staker] / APYaverage) /
-                fortnightlyAPYSplit) * timeChuncks;
-
-            // Pay
-            token.safeTransfer(_staker, owedPremium);
-            // TODO if transfer fails call payPremium
-            // TODO if payPremium fails update APY to 0%
-
-            // update premiumBalance
-            premiumBalance -= owedPremium;
-        } else {
-            // calculate currently owed for the week
-            uint256 owedPremium = (staker[_staker] / desiredAPY) /
-                fortnightlyAPYSplit;
-            // pay current period owed
-
-            token.safeTransfer(_staker, owedPremium);
-            // TODO if transfer fails call payPremium
-            // TODO if payPremium fails update APY to 0%
-
-            // update premium
-            premiumBalance -= owedPremium;
-        }
-
-        // update last time claimed
-        lastClaimed[_staker] = block.timestamp;
-
-        return true;

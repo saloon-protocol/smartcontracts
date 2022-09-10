@@ -42,6 +42,9 @@ contract BountyPool is ReentrancyGuard, Ownable {
     // staker address => stakerInfo array
     mapping(address => StakerInfo[]) public staker;
 
+    // staker address => amount => timelock time
+    mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
+
     struct StakerInfo {
         uint256 stakerBalance;
         uint256 balanceTimeStamp;
@@ -150,8 +153,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     }
 
     // PROJECT PAY weekly/monthly PREMIUM to this address
-    // this address needs to be approved
-    // base this off stakersDeposit
+    // this address needs to be approved first
     function payFortnightlyPremium() public onlyManagerOrSelf returns (bool) {
         uint256 currentPremiumBalance = premiumBalance;
         uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
@@ -179,6 +181,12 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
                 // update premiumBalance
                 premiumBalance += fortnightlyPremiumOwed;
+
+                //TODO if premium isnt paid, reset APY
+
+                lastTimePaid = block.timestamp;
+
+                return true;
             } else {
                 uint256 fortnightlyPremiumOwed = (((stakersDeposit *
                     desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
@@ -198,14 +206,15 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
                 // update premiumBalance
                 premiumBalance += fortnightlyPremiumOwed;
+
+                //TODO if premium isnt paid, reset APY
+
+                lastTimePaid = block.timestamp;
+
+                return true;
             }
         }
-
-        //TODO if premium isnt paid, reset APY
-
-        lastTimePaid = block.timestamp;
-
-        return true;
+        return false;
     }
 
     // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
@@ -220,10 +229,10 @@ contract BountyPool is ReentrancyGuard, Ownable {
         external
         onlyManager
         nonReentrant
+        returns (bool)
     {
         // dont allow staking if stakerDeposit >= poolCap
         require(stakersDeposit >= poolCap, "Staking Pool already full");
-        // TODO transferFrom to this address
 
         // update stakerInfo struct
         StakerInfo memory newInfo;
@@ -235,17 +244,57 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
         // increase global stakersDeposit
         stakersDeposit += _amount;
+
+        // transferFrom to this address
+        token.safeTransferFrom(_staker, address(this), _amount);
+
+        return true;
     }
 
-    // TODO UNSTAKING
+    function askForUnstake(address _staker, uint256 _amount)
+        external
+        onlyManager
+    {
+        stakerTimeLock[_staker][_amount] = block.timestamp;
+
+        // TODO emit event -> necessary to predict payout payment in the following week
+    }
+
+    // UNSTAKING
     // allow instant withdraw if stakerDeposit >= poolCap or APY = 0%
     // otherwise have to wait for timelock period
-    // decrease staker balance
-    // decrease stakersDeposit
+    function unstake(address _staker, uint256 _amount)
+        external
+        onlyManager
+        nonReentrant
+        returns (bool)
+    {
+        if (desiredAPY != 0) {
+            require(
+                stakerTimelock[_staker][_amount] + poolPeriod < block.timestamp,
+                "Timelock not finished or started"
+            );
+
+            // decrease staker balance
+            // update stakerInfo struct
+            StakerInfo memory newInfo;
+            newInfo.balanceTimeStamp = block.timestamp;
+            newInfo.stakerBalance = staker[_staker][-1].stakerBalance - _amount;
+
+            // save info to storage
+            staker[_staker].push(newInfo);
+
+            // decrease global stakersDeposit
+            stakersDeposit -= _amount;
+
+            // transfer it out
+            token.safeTransfer(_staker, _amount);
+
+            return true;
+        }
+    }
 
     // claim premium
-    // TODO doesnt take into account fluctuations in stakers Balance...
-    // it uses current balance for all APY periods, however he could have had 10k at 12% and 100k at 2%
     function claimPremium(address _staker) external onlyManager nonReentrant {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         lastTimeClaimed = lastClaimed[_staker];
@@ -302,6 +351,10 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
             // update premiumBalance
             premiumBalance -= totalPremiumToClaim;
+
+            // update last time claimed
+            lastClaimed[_staker] = block.timestamp;
+            return true;
         } else {
             // calculate currently owed for the week
 
@@ -320,12 +373,13 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
             // update premium
             premiumBalance -= owedPremium;
+
+            // update last time claimed
+            lastClaimed[_staker] = block.timestamp;
+            return true;
         }
 
-        // update last time claimed
-        lastClaimed[_staker] = block.timestamp;
-
-        return true;
+        return false;
     }
 
     ///// VIEW FUNCTIONS /////
