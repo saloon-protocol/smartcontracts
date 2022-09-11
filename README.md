@@ -4,7 +4,6 @@
 
 BountyPool:
 
-- Change onlyManager modifier to onlyProxy
 - EVENTS (and small todos)
 
 ---
@@ -17,13 +16,19 @@ BeaconProxy:
 
 UpgradeableBeacon:
 
-- Only allow `manager` to call `delegate`
-
 ---
 
 BeaconProxy:
 
 - Only allow `manager` to call `delegate`
+
+---
+
+Manager:
+
+- function to deploy implementation
+- function to deploy upgradeableBeacon
+- function to change implementation on upgradeableBeacon
 
 ---
 
