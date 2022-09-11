@@ -11,7 +11,7 @@ The Manager contract controls it all, it is the only contract that we and any us
   - Deploy new implementations.
   - Update UpgradeableBeacon.
 
-- Portal for a bounties:
+- Portal for users and projects:
   - Users are able to invest through it and claim their premiums.
   - Projects are able to control their deposits, APYs and pool caps.
   - We are able to pay bounties and claim insurance premiums.
