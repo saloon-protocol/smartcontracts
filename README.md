@@ -1,6 +1,6 @@
 # Collection of TODOs, Thoughts and Observations
 
-TODOs by Contract:
+### TODOs by Contract:
 
 BountyPool:
 
@@ -8,7 +8,7 @@ BountyPool:
 
 ---
 
-TODOs:
+### TODOs big picture:
 
 - Figure out Beacon Proxy implementation and Upgradeable Beacon.
 - Implement BeaconProxy (bountyProxy)
@@ -18,6 +18,8 @@ TODOs:
 - Start Working on version 2
 
 ---
+
+## Ramblings, notes and observations
 
 BountyProxyFactory deploys bounty proxies which all look to the same upgradeable beacon.
 We can upgrade all proxies by changing which contract the beacon is looking to.
