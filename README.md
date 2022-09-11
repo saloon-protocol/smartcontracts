@@ -1,9 +1,21 @@
-TODO:
+Immediate TODOs:
 
-- PROJECT DEPOSIT WITHDRAWAL
+BountyPool:
+
 - FINISH ALL TODOs
 - VIEW FUNCTIONS
-- EVENTS
+- EVENTS (and small todos)
+
+---
+
+TODOs:
+
+- Figure out Beacon Proxy implementation and Upgradeable Beacon.
+- Implement BeaconProxy (bountyProxy)
+- Implementi UpgradeableBeacon
+- Finish BountyProxiesManager Implementation
+
+- Start Working on version 2
 
 ---
 
