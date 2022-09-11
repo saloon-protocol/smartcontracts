@@ -50,9 +50,10 @@ Manager:
 
 ### TODOs big picture:
 
-- Figure out Beacon Proxy implementation and Upgradeable Beacon.
+- Figure out Beacon Proxy implementation and Upgradeable Beacon. - DONE
 - Implement BeaconProxy (bountyProxy)
-- Implementi UpgradeableBeacon
+- Implement UpgradeableBeacon
+- Implement ProxyFactory
 - Finish BountyProxiesManager Implementation
 
 - Start Working on version 2
