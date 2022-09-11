@@ -580,7 +580,9 @@ contract BountyPool is ReentrancyGuard {
             totalPremiumToClaim -= saloonFee;
             if (!token.safeTransfer(_staker, totalPremiumToClaim)) {
                 payFortnightlyPremium();
-                // if function above fails than it fails...
+                // if function above changes APY than accounting is going to get messed up,
+                // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
+                // if function above fails then it fails...
             }
 
             // update premiumBalance
@@ -604,7 +606,9 @@ contract BountyPool is ReentrancyGuard {
 
             if (!token.safeTransfer(_staker, owedPremium)) {
                 payFortnightlyPremium();
-                // if function above fails than it fails...
+                // if function above changes APY than accounting is going to get messed up,
+                // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
+                // if function above fails then it fails...
             }
 
             // update premium
@@ -621,13 +625,50 @@ contract BountyPool is ReentrancyGuard {
     ///// VIEW FUNCTIONS /////
 
     // View total balance
+    function viewHackerPayout() external view returns (uint256) {
+        return bountyHackerPayout;
+    }
+
     // View stakersDeposit balance
+    function viewStakersDeposit() external view returns (uint256) {
+        return stakersDeposit;
+    }
+
     // View deposit balance
+    function viewProjecDeposit() external view returns (uint256) {
+        return projectDeposit;
+    }
+
     // view premium balance
+    function viewPremiumBalance() external view returns (uint256) {
+        return premiumBalance;
+    }
+
     // view required premium balance
+    function viewRequirePremiumBalance() external view returns (uint256) {
+        return requiredPremiumBalancePerPeriod;
+    }
+
     // View APY
+    function viewDesireAPY() external view returns (uint256) {
+        return desiredAPY;
+    }
+
     // View Cap
+    function viewPoolCap() external view returns (uint256) {
+        return poolCap;
+    }
+
     // View user staking balance
+    function viewUserStakingBalance(address _staker)
+        external
+        view
+        returns (uint256, uint256)
+    {
+        return (staker[_staker].stakerBalance, staker[_staker].timeStamp);
+    }
+
+    // view user current claimable premium ???
 
     ///// VIEW FUNCTIONS END /////
 }

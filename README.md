@@ -2,8 +2,6 @@ Immediate TODOs:
 
 BountyPool:
 
-- FINISH ALL TODOs
-- VIEW FUNCTIONS
 - EVENTS (and small todos)
 
 ---
