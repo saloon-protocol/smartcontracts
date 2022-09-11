@@ -1,4 +1,6 @@
-Immediate TODOs:
+# Collection of TODOs, Thoughts and Observations
+
+TODOs by Contract:
 
 BountyPool:
 
