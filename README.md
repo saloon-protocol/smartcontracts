@@ -1,5 +1,21 @@
 # Collection of TODOs, Thoughts and Observations
 
+## Basic Flow
+
+The Manager contract controls it all, it is the only contract that we and any users have to interact with. This makes it simple and straightforward, not juggling different contracts addresses on front end or anything, just need to keep track of this one.
+
+- It is able to:
+
+  - Deploy new bounties.
+  - Shutdown bounties
+  - Deploy new implementations.
+  - Update UpgradeableBeacon.
+
+- Portal for a bounties:
+  - Users are able to invest through it and claim their premiums.
+  - Projects are able to control their deposits, APYs and pool caps.
+  - We are able to pay bounties and claim insurance premiums.
+
 ### TODOs by Contract:
 
 BountyPool:
@@ -26,7 +42,7 @@ BeaconProxy:
 
 Manager:
 
-- function to deploy implementation
+- function to deploy implementation (and update upgradeableBeacon atomically)
 - function to deploy upgradeableBeacon
 - function to change implementation on upgradeableBeacon
 
