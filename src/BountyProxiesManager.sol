@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity >=0.8.4;
+//SPDX-License-Identifier: MIT
+pragma solidity 0.8.10;
 
 import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
@@ -9,9 +9,11 @@ import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 // import "../core/interfaces/IAddressProvider.sol";
 // import "../core/interfaces/IAccessController.sol";
 // import { CustomErrors } from "../libraries/CustomErrors.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
+
 
 /// @title MIMOProxyRegistry
-contract BountyProxiesManager {
+contract BountyProxiesManager is Owner {
     /// PUBLIC STORAGE ///
 
     /// @inheritdoc IMIMOProxyRegistry
@@ -36,7 +38,7 @@ contract BountyProxiesManager {
     }
 
     modifier onlySaloon() {
-        require(msg.sender == manager, "Only Saloon allowed");
+        require(msg.sender == owner, "Only Saloon allowed");
         _;
     }
 
@@ -70,6 +72,13 @@ contract BountyProxiesManager {
 
         // Create new mapping so we can look up bounty details by their name
         bountyDetails[_projectName] = newBounty;
+
+        // update proxyWhitelist in implementation
+    }
+
+    ///// KILL BOUNTY ////
+    function killBounty() external {
+        // exclude proxy from proxyWhitelist
     }
 
     ////////// VIEW FUNCTIONS ////////////

@@ -4,7 +4,26 @@
 
 BountyPool:
 
+- Change onlyManager modifier to onlyProxy
 - EVENTS (and small todos)
+
+---
+
+BeaconProxy:
+
+- Only allow `manager` to call `delegate`
+
+---
+
+UpgradeableBeacon:
+
+- Only allow `manager` to call `delegate`
+
+---
+
+BeaconProxy:
+
+- Only allow `manager` to call `delegate`
 
 ---
 
@@ -17,12 +36,30 @@ BountyPool:
 
 - Start Working on version 2
 
----
-
 ## Ramblings, notes and observations
 
 BountyProxyFactory deploys bounty proxies which all look to the same upgradeable beacon.
 We can upgrade all proxies by changing which contract the beacon is looking to.
+
+---
+
+### Reasons/options for Manager -> Implementation access control choice
+
+- The implementation will only accept calls coming from the `manager` contract.
+
+- Every BountyProxy will have a different address so the Implementation cant rely on msg.sender and instead has to rely on receiving an extra input `_sender`
+
+- Verifying senders can be done in two way
+
+  - manager updates a mapping in the implementation contract every time a new BountyPool is launched so the Proxy can have access to the implementation. Proxy checks if mapping(`msg.sender`) is allowed (!=0) - THIS IS THE CHOSEN ONE.
+
+  - OR instead of the manager updating the implementation contract with new values for every bounty that is launched, it just passes its address -- MEEH THIS WOULDNT WORK. Anyone could then call and pass in the managers address.
+
+---
+
+### Considerations
+
+- Should we have a `_gap` in proxy/implementaion? I've seen somewhere it is good to avoid storage collisions.
 
 ---
 
@@ -139,12 +176,6 @@ PayPremium:
 
 - what if full pool goes a full period without payment?
   - payPremium is called if claimPremium drains contract out of balance!!
--
-
-TODO:
-
-- Finish all functions.
-- Implement events
 
 ---
 
