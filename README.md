@@ -1,7 +1,5 @@
 TODO:
 
-- ADMIN PAY BOUNTY
-- ADMIN HARVEST FEES
 - PROJECT DEPOSIT WITHDRAWAL
 - FINISH ALL TODOs
 - VIEW FUNCTIONS
@@ -149,6 +147,11 @@ How to retroactively deploy insurance pool for all bountyproxies?
 Unstake():
 
 - include timelock in staker struct
+
+OBS:
+
+- Stake only push to array if previous balance = 0
+- Unstake removes from array if resulting balance = 0
 
 ---
 

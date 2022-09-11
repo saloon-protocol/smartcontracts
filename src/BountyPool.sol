@@ -5,14 +5,16 @@ import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
+// todo import safe library for openzeppeling safeTransfer()
+
 //  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
 
-contract BountyPool is ReentrancyGuard, Ownable {
+contract BountyPool is ReentrancyGuard {
     //#################### State Variables *****************\\
     address public immutable projectWallet;
     address public immutable manager;
     address public immutable token;
-    address public immutable saloonWallet
+    address public immutable saloonWallet;
 
     uint256 public constant VERSION = 1;
     uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
@@ -42,7 +44,7 @@ contract BountyPool is ReentrancyGuard, Ownable {
     mapping(address => uint256) public lastClaimed;
     // staker address => stakerInfo array
     mapping(address => StakerInfo[]) public staker;
-
+    address[] public stakerList;
     // staker address => amount => timelock time
     mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
 
@@ -83,36 +85,106 @@ contract BountyPool is ReentrancyGuard, Ownable {
 
     ////FUNCTIONS //////
 
-    // ADMIN PAY BOUNTY AND HARVEST FEES
-
     // ADMIN PAY BOUNTY public
     // this implementation uses investors funds first before project deposit,
     // future implementation might use a more hybrid and sophisticated splitting of costs.
-    function payBounty(address _hunter, uint256 _amount) public onlyManager {
+    // todo cache variables to make it more gas effecient
+    function payBounty(address _hunter, uint256 _amount)
+        public
+        onlyManager
+        returns (bool)
+    {
         // check if stakersDeposit is enough
         if (stakersDeposit >= _amount) {
             // decrease stakerDeposit
             stakersDeposit -= _amount;
-            // TODO calculate percentage of stakersDeposit
-            // TODO loop through all stakers and deduct percentage from their balances
+            // if staker deposit == 0
+            if (stakersDeposit == 0) {
+                for (uint256 i; i < length; ++i) {
+                    address stakerAddress = stakerList[i]; //   TODO cache stakerList before
+                    staker[stakerAddress].stakerBalance = 0;
+                    staker[stakerAddress].timeStamp = block.timestamp;
+                    // clean stakerList array
+                    delete stakerList;
+
+                    // deduct saloon commission
+                    uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
+                        DENOMINATOR;
+                    uint256 hunterPayout = _amount - saloonCommission;
+                    // transfer to hunter
+                    token.safeTransfer(_hunter, hunterPayout); //todo maybe transfer to payout address
+                    // transfer commission to saloon address
+                    token.safeTransfer(saloonWallet, saloonCommission);
+
+                    // todo Emit event with timestamp and amount
+                    return true;
+                }
+            }
+            // calculate percentage of stakersDeposit
+            uint256 percentage = _amount / stakersDeposit;
+            // loop through all stakers and deduct percentage from their balances
+            uint256 length = stakerList.length;
+            for (uint256 i; i < length; ++i) {
+                address stakerAddress = stakerList[i]; //   TODO cache stakerList before
+                staker[stakerAddress].stakerBalance =
+                    staker[stakerAddress].stakerBalance -
+                    ((staker[stakerAddress].stakerBalance * percentage) /
+                        DENOMINATOR);
+                staker[stakerAddress].timeStamp = block.timestamp;
+            }
             // deduct saloon commission
-            uint saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
-            uint hunterPayout = _amount - saloonCommission;
+            uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
+                DENOMINATOR;
+            uint256 hunterPayout = _amount - saloonCommission;
             // transfer to hunter
             token.safeTransfer(_hunter, hunterPayout);
             // transfer commission to saloon address
             token.safeTransfer(saloonWallet, saloonCommission);
+
+            // todo Emit event with timestamp and amount
+
+            return true;
         } else {
+            // reset baalnce of all stakers
+            uint256 length = stakerList.length;
+            for (uint256 i; i < length; ++i) {
+                address stakerAddress = stakerList[i]; //   TODO cache stakerList before
+                staker[stakerAddress].stakerBalance = 0;
+                staker[stakerAddress].timeStamp = block.timestamp;
+                // clean stakerList array
+                delete stakerList;
+            }
             // if stakersDeposit not enough use projectDeposit to pay the rest
-            // decrease stakerDeposit
-            // descrease project deposit
+            uint256 remainingCost = _amount - stakersDeposit;
+            // descrease project deposit by the remaining amount
+            projectDeposit -= remainingCost;
+
+            // set stakers deposit to 0
+            stakersDeposit = 0;
+
             // deduct saloon commission
+            uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
+                DENOMINATOR;
+            uint256 hunterPayout = _amount - saloonCommission;
             // transfer to hunter
+            token.safeTransfer(_hunter, hunterPayout);
             // transfer commission to saloon address
+            token.safeTransfer(saloonWallet, saloonCommission);
+
+            // todo Emit event with timestamp and amount
+            return true;
         }
     }
 
     // ADMIN HARVEST FEES public
+    function collectSaloonPremiumFees() external onlyManager returns (bool) {
+        // send current fees to saloon address
+        token.safeTransfer(saloonWallet, saloonPremiumFees);
+        // reset claimable fees
+        saloonPremiumFees = 0;
+
+        // todo emit event
+    }
 
     // PROJECT DEPOSIT
     // project must approve this address first.
@@ -258,7 +330,15 @@ contract BountyPool is ReentrancyGuard, Ownable {
         returns (bool)
     {
         // dont allow staking if stakerDeposit >= poolCap
-        require(stakersDeposit >= poolCap, "Staking Pool already full");
+        require(
+            stakersDeposit + _amount <= poolCap,
+            "Staking Pool already full"
+        );
+
+        // Push to stakerList array if previous balance = 0
+        if (staker[_staker][-1].stakerBalance == 0) {
+            stakerList.push(_staker);
+        }
 
         // update stakerInfo struct
         StakerInfo memory newInfo;
@@ -283,7 +363,8 @@ contract BountyPool is ReentrancyGuard, Ownable {
     {
         stakerTimeLock[_staker][_amount] = block.timestamp;
 
-        // TODO emit event -> necessary to predict payout payment in the following week
+        //todo emit event -> necessary to predict payout payment in the following week
+        //todo OR have variable that gets updated with new values? - forgot what we discussed about this
     }
 
     // UNSTAKING
@@ -306,6 +387,28 @@ contract BountyPool is ReentrancyGuard, Ownable {
             StakerInfo memory newInfo;
             newInfo.balanceTimeStamp = block.timestamp;
             newInfo.stakerBalance = staker[_staker][-1].stakerBalance - _amount;
+
+            address[] memory stakersList = stakerList;
+            if (newInfo.stakerBalance == 0) {
+                // loop through stakerlist
+                uint256 length = stakersList.length(); // can you do length on memory arrays?
+                for (uint256 i; i < length; ) {
+                    // find staker
+                    if (stakersList[i] == _staker) {
+                        // exchange it with last address in array
+                        address lastAddress = stakersList[-1];
+                        stakerList[-1] = _staker;
+                        stakerList[i] = lastAddress;
+                        // pop it
+                        stakerList.pop();
+                        break;
+                    }
+
+                    unchecked {
+                        ++i;
+                    }
+                }
+            }
 
             // save info to storage
             staker[_staker].push(newInfo);
