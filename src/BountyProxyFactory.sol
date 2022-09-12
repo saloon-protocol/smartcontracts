@@ -53,7 +53,7 @@ contract MIMOProxyFactory is IMIMOProxyFactory {
         override
         returns (IMIMOProxy proxy)
     {
-        proxy = IMIMOProxy(mimoProxyBase.clone());
+        proxy = IBountyProxy(mimoProxyBase.clone());
         proxy.initialize();
 
         // Transfer the ownership from this factory contract to the specified owner.

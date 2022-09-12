@@ -16,6 +16,23 @@ The Manager contract controls it all, it is the only contract that we and any us
   - Projects are able to control their deposits, APYs and pool caps.
   - We are able to pay bounties and claim insurance premiums.
 
+## Questions:
+
+- Should the Manager itself be a proxy? Seems like a good idea.
+
+### TODOs big picture:
+
+- Figure out Beacon Proxy implementation and Upgradeable Beacon. - DONE
+- Develop BeaconProxy (bountyProxy) - DONE
+- Develop UpgradeableBeacon - DONE
+- Develop ProxyFactory
+- Finish BountyProxiesManager Implementation
+- Develop ManagerProxy
+- Make sure all contracts have working dependencies
+- Test on testnet
+
+- Start Working on version 2
+
 ### TODOs by Contract:
 
 BountyPool:
@@ -34,13 +51,13 @@ UpgradeableBeacon:
 
 ---
 
-BeaconProxy:
+BeaconProxyFactory:
 
 - Only allow `manager` to call `delegate`
 
 ---
 
-Manager:
+Manager Implementation:
 
 - function to deploy implementation (and update upgradeableBeacon atomically)
 - function to deploy upgradeableBeacon
@@ -48,15 +65,9 @@ Manager:
 
 ---
 
-### TODOs big picture:
+ManagerProxy:
 
-- Figure out Beacon Proxy implementation and Upgradeable Beacon. - DONE
-- Implement BeaconProxy (bountyProxy)
-- Implement UpgradeableBeacon
-- Implement ProxyFactory
-- Finish BountyProxiesManager Implementation
-
-- Start Working on version 2
+- function to change implementation
 
 ## Ramblings, notes and observations
 
