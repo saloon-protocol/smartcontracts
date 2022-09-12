@@ -11,8 +11,11 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract BountyPool is ReentrancyGuard {
     //#################### State Variables *****************\\
+    // possibly make this a constant
     address public immutable projectWallet;
+    // possibly make this a constant
     address public immutable manager;
+    // possibly erase this and rely on manager
     address public immutable token;
     address public immutable saloonWallet;
 
@@ -74,6 +77,7 @@ contract BountyPool is ReentrancyGuard {
 
     modifier onlyProxy() {
         require(proxyWhitelist[msg.sender] != 0, "Address not whitelisted");
+        _;
     }
 
     modifier onlyProxyOrSelf() {
