@@ -14,8 +14,7 @@ contract BountyPool is ReentrancyGuard {
     
     //todo possibly make this a constant
     address public immutable manager;
-    //todo possibly erase this and rely on manager
-    address public immutable token;
+    //todo possibly make this a constant
     address public immutable saloonWallet;
 
     uint256 public constant VERSION = 1;

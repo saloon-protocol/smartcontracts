@@ -28,8 +28,10 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop ProxyFactory - DONE
 - Finish BountyProxiesManager Implementation
 - Develop ManagerProxy
+- Remove accounting redundancies between factory/registry/manager
 - Make sure all contracts have working dependencies
 - Test on testnet
+- Test on mainnet
 
 - Start Working on version 2
 
