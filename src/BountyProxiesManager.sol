@@ -11,6 +11,10 @@ import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 // import { CustomErrors } from "../libraries/CustomErrors.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
+//// THOUGHTS:
+// Planning to separate this into contracts:
+// 1. Registry contract that holds varaibles
+// 2. Manager Contract that hold state changing functions and inherits Registry
 
 /// @title MIMOProxyRegistry
 contract BountyProxiesManager is Owner {
@@ -19,16 +23,16 @@ contract BountyProxiesManager is Owner {
     /// @inheritdoc IMIMOProxyRegistry
     IBountyProxyFactory public factory;
 
-    struct Addresses {
+    struct Bounties {
         string projectName;
         address projectWallet;
         address proxyAddress;
         address token;
     }
 
-    Addresses[] public bountiesList;
+    Bounties[] public bountiesList;
     // Project name => project auth address => proxy address
-    mapping(string => Addresses) public bountyDetails;
+    mapping(string => Bounties) public bountyDetails;
     // Token address => approved or not
     mapping(address => bool)  public tokenWhitelist;
 
@@ -57,7 +61,7 @@ contract BountyProxiesManager is Owner {
 
         require(tokenWhitelist[_token] == true, "Token not approved");
 
-        Addresses memory newBounty;
+        Bounties memory newBounty;
         newBounty.projectName = _projectName;
         newBounty.projectWallet = _projectWallet;
         newBounty.token = _token;
@@ -140,6 +144,8 @@ contract BountyProxiesManager is Owner {
 
     /// ADMIN UPDATE APPROVED TOKENS ///
 
+    /// ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY ///
+
     //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME/////
     // time locked
     // fails if msg.sender != project owner
@@ -157,9 +163,11 @@ contract BountyProxiesManager is Owner {
         string memory _projectName,
         uint256 _amount
     ) external returns (bool) {
-        Addresses memory bounty = bountyDetails[_projectName];
+        Bounties memory bounty = bountyDetails[_projectName];
 
         require(msg.sender == bounty.projectWallet, "Not project owner");
+        require(msg.sender == bounty.token, "Token not assigned");
+        // check if token is same as assigned to project
         
         
 

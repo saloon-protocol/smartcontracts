@@ -16,7 +16,7 @@ import "../ERC1967/ERC1967Upgrade.sol";
  * _Available since v3.4._
  */
 contract BountyProxy is Proxy, ERC1967Upgrade {
-    address public immutable manager;
+    address public immutable manager; //might not be necessary if owner is transferred thourgh proxyFactory
 
     /**
      * @dev Initializes the proxy with `beacon`.

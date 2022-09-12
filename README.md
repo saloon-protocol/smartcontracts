@@ -41,9 +41,9 @@ BountyPool:
 
 ---
 
-BeaconProxy:
+BountyProxy:
 
-- Only allow `manager` to call `delegate`
+- Only allow `manager` to call `delegate` -> Sort out if this is going to be done via ProxyFactory `transferOwnership` or `initialize()`.
 
 ---
 
