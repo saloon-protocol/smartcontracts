@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 import "./IBeacon.sol";
 import "../Proxy.sol";
 import "../ERC1967/ERC1967Upgrade.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /**
  * @dev This contract implements a proxy that gets the implementation address for each call from an {UpgradeableBeacon}.
@@ -15,7 +16,7 @@ import "../ERC1967/ERC1967Upgrade.sol";
  *
  * _Available since v3.4._
  */
-contract BountyProxy is Proxy, ERC1967Upgrade {
+contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
     address public immutable manager; //might not be necessary if owner is transferred thourgh proxyFactory
 
     /**
@@ -29,12 +30,13 @@ contract BountyProxy is Proxy, ERC1967Upgrade {
      *
      * - `beacon` must be a contract with the interface {IBeacon}.
      */
-    constructor(
-        address beacon,
-        bytes memory data,
-        address manager
-    ) payable {
-        _upgradeBeaconToAndCall(beacon, data, false);
+    function initialize(
+        address _beacon,
+        bytes memory _data,
+        address _manager
+    ) payable initializer {
+        _upgradeBeaconToAndCall(_beacon, _data, false);
+        manager = _manager;
     }
 
     modifier onlyManager() {

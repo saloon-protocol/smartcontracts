@@ -15,6 +15,8 @@ contract MIMOProxyFactory is IMIMOProxyFactory {
 
     address public immutable mimoProxyBase;
 
+    address public immutable manager;
+
     /// @inheritdoc IMIMOProxyFactory
     uint256 public constant override VERSION = 1;
 
@@ -23,8 +25,14 @@ contract MIMOProxyFactory is IMIMOProxyFactory {
     /// @dev Internal mapping to track all deployed proxies.
     mapping(address => bool) internal _proxies;
 
-    constructor(address _mimoProxyBase) {
+    constructor(address _mimoProxyBase, address _manager) {
         mimoProxyBase = _mimoProxyBase;
+        manager = _manager;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == manager, "Only manager allowed");
+        _;
     }
 
     /// PUBLIC CONSTANT FUNCTIONS ///
@@ -48,16 +56,16 @@ contract MIMOProxyFactory is IMIMOProxyFactory {
 
     // @audit This should only be callable by the Registry
     /// @inheritdoc IMIMOProxyFactory
-    function deployFor(address owner)
+    function deployFor(address _beacon, bytes memory _data)
         public
         override
+        onlyManager
         returns (IMIMOProxy proxy)
     {
         proxy = IBountyProxy(mimoProxyBase.clone());
-        proxy.initialize();
+        proxy.initialize(_beacon, _data, msg.sender);
 
         // Transfer the ownership from this factory contract to the specified owner.
-        proxy.transferOwnership(owner);
 
         // Mark the proxy as deployed.
         _proxies[address(proxy)] = true;

@@ -25,7 +25,7 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Figure out Beacon Proxy implementation and Upgradeable Beacon. - DONE
 - Develop BeaconProxy (bountyProxy) - DONE
 - Develop UpgradeableBeacon - DONE
-- Develop ProxyFactory
+- Develop ProxyFactory - DONE
 - Finish BountyProxiesManager Implementation
 - Develop ManagerProxy
 - Make sure all contracts have working dependencies
@@ -43,7 +43,7 @@ BountyPool:
 
 BountyProxy:
 
-- Only allow `manager` to call `delegate` -> Sort out if this is going to be done via ProxyFactory `transferOwnership` or `initialize()`.
+- Only allow `manager` to call `delegate` -> Sort out if this is going to be done via ProxyFactory `transferOwnership` or `initialize()`. Probably initialize
 
 ---
 
@@ -53,12 +53,13 @@ UpgradeableBeacon:
 
 BeaconProxyFactory:
 
-- Only allow `manager` to call `delegate`
+- Only allow `manager` to deploy
 
 ---
 
 Manager Implementation:
 
+- function to dpeloy BountyProxyBase ( base to generate proxies from)
 - function to deploy implementation (and update upgradeableBeacon atomically)
 - function to deploy upgradeableBeacon
 - function to change implementation on upgradeableBeacon
