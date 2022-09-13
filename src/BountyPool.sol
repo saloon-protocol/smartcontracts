@@ -492,6 +492,8 @@ contract BountyPool is ReentrancyGuard {
         nonReentrant
         returns (bool)
     {
+        //TODO allow for immediate withdrawal if APY drops from desired APY
+        // going to need to create an extra variable for storing this when apy changes for worse
         if (desiredAPY != 0) {
             require(
                 stakerTimelock[_staker][_amount] < block.timestamp &&
