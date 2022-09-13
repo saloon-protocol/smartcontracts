@@ -16,7 +16,6 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 // 1. Registry contract that holds varaibles
 // 2. Manager Contract that hold state changing functions and inherits Registry
 
-/// @title MIMOProxyRegistry
 contract BountyProxiesManager is Owner {
     /// PUBLIC STORAGE ///
 
@@ -38,11 +37,6 @@ contract BountyProxiesManager is Owner {
     mapping(string => Bounties) public bountyDetails;
     // Token address => approved or not
     mapping(address => bool) public tokenWhitelist;
-
-    // Probably exclude this
-    // function onlyProject(string memory _projectName) {
-    //     require(msg.sender == projectWallet, "Only Project owner allowed");
-    // }
 
     modifier onlySaloon() {
         require(msg.sender == owner, "Only Saloon allowed");
@@ -109,32 +103,6 @@ contract BountyProxiesManager is Owner {
 
         return true;
     }
-
-    ////////// TODO VIEW FUNCTIONS ////////////
-
-    // Function to view all bounties name string //
-    function viewAllBountiesByName() external view returns (Bounties[]) {
-        return bountiesList; //done
-    }
-
-    // Function to view TVL , average APY and remaining  amount to reach total CAP of all pools together //
-
-    // Function to view Total Balance of Pool By Project Name //
-
-    // Function to view Project Deposit to Pool by Project Name //
-
-    // Function to view Total Staker Balance of Pool By Project Name //
-
-    // Function to view individual Staker Balance in Pool by Project Name //
-
-    //TODO  Function to find bounty proxy and wallet address by Name
-    function getBountyAddressByName(string memory _projectName)
-        external
-        view
-        returns (bool)
-    {}
-
-    ///////////////////////    VIEW FUNCTIONS END  ////////////////////////
 
     ///// PUBLIC PAY PREMIUM FOR ONE BOUNTY // done
     function billPremiumForOnePool(string memory _projectName)
@@ -340,4 +308,64 @@ contract BountyProxiesManager is Owner {
     }
 
     // ??????????/  STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
+
+    ///////////////////////// VIEW FUNCTIONS //////////////////////
+
+    // Function to view all bounties name string // done
+    function viewAllBountiesByName() external view returns (Bounties[]) {
+        return bountiesList;
+    }
+
+    //?????? Function to view TVL , average APY and remaining  amount to reach total CAP of all pools together //
+
+    // Function to view Total Balance of Pool By Project Name // done
+    function viewBountyPayout(string memory _projectName)
+        external
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewHackerPayout();
+    }
+
+    // Function to view Project Deposit to Pool by Project Name // done
+    function viewProjectDeposit(string memory _projectName)
+        external
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewProjecDeposit();
+    }
+
+    // Function to view Total Staker Balance of Pool By Project Name // done
+    function viewstakersDeposit(string memory _projectName)
+        external
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewStakersDeposit();
+    }
+
+    // Function to view individual Staker Balance in Pool by Project Name // done
+    function viewUserStakingBalance(string memory _projectName)
+        external
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewUserStakingBalance(msg.sender);
+    }
+
+    // Function to find bounty proxy and wallet address by Name // done
+    function getBountyAddressByName(string memory _projectName)
+        external
+        view
+        returns (address)
+    {
+        return bountyDetails[_projectName].proxyAddress;
+    }
+
+    ///////////////////////    VIEW FUNCTIONS END  ////////////////////////
 }

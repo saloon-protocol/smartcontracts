@@ -558,7 +558,7 @@ contract BountyPool is ReentrancyGuard {
     }
 
     // claim premium
-    function claimPremium(address _token, address _staker) external onlyProxy nonReentrant {
+    function claimPremium(address _token, address _staker) external onlyProxy nonReentrant returns(owedPremium){
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
@@ -609,7 +609,8 @@ contract BountyPool is ReentrancyGuard {
                 DENOMINATOR;
             // subtract saloon fee
             totalPremiumToClaim -= saloonFee;
-            if (!_token.safeTransfer(_staker, totalPremiumToClaim)) {
+            uint owedPremium = totalPremiumToClaim
+            if (!_token.safeTransfer(_staker, owedPremium)) {
                 billFortnightlyPremium();
                 // if function above changes APY than accounting is going to get messed up,
                 // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
@@ -699,9 +700,9 @@ contract BountyPool is ReentrancyGuard {
         return (staker[_staker].stakerBalance, staker[_staker].timeStamp);
     }
 
-    // view user current claimable premium ???
+    //todo view user current claimable premium ???
 
-    // view version???
+    //todo view version???
 
     ///// VIEW FUNCTIONS END /////
 }
