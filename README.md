@@ -33,7 +33,7 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop payout receiving contract
 - Remove accounting redundancies between factory/registry/manager
 - Make sure all contracts have working dependencies
-- Test on testnet
+- Test on testnet and front end integration
 - Test on mainnet
 
 - Start Working on version 2
@@ -46,7 +46,7 @@ BountyPool:
 
 ---
 
-BountyProxy:
+BountyProxyFactory:
 
 - Only allow `manager` to call `delegate` -> Sort out if this is going to be done via ProxyFactory `transferOwnership` or `initialize()`. Probably initialize
 
@@ -56,7 +56,7 @@ UpgradeableBeacon:
 
 ---
 
-BeaconProxyFactory:
+BountyProxy:
 
 - Only allow `manager` to deploy
 

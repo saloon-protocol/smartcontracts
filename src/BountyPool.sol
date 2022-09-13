@@ -17,6 +17,8 @@ contract BountyPool is ReentrancyGuard {
     //todo possibly make this a constant
     address public immutable saloonWallet;
 
+    bool public APYdropped;
+
     uint256 public constant VERSION = 1;
     uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
     uint256 public constant PREMIUM_COMMISSION = 2 * 1e18;
@@ -263,6 +265,9 @@ contract BountyPool is ReentrancyGuard {
         // set APY
         desiredAPY = _desiredAPY;
 
+        // disable instant withdrawals
+        APYdropped = false;
+
         return true;
     }
 
@@ -327,6 +332,8 @@ contract BountyPool is ReentrancyGuard {
                         address(this),
                         newFortnightlyPremiumOwed
                     );
+                    // enable instant withdrawals
+                    APYdropped = true;
 
                     return true;
                 } else {
@@ -341,6 +348,9 @@ contract BountyPool is ReentrancyGuard {
                     premiumBalance += fortnightlyPremiumOwed;
 
                     lastTimePaid = block.timestamp;
+
+                    // disable instant withdrawals
+                    APYdropped = false;
 
                     return true;
                 }
@@ -390,6 +400,8 @@ contract BountyPool is ReentrancyGuard {
                         address(this),
                         newFortnightlyPremiumOwed
                     );
+                    // enable instant withdrawals
+                    APYdropped = true;
 
                     return true;
                 } else {
@@ -404,6 +416,9 @@ contract BountyPool is ReentrancyGuard {
                     premiumBalance += fortnightlyPremiumOwed;
 
                     lastTimePaid = block.timestamp;
+
+                    // disable instant withdrawals
+                    APYdropped = false;
 
                     return true;
                 }
@@ -492,9 +507,9 @@ contract BountyPool is ReentrancyGuard {
         nonReentrant
         returns (bool)
     {
-        //TODO allow for immediate withdrawal if APY drops from desired APY
+        // allow for immediate withdrawal if APY drops from desired APY
         // going to need to create an extra variable for storing this when apy changes for worse
-        if (desiredAPY != 0) {
+        if (desiredAPY != 0 || APYdropped == true) {
             require(
                 stakerTimelock[_staker][_amount] < block.timestamp &&
                     stakerTimelock[_staker][_amount] != 0,
@@ -528,7 +543,6 @@ contract BountyPool is ReentrancyGuard {
                     }
                 }
             }
-
             // save info to storage
             staker[_staker].push(newInfo);
 
