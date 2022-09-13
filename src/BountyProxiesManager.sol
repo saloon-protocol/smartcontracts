@@ -46,6 +46,7 @@ contract BountyProxiesManager is Owner {
         _;
     }
 
+    // factory address might not be known at the time of deployment
     /// @param factory_ The base contract of the factory
     constructor(IBountyProxyFactory factory_) {
         factory = factory_;
