@@ -273,7 +273,7 @@ contract BountyPool is ReentrancyGuard {
 
     // PROJECT PAY weekly/monthly PREMIUM to this address
     // this address needs to be approved first
-    function payFortnightlyPremium(address _projectWallet) public onlyProxyOrSelf returns (bool) {
+    function billFortnightlyPremium(address _token, address _projectWallet) public onlyProxyOrSelf returns (bool) {
         uint256 currentPremiumBalance = premiumBalance;
         uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
         // check if current premium balance is less than required
@@ -430,7 +430,7 @@ contract BountyPool is ReentrancyGuard {
     // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
     // timelock on this?
 
-    function scheduleprojectDepositWithdrawal(address _token, uint256 _amount) {
+    function scheduleprojectDepositWithdrawal(uint256 _amount) {
         projectWithdrawalTimeLock[_amount] = block.timestamp + poolPeriod;
 
         //todo emit event -> necessary to predict payout payment in the following week
@@ -438,7 +438,7 @@ contract BountyPool is ReentrancyGuard {
     }
 
     // PROJECT DEPOSIT WITHDRAWAL
-    function projectDepositWithdrawal(address _projectWallet, uint256 _amount) external returns (bool) {
+    function projectDepositWithdrawal(address _token, address _projectWallet, uint256 _amount) external returns (bool) {
         // timelock on this.
         require(
             projectWithdrawalTimeLock[_amount] < block.timestamp &&
@@ -609,7 +609,7 @@ contract BountyPool is ReentrancyGuard {
             // subtract saloon fee
             totalPremiumToClaim -= saloonFee;
             if (!_token.safeTransfer(_staker, totalPremiumToClaim)) {
-                payFortnightlyPremium();
+                billFortnightlyPremium();
                 // if function above changes APY than accounting is going to get messed up,
                 // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
                 // if function above fails then it fails...
@@ -635,7 +635,7 @@ contract BountyPool is ReentrancyGuard {
             owedPremium -= saloonFee;
 
             if (!_token.safeTransfer(_staker, owedPremium)) {
-                payFortnightlyPremium();
+                billFortnightlyPremium();
                 // if function above changes APY than accounting is going to get messed up,
                 // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
                 // if function above fails then it fails...

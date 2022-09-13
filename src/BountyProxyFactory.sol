@@ -56,7 +56,7 @@ contract MIMOProxyFactory is IMIMOProxyFactory {
 
     // @audit This should only be callable by the Registry
     /// @inheritdoc IMIMOProxyFactory
-    function deployFor(address _beacon, bytes memory _data)
+    function deployBounty(address _beacon, bytes memory _data)
         public
         override
         onlyManager

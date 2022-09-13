@@ -36,6 +36,8 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Come up with contract deployment script so everything is deployed atomically in the right order
 - Test on testnet and front end integration
 - Test on mainnet and front end integration
+- Learn [this](https://www.youtube.com/watch?v=YpEm9Ki0qLE&t=622s) to learn about storage collisions.
+- Launch mainnet
 
 - Start Working on version 2
 
@@ -46,7 +48,9 @@ BountyPool:
 - EVENTS (and small todos)
 
 Next version:
-If pool has had 0%APY for over 1 year we can claim all left over stakersDeposit and unclaimed premium.
+
+- Embbeded yield strategy
+- If pool has had 0%APY for over 1 year we can claim all left over stakersDeposit and unclaimed premium.
 
 ---
 
@@ -68,9 +72,12 @@ BountyProxy:
 
 Manager Implementation:
 
-- function to dpeloy BountyProxyBase ( base to generate proxies from)
 - function to update upgradeableBeacon (and deploy implementation atomically?)
-- function to deploy upgradeableBeacon? - can probably be deployed separately
+
+Next version:
+
+- Update factory address
+- Update beacon address
 
 ---
 
@@ -84,14 +91,15 @@ PayoutWallet:
 
 - time limit on how long the hunter has to withdraw winnings (1 year)
 
-### Contract Deployment script/order
+### Contract Deployment script/order (First to last)
 
-Proxy
+BountyProxy
 Factory
 PayoutWallet
 Implementation
 UpgradeableBeacon
-Manager
+Manager Implementation
+ManagerProxy
 
 ## Ramblings, notes and observations
 

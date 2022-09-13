@@ -21,7 +21,10 @@ contract BountyProxiesManager is Owner {
     /// PUBLIC STORAGE ///
 
     /// @inheritdoc IMIMOProxyRegistry
-    IBountyProxyFactory public factory;
+    IBountyProxyFactory public immutable factory;
+    // should this be a constant?
+    address public immutable beacon;
+    address public immutable bountyImplementation;
 
     struct Bounties {
         string projectName;
@@ -34,12 +37,12 @@ contract BountyProxiesManager is Owner {
     // Project name => project auth address => proxy address
     mapping(string => Bounties) public bountyDetails;
     // Token address => approved or not
-    mapping(address => bool)  public tokenWhitelist;
+    mapping(address => bool) public tokenWhitelist;
 
-    modifier onlyProject() {
-        require(msg.sender == projectWallet, "Only Project owner allowed");
-        _;
-    }
+    // Probably exclude this
+    // function onlyProject(string memory _projectName) {
+    //     require(msg.sender == projectWallet, "Only Project owner allowed");
+    // }
 
     modifier onlySaloon() {
         require(msg.sender == owner, "Only Saloon allowed");
@@ -48,17 +51,24 @@ contract BountyProxiesManager is Owner {
 
     // factory address might not be known at the time of deployment
     /// @param factory_ The base contract of the factory
-    constructor(IBountyProxyFactory factory_) {
+    constructor(
+        IBountyProxyFactory factory_,
+        address beacon,
+        address _bountyImplementation
+    ) {
         factory = factory_;
+        beacon = _beacon;
+        bountyImplementation = _bountyImplementation;
     }
 
-    ///// DEPLOY NEW BOUNTY //////
-    function deployNewBounty(string memory _projectName, address _projectWallet, address _token)
+    ///// DEPLOY NEW BOUNTY ////// done
+    function deployNewBounty(bytes memory _data)
         external
-        returns (newProxyAddress)
+        onlySaloon
+        returns (address, bool)
     {
-        // added access control (only owner can deploy new bounty
         // revert if project name already has bounty
+        require(bountyDetails[_projectName] == 0, "Project already has bounty");
 
         require(tokenWhitelist[_token] == true, "Token not approved");
 
@@ -68,7 +78,7 @@ contract BountyProxiesManager is Owner {
         newBounty.token = _token;
 
         // call factory to deploy bounty
-        address newProxyAddress = factory.deployBounty(_projectName, _projectWallet, _token);
+        address newProxyAddress = factory.deployBounty(beacon, _data);
 
         newBounty.proxyAddress = newProxyAddress;
 
@@ -79,16 +89,33 @@ contract BountyProxiesManager is Owner {
         bountyDetails[_projectName] = newBounty;
 
         // update proxyWhitelist in implementation
+        bountyImplementation.updateProxyWhitelist(newProxyAddress, true);
+
+        return (newProxyAddress, true);
     }
 
-    ///// KILL BOUNTY ////
-    function killBounty() external {
-        // exclude proxy from proxyWhitelist
+    ///// KILL BOUNTY //// done
+    function killBounty(string memory _projectName)
+        external
+        onlySaloon
+        returns (bool)
+    {
+        // attempt to withdraw all money?
+        // call (currently non-existent) pause function?
+        // look up address by name
+        Bounties memory bounty = bountyDetails[_projectName];
+        // exclude proxy from proxyWhitelist in bounty implementation
+        bountyImplementation.updateProxyWhitelist(bounty.proxyAddress, false);
+
+        return true;
     }
 
-    ////////// VIEW FUNCTIONS ////////////
+    ////////// TODO VIEW FUNCTIONS ////////////
 
     // Function to view all bounties name string //
+    function viewAllBountiesByName() external view returns (Bounties[]) {
+        return bountiesList; //done
+    }
 
     // Function to view TVL , average APY and remaining  amount to reach total CAP of all pools together //
 
@@ -100,91 +127,181 @@ contract BountyProxiesManager is Owner {
 
     // Function to view individual Staker Balance in Pool by Project Name //
 
-    // Function to find bounty proxy and wallet address by Name
-    function getBountyAddressByName(string memory _projectName) external view returns () {}
+    //TODO  Function to find bounty proxy and wallet address by Name
+    function getBountyAddressByName(string memory _projectName)
+        external
+        view
+        returns (bool)
+    {}
 
-    ////    VIEW FUNCTIONS END  ///////
+    ///////////////////////    VIEW FUNCTIONS END  ////////////////////////
 
-    ///// PUBLIC PAY PREMIUM FOR ONE BOUNTY
-    function collectPremiumForOnePool(string memory _projectName) external returns(bool) {
-        // check if premium has already been paid
-        if (bountyDetails){
-            // if it hasnt pay premium
-            bountiesList[i].proxyAddress.payPremium()
-            return true;
-        }
-        return false;
-
-
-    }
-    ///// PUBLIC PAY PREMIUM FOR ALL BOUNTIES
-    function collectPremiumForAll() external returns(bool) {
-        for(i; i < bountiesList.length;) {
-
-            // check if premium has been paid
-            if {
-                // if it hasnt pay premium
-                bountiesList[i].proxyAddress.payPremium()
-            }
-            
-
-            unchecked {
-                ++i
-            }
-        }
-
+    ///// PUBLIC PAY PREMIUM FOR ONE BOUNTY // done
+    function billPremiumForOnePool(string memory _projectName)
+        external
+        returns (bool)
+    {
+        bountyDetails[_projectName].proxyAddress.billFortnightlyPremium(
+            bountyDetails[_projectName].token,
+            bountyDetails[_projectName].projectWallet
+        );
         return true;
-        
-
     }
-    // skip premiums that have already been paid
 
-    /// ADMIN WITHDRAWAL FROM POOL  TO PAY BOUNTY ///
+    ///// PUBLIC PAY PREMIUM FOR ALL BOUNTIES // done
+    function billPremiumForAll() external returns (bool) {
+        // cache bounty bounties listt
+        Bounties[] memory bountiesArray = bountiesList;
+        uint256 length = bountiesArray.length();
+        // iterate through all bounty proxies
+        for (uint256 i; i < length; ++i) {
+            // collect the premium fees from bounty
+            bountiesArray[i].proxyAddress.billFortnightlyPremium(
+                bountiesArray[i].token,
+                bountiesArray[i].projectWallet
+            );
+        }
+        return true;
+    }
 
-    /// ADMIN CHANNGE IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON ///
+    /// ADMIN WITHDRAWAL FROM POOL  TO PAY BOUNTY /// done
+    function payHackerBounty(
+        string memory _projectName,
+        address _hunter,
+        uint256 _amount
+    ) external onlySaloon returns (bool) {
+        bountyDetails[_projectName].proxyAddress.payBounty(
+            bountyDetails[_projectName].token,
+            _hunter,
+            _amount
+        );
+        return true;
+    }
 
-    /// ADMIN UPDATE APPROVED TOKENS ///
+    /// ADMIN CLAIM PREMIUM FEES for ALL BOUNTIES/// done
+    function withdrawSaloonPremiumFees() external onlySaloon returns (bool) {
+        // cache bounty bounties listt
+        Bounties[] memory bountiesArray = bountiesList;
+        uint256 length = bountiesArray.length();
+        // iterate through all bounty proxies
+        for (uint256 i; i < length; ++i) {
+            // collect the premium fees from bounty
+            bountiesArray[i].proxyAddress.collectSaloonPremiumFees(
+                bountiesArray[i].token
+            );
+        }
+        return true;
+    }
 
-    /// ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY ///
+    /// TODO ADMIN update BountyPool IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON ///
 
-    //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME/////
+    /// ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY /// ????????
+
+    /// ADMIN UPDATE APPROVED TOKENS /// done
+    function updateTokenWhitelist(address _token, address whitelisted)
+        external
+        onlySaloon
+        returns (bool)
+    {
+        tokenWhitelist[_token] = whitelisted;
+    }
+
+    //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME///// done
     // time locked
     // fails if msg.sender != project owner
-    function setBountyCapAndAPY() external {
+    function setBountyCapAndAPY(
+        string memory _projectName,
+        uint256 _poolCap,
+        uint256 _desiredAPY
+    ) external returns (bool) {
         // look for project address
-        // require msg.sender == projectWAllet
+        Bounties memory bounty = bountyDetails[_projectName];
+
+        // require msg.sender == projectWallet
+        require(msg.sender == bounty.projectWallet, "Not project owner");
+
         // set cap
-        
+        bounty.proxyAddress.setPoolCap(_poolCap);
         // set APY
+        bounty.proxyAddress.desiredAPY(
+            bounty.token,
+            bounty.projectWallet,
+            _desiredAPY
+        );
+
+        return true;
     }
 
-    /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL by NAME///////
-    // fails if msg.sender != project owner
-    function projectDeposit(
+    /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL by NAME/////// done
+    function projectDeposit(string memory _projectName, uint256 _amount)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        // check if msg.sender is allowed
+        require(msg.sender == bounty.projectWallet, "Not project owner");
+        // do deposit
+        bounty.proxyAddress.bountyDeposit(
+            bounty.token,
+            bounty.projectWallet,
+            _amount
+        );
+
+        return true;
+    }
+
+    /////// PROJECT FUNCTION TO SCHEDULE WITHDRAW FROM POOL  by PROJECT NAME///// done
+    function scheduleProjectDepositWithdrawal(
         string memory _projectName,
         uint256 _amount
     ) external returns (bool) {
+        // cache bounty
         Bounties memory bounty = bountyDetails[_projectName];
 
+        // check if caller is project
         require(msg.sender == bounty.projectWallet, "Not project owner");
-        require(msg.sender == bounty.token, "Token not assigned");
-        // check if token is same as assigned to project
-        
-        
 
-        if (bounty.proxyAddress.bountyDeposit(_amount)) {
-            return true;
-        }
+        // schedule withdrawal
+        bounty.proxyAddress.scheduleprojectDepositWithdrawal(_amount);
+
+        return true;
     }
 
-    /////// PROJECT FUNCTION TO WITHDRAWAL FROM POOL  by PROJECT NAME/////
-    // time locked
-    // fails if msg.sender != project owner
+    /////// PROJECT FUNCTION TO WITHDRAW FROM POOL  by PROJECT NAME///// done
+    function projectDepositWithdrawal(
+        string memory _projectName,
+        uint256 _amount
+    ) external returns (bool) {
+        // cache bounty
+        Bounties memory bounty = bountyDetails[_projectName];
 
-    ////// STAKER FUNCTION TO STAKE INTO POOL by PROJECT NAME//////
+        // check if caller is project
+        require(msg.sender == bounty.projectWallet, "Not project owner");
 
-    ////// STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
+        // schedule withdrawal
+        bounty.proxyAddress.projectDepositWithdrawal(
+            bounty.token,
+            bounty.projectWallet,
+            _amount
+        );
 
-    ////// STAKER FUNCTION TO WITHDRAWAL FROM POOL ///////
-    // time locked
+        return true;
+    }
+
+    ////// STAKER FUNCTION TO STAKE INTO POOL by PROJECT NAME////// done
+    function stake(string memory _projectName, uint256 _amount)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        bounty.proxyAddress.stake(bounty.token, msg.sender, _amount);
+    }
+
+    ////// TODO STAKER FUNCTION TO SCHEDULE UNSTAKE FROM POOL ///////
+
+    ////// TODO STAKER FUNCTION TO UNSTAKE FROM POOL ///////
+
+    ///// TODO STAKER FUNCTION TO CLAIM PREMIUM by PROJECT NAME//////
+
+    ///// TODO STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
 }
