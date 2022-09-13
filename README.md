@@ -1,5 +1,7 @@
 # Collection of TODOs, Thoughts and Observations
 
+[forge](https://book.getfoundry.sh/forge/)
+
 ## Basic Flow
 
 The Manager contract controls it all, it is the only contract that we and any users have to interact with. This makes it simple and straightforward, not juggling different contracts addresses on front end or anything, just need to keep track of this one.
