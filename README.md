@@ -28,7 +28,7 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop BeaconProxy (bountyProxy) - DONE
 - Develop UpgradeableBeacon - DONE
 - Develop ProxyFactory - DONE
-- Finish BountyProxiesManager Implementation
+- Finish BountyProxiesManager Implementation -
 - Develop ManagerProxy
 - Develop payout receiving contract
 - Remove accounting redundancies between factory/registry/manager

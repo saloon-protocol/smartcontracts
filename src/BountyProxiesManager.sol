@@ -195,7 +195,7 @@ contract BountyProxiesManager is Owner {
 
     /// TODO ADMIN update BountyPool IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON ///
 
-    /// ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY /// ????????
+    ///????????????? ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY /// ????????
 
     /// ADMIN UPDATE APPROVED TOKENS /// done
     function updateTokenWhitelist(address _token, address whitelisted)
@@ -295,13 +295,49 @@ contract BountyProxiesManager is Owner {
     {
         Bounties memory bounty = bountyDetails[_projectName];
         bounty.proxyAddress.stake(bounty.token, msg.sender, _amount);
+
+        return true;
     }
 
-    ////// TODO STAKER FUNCTION TO SCHEDULE UNSTAKE FROM POOL ///////
+    ////// STAKER FUNCTION TO SCHEDULE UNSTAKE FROM POOL /////// done
+    function scheduleUnstake(string memory _projectName, uint256 _amount)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
 
-    ////// TODO STAKER FUNCTION TO UNSTAKE FROM POOL ///////
+        //todo should all these function check return value like this?
+        if (bounty.proxyAddress.askForUnstake(msg.sender, _amount)) {
+            return true;
+        }
+    }
 
-    ///// TODO STAKER FUNCTION TO CLAIM PREMIUM by PROJECT NAME//////
+    ////// STAKER FUNCTION TO UNSTAKE FROM POOL /////// done
+    function unstake(string memory _projectName, uint256 _amount)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
 
-    ///// TODO STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
+        if (bounty.proxyAddress.unstake(bounty.token, msg.sender, _amount)) {
+            return true;
+        }
+    }
+
+    ///// STAKER FUNCTION TO CLAIM PREMIUM by PROJECT NAME////// done
+    function claimPremium(string memory _projectName)
+        external
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+
+        uint256 premiumClaimed = bounty.proxyAddress.claimPremium(
+            bounty.token,
+            msg.sender
+        );
+
+        return premiumClaimed;
+    }
+
+    // ??????????/  STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
 }

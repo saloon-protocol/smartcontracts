@@ -492,6 +492,7 @@ contract BountyPool is ReentrancyGuard {
         external
         onlyProxy
     {
+        require(staker[_staker].stakerBalance >= _amount, "Insuficcient balance");
         stakerTimeLock[_staker][_amount] = block.timestamp + poolPeriod;
 
         //todo emit event -> necessary to predict payout payment in the following week
