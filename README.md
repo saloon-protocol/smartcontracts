@@ -2,6 +2,11 @@
 
 [forge](https://book.getfoundry.sh/forge/)
 
+## IMMEDIATE TODO:
+
+- Implement saloonWallet
+- Change functions in BountyPool that use saloonWallet variable and leave the calculations of bounty commission up to the saloonWallet contract
+
 ## Basic Flow
 
 The Manager contract controls it all, it is the only contract that we and any users have to interact with. This makes it simple and straightforward, not juggling different contracts addresses on front end or anything, just need to keep track of this one.
@@ -28,9 +33,10 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop BeaconProxy (bountyProxy) - DONE
 - Develop UpgradeableBeacon - DONE
 - Develop ProxyFactory - DONE
-- Finish BountyProxiesManager Implementation -
-- Develop ManagerProxy
+- Finish BountyProxiesManager Implementation - DONE
+- Develop ManagerProxy: ERC1967Proxy, ERC1967Upgrade - DONE
 - Develop payout receiving contract
+
 - Remove accounting redundancies between factory/registry/manager
 - Make sure all contracts have working dependencies
 - Come up with contract deployment script so everything is deployed atomically in the right order
@@ -45,6 +51,7 @@ The Manager contract controls it all, it is the only contract that we and any us
 
 BountyPool:
 
+- Update saloonWallet as function input for all functions that take it)
 - EVENTS (and small todos)
 
 Next version:

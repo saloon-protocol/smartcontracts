@@ -14,8 +14,7 @@ contract BountyPool is ReentrancyGuard {
     
     //todo possibly make this a constant
     address public immutable manager;
-    //todo possibly make this a constant
-    address public immutable saloonWallet;
+    
 
     bool public APYdropped;
 
@@ -29,6 +28,7 @@ contract BountyPool is ReentrancyGuard {
     uint256 public stakersDeposit;
     uint256 public bountyBalance = projectDeposit + stakersDeposit;
 
+    // TODO perhaps this is done in the payout address...
     uint256 public saloonBountyCommission =
         (bountyBalance * BOUNTY_COMMISSION) / DENOMINATOR;
     // bountyBalance - % commission
@@ -127,7 +127,7 @@ contract BountyPool is ReentrancyGuard {
                     staker[stakerAddress].timeStamp = block.timestamp;
                     // clean stakerList array
                     delete stakerList;
-
+                    /// DO THIS CALCULATION AT WALLET ADDRESS
                     // deduct saloon commission
                     uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
                         DENOMINATOR;

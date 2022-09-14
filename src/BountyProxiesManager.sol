@@ -24,6 +24,7 @@ contract BountyProxiesManager is Owner {
     // should this be a constant?
     address public immutable beacon;
     address public immutable bountyImplementation;
+    address public saloonWallet;
 
     struct Bounties {
         string projectName;
@@ -53,6 +54,14 @@ contract BountyProxiesManager is Owner {
         factory = factory_;
         beacon = _beacon;
         bountyImplementation = _bountyImplementation;
+    }
+
+    //////// TODO WITHDRAW FROM SALOON WALLET //////
+
+    //////// UPDATE SALOON WALLET FOR HUNTER PAYOUTS ////// done
+    function updateSaloonWallet(address _newWallet) external onlySaloon {
+        require(_newWallet != 0, "Address cant be zero");
+        saloonWallet = _newWallet;
     }
 
     ///// DEPLOY NEW BOUNTY ////// done
