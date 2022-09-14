@@ -5,7 +5,8 @@
 ## IMMEDIATE TODO:
 
 - Implement saloonWallet
-- Change functions in BountyPool that use saloonWallet variable and leave the calculations of bounty commission up to the saloonWallet contract
+
+- Fix Manager to use saloonWallet as input when calling proxies
 
 ## Basic Flow
 
@@ -25,6 +26,7 @@ The Manager contract controls it all, it is the only contract that we and any us
 
 ## Questions:
 
+- DOES THE IMPLEMENTATION VIEW THE PROXY ADDRESS AS SELF OR ANOTHER MSG.SENDER????? ProxyA -> LogicA -> ContractB. MSG.SENDER incontract be is ProxyA.
 - Should the Manager itself be a proxy? Seems like a good idea.
 
 ### TODOs big picture:
@@ -38,7 +40,9 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop payout receiving contract
 
 - Remove accounting redundancies between factory/registry/manager
-- Make sure all contracts have working dependencies
+- Try deploy saloon oon github page
+- Connect saloon to MetaMask
+- Make sure all contracts have working dependencies like safeTransfer and etc
 - Come up with contract deployment script so everything is deployed atomically in the right order
 - Test on testnet and front end integration
 - Test on mainnet and front end integration
@@ -91,6 +95,8 @@ Next version:
 ManagerProxy:
 
 - function to change implementation
+
+- Consider using a UUPSUpgradeable
 
 ---
 

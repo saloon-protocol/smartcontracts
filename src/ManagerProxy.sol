@@ -20,20 +20,31 @@ contract ERC1967Proxy is Proxy, ERC1967Upgrade {
      * If `_data` is nonempty, it's used as data in a delegate call to `_logic`. This will typically be an encoded
      * function call, and allows initializing the storage of the proxy like a Solidity constructor.
      */
-    constructor(address _logic, bytes memory _data) payable {
+    constructor(
+        address _logic,
+        bytes memory _data,
+        address _admin
+    ) payable {
         _upgradeToAndCall(_logic, _data, false);
+        _setAdmin(_admin);
     }
 
-    // TODO Introduce access control without messing up storage ( figure out how to fetch admin)
-    function upgradeImplementation(address _newImplementation)
-        external
-        returns (bool)
-    {
-        // timelock this?
-        if (_upgradeToAndCall(_newImplementation, 0, false)) {
-            return true;
-        }
-    }
+    //?????????????? FUNCTION TO UPGRADE ADMIN?????????????
+
+    ///// MAYBE CHANGE THIS TO UUPSUPgradeable and delete belwo function -DONE
+    // function upgradeImplementation(address _newImplementation)
+    //     external
+    //     returns (bool)
+    // {
+    //     // timelock this?
+    //     require(
+    //         StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender,
+    //         "Not Admin"
+    //     );
+    //     if (_upgradeToAndCall(_newImplementation, 0, false)) {
+    //         return true;
+    //     }
+    // }
 
     /**
      * @dev Returns the current implementation address.

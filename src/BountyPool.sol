@@ -52,8 +52,8 @@ contract BountyPool is ReentrancyGuard {
     // staker address => amount => timelock time
     mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
 
-    // proxy address =>
-    mapping(address => uint256) public proxyWhitelist;
+    // NOT NEEDED - proxy address =>
+    // mapping(address => uint256) public proxyWhitelist;
 
     struct StakerInfo {
         uint256 stakerBalance;
@@ -75,14 +75,14 @@ contract BountyPool is ReentrancyGuard {
         _;
     }
     // todo maybe make this check at the manager level
-    modifier onlyProxy() {
-        require(proxyWhitelist[msg.sender] != 0, "Address not whitelisted");
-        _;
-    }
+    // modifier onlyProxy() {
+    //     require(proxyWhitelist[msg.sender] != 0, "Address not whitelisted");
+    //     _;
+    // }
     //todo  maybe make this check at the manager level
-    modifier onlyProxyOrSelf() {
+    modifier onlyManagerOrSelf() {
         require(
-            proxyWhitelist[msg.sender] != 0 || msg.sender == address(this),
+            msg.sender == manager || msg.sender == address(this),
             "Only manager allowed"
         );
         _;
@@ -98,21 +98,21 @@ contract BountyPool is ReentrancyGuard {
 
     //#################### Functions *******************\\
 
-    // MANAGER WHITELIST PROXY
-    function updateProxyWhitelist(address _proxy, bool _whitelist)
-        external
-        onlyManager
-    {
-        proxyWhitelist[_proxy] = _whitelist;
-    }
+    // NOT NEEDED -  WHITELIST PROXY
+    // function updateProxyWhitelist(address _proxy, bool _whitelist)
+    //     external
+    //     onlyManager
+    // {
+    //     proxyWhitelist[_proxy] = _whitelist;
+    // }
 
     // ADMIN PAY BOUNTY public
     // this implementation uses investors funds first before project deposit,
     // future implementation might use a more hybrid and sophisticated splitting of costs.
     // todo cache variables to make it more gas effecient
-    function payBounty(address _token, address _hunter, uint256 _amount)
+    function payBounty(address _token, address _saloonWallet, address _hunter, uint256 _amount)
         public
-        onlyProxy
+        onlyManager
         returns (bool)
     {
         // check if stakersDeposit is enough
@@ -127,15 +127,8 @@ contract BountyPool is ReentrancyGuard {
                     staker[stakerAddress].timeStamp = block.timestamp;
                     // clean stakerList array
                     delete stakerList;
-                    /// DO THIS CALCULATION AT WALLET ADDRESS
-                    // deduct saloon commission
-                    uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
-                        DENOMINATOR;
-                    uint256 hunterPayout = _amount - saloonCommission;
-                    // transfer to hunter
-                    _token.safeTransfer(_hunter, hunterPayout); //todo maybe transfer to payout address
-                    // transfer commission to saloon address
-                    _token.safeTransfer(saloonWallet, saloonCommission);
+                    // transfer  to saloonWallet address
+                    _token.safeTransfer(_saloonWallet, _amount);
 
                     // todo Emit event with timestamp and amount
                     return true;
@@ -153,14 +146,9 @@ contract BountyPool is ReentrancyGuard {
                         DENOMINATOR);
                 staker[stakerAddress].timeStamp = block.timestamp;
             }
-            // deduct saloon commission
-            uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
-                DENOMINATOR;
-            uint256 hunterPayout = _amount - saloonCommission;
-            // transfer to hunter
-            _token.safeTransfer(_hunter, hunterPayout);
-            // transfer commission to saloon address
-            _token.safeTransfer(saloonWallet, saloonCommission);
+           
+            // transfer to saloon funds address
+            _token.safeTransfer(_saloonWallet, _amount);
 
             // todo Emit event with timestamp and amount
 
@@ -183,14 +171,8 @@ contract BountyPool is ReentrancyGuard {
             // set stakers deposit to 0
             stakersDeposit = 0;
 
-            // deduct saloon commission
-            uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) /
-                DENOMINATOR;
-            uint256 hunterPayout = _amount - saloonCommission;
-            // transfer to hunter
-            _token.safeTransfer(_hunter, hunterPayout);
-            // transfer commission to saloon address
-            _token.safeTransfer(saloonWallet, saloonCommission);
+            // transfer funds to saloon address
+            _token.safeTransfer(_saloonWallet, _amount);
 
             // todo Emit event with timestamp and amount
             return true;
@@ -198,20 +180,23 @@ contract BountyPool is ReentrancyGuard {
     }
 
     // ADMIN HARVEST FEES public
-    function collectSaloonPremiumFees(address _token) external onlyProxy returns (bool) {
+    function collectSaloonPremiumFees(address _token, address _saloonWallet) external onlyManager returns (uint) {
         // send current fees to saloon address
-        _token.safeTransfer(saloonWallet, saloonPremiumFees);
+        _token.safeTransfer(_saloonWallet, saloonPremiumFees);
+        uint totalCollected = saloonPremiumFees;
         // reset claimable fees
         saloonPremiumFees = 0;
+
+        return totalCollected;
 
         // todo emit event
     }
 
     // PROJECT DEPOSIT
     // project must approve this address first.
-    function bountyDeposit(address _token, address _projectWallet, uint256 _amount) external onlyProxy returns (bool) {
+    function bountyDeposit(address _token, address _projectWallet, uint256 _amount) external onlyManager returns (bool) {
         // transfer from project account
-        _token.safeTransferFrom(address _projectWallet, address(this), _amount);
+        _token.safeTransferFrom(_projectWallet, address(this), _amount);
 
         // update deposit variable
         projectDeposit += _amount;
@@ -220,7 +205,7 @@ contract BountyPool is ReentrancyGuard {
     }
 
     // PROJECT SET CAP
-    function setPoolCap(uint256 _amount) external onlyProxy {
+    function setPoolCap(uint256 _amount) external onlyManager {
         // todo two weeks time lock?
         poolCap = _amount;
     }
@@ -233,7 +218,7 @@ contract BountyPool is ReentrancyGuard {
     // 2. if theres is ever a problem with payment the initial premium deposit can be used as a buffer so users can still be paid while issue is fixed.
     function setDesiredAPY(address _token, address _projectWallet, uint256 _desiredAPY)
         external
-        onlyProxy
+        onlyManager
         returns (bool)
     {
         // set timelock on this???
@@ -273,7 +258,7 @@ contract BountyPool is ReentrancyGuard {
 
     // PROJECT PAY weekly/monthly PREMIUM to this address
     // this address needs to be approved first
-    function billFortnightlyPremium(address _token, address _projectWallet) public onlyProxyOrSelf returns (bool) {
+    function billFortnightlyPremium(address _token, address _projectWallet) public onlyManagerOrSelf returns (bool) {
         uint256 currentPremiumBalance = premiumBalance;
         uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
         // check if current premium balance is less than required
@@ -456,7 +441,7 @@ contract BountyPool is ReentrancyGuard {
     // staker needs to approve this address first
     function stake(address _token, address _staker, uint256 _amount)
         external
-        onlyProxy
+        onlyManager
         nonReentrant
         returns (bool)
     {
@@ -490,7 +475,7 @@ contract BountyPool is ReentrancyGuard {
 
     function askForUnstake(address _staker, uint256 _amount)
         external
-        onlyProxy
+        onlyManager
     {
         require(staker[_staker].stakerBalance >= _amount, "Insuficcient balance");
         stakerTimeLock[_staker][_amount] = block.timestamp + poolPeriod;
@@ -504,7 +489,7 @@ contract BountyPool is ReentrancyGuard {
     // otherwise have to wait for timelock period
     function unstake(address _token, address _staker, uint256 _amount)
         external
-        onlyProxy
+        onlyManager
         nonReentrant
         returns (bool)
     {
@@ -558,7 +543,7 @@ contract BountyPool is ReentrancyGuard {
     }
 
     // claim premium
-    function claimPremium(address _token, address _staker) external onlyProxy nonReentrant returns(owedPremium){
+    function claimPremium(address _token, address _staker) external onlyManager nonReentrant returns(owedPremium){
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;

@@ -10,13 +10,14 @@ import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 // import "../core/interfaces/IAccessController.sol";
 // import { CustomErrors } from "../libraries/CustomErrors.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "./UUPSUPgradeable.sol";
 
 //// THOUGHTS:
 // Planning to separate this into contracts:
 // 1. Registry contract that holds varaibles
 // 2. Manager Contract that hold state changing functions and inherits Registry
 
-contract BountyProxiesManager is Owner {
+contract BountyProxiesManager is Owner, UUPSUPgradeable {
     /// PUBLIC STORAGE ///
 
     /// @inheritdoc IMIMOProxyRegistry
@@ -48,7 +49,7 @@ contract BountyProxiesManager is Owner {
     /// @param factory_ The base contract of the factory
     constructor(
         IBountyProxyFactory factory_,
-        address beacon,
+        address _beacon,
         address _bountyImplementation
     ) {
         factory = factory_;
@@ -56,7 +57,23 @@ contract BountyProxiesManager is Owner {
         bountyImplementation = _bountyImplementation;
     }
 
-    //////// TODO WITHDRAW FROM SALOON WALLET //////
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        virtual
+        overried
+        onlySaloon
+    {}
+
+    //////// WITHDRAW FROM SALOON WALLET ////// done
+    function withdrawSaloonFunds(
+        address _token,
+        address _to,
+        uint256 _amount
+    ) external onlySaloon returns (bool) {
+        require(_to != 0, "Address Zero");
+        saloonWallet.withdrawSaloonFunds(_token, _to, _amount);
+        return true;
+    }
 
     //////// UPDATE SALOON WALLET FOR HUNTER PAYOUTS ////// done
     function updateSaloonWallet(address _newWallet) external onlySaloon {
@@ -91,8 +108,8 @@ contract BountyProxiesManager is Owner {
         // Create new mapping so we can look up bounty details by their name
         bountyDetails[_projectName] = newBounty;
 
-        // update proxyWhitelist in implementation
-        bountyImplementation.updateProxyWhitelist(newProxyAddress, true);
+        //  NOT NEEDED  update proxyWhitelist in implementation
+        // bountyImplementation.updateProxyWhitelist(newProxyAddress, true);
 
         return (newProxyAddress, true);
     }
@@ -152,6 +169,8 @@ contract BountyProxiesManager is Owner {
             _hunter,
             _amount
         );
+        // update saloonWallet variables
+        saloonWallet.bountyPaid();
         return true;
     }
 
@@ -163,14 +182,28 @@ contract BountyProxiesManager is Owner {
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
             // collect the premium fees from bounty
-            bountiesArray[i].proxyAddress.collectSaloonPremiumFees(
-                bountiesArray[i].token
+            uint256 totalCollected = bountiesArray[i]
+                .proxyAddress
+                .collectSaloonPremiumFees(bountiesArray[i].token);
+            saloonWallet.premiumFeesCollected(
+                bountiesArray[i].token,
+                totalCollected
             );
         }
         return true;
     }
 
-    /// TODO ADMIN update BountyPool IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON ///
+    /// ADMIN update BountyPool IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON /// done
+    function updateBountyPoolImplementation(address _newImplementation)
+        external
+        onlySaloon
+        returns (bool)
+    {
+        require(_newImplementation != 0, "Address zero");
+        beacon.upgradeTo(_newImplementation);
+
+        return true;
+    }
 
     ///????????????? ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY /// ????????
 

@@ -17,8 +17,6 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
  * _Available since v3.4._
  */
 contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
-    address public immutable manager; //might not be necessary if owner is transferred thourgh proxyFactory
-
     /**
      * @dev Initializes the proxy with `beacon`.
      *
@@ -36,12 +34,7 @@ contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
         address _manager
     ) payable initializer {
         _upgradeBeaconToAndCall(_beacon, _data, false);
-        manager = _manager;
-    }
-
-    modifier onlyManager() {
-        require(msg.sender == manager, "Only manager allowed");
-        _;
+        _setAdmind(manager);
     }
 
     /**
@@ -68,7 +61,9 @@ contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
      * @dev Fallback function that delegates calls to the address returned by `_implementation()`. Will run if no other
      * function in the contract matches the call data.
      */
-    fallback() external payable virtual override onlyManager {
+    fallback() external payable virtual override {
+        // access control
+        require(StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender);
         _fallback();
     }
 
@@ -77,6 +72,8 @@ contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
      * is empty.
      */
     receive() external payable virtual override onlyManager {
+        // access control
+        require(StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender);
         _fallback();
     }
 
