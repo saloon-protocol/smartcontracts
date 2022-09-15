@@ -23,17 +23,20 @@ library SafeERC20 {
         IERC20 token,
         address to,
         uint256 value
-    ) internal {
+    ) internal returns (bool) {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+        return true;
     }
 
+    // THIS FUNCTION HAS BEEN EDITED TO RETURN A VALUE
     function safeTransferFrom(
         IERC20 token,
         address from,
         address to,
         uint256 value
-    ) internal {
+    ) internal returns (bool) {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+        return true;
     }
 
     /**

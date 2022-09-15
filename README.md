@@ -2,12 +2,6 @@
 
 [forge](https://book.getfoundry.sh/forge/)
 
-## IMMEDIATE TODO:
-
-- Implement saloonWallet
-
-- Fix Manager to use saloonWallet as input when calling proxies
-
 ## Basic Flow
 
 The Manager contract controls it all, it is the only contract that we and any users have to interact with. This makes it simple and straightforward, not juggling different contracts addresses on front end or anything, just need to keep track of this one.
@@ -24,11 +18,6 @@ The Manager contract controls it all, it is the only contract that we and any us
   - Projects are able to control their deposits, APYs and pool caps.
   - We are able to pay bounties and claim insurance premiums.
 
-## Questions:
-
-- DOES THE IMPLEMENTATION VIEW THE PROXY ADDRESS AS SELF OR ANOTHER MSG.SENDER????? ProxyA -> LogicA -> ContractB. MSG.SENDER incontract be is ProxyA.
-- Should the Manager itself be a proxy? Seems like a good idea.
-
 ### TODOs big picture:
 
 - Figure out Beacon Proxy implementation and Upgradeable Beacon. - DONE
@@ -37,12 +26,11 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop ProxyFactory - DONE
 - Finish BountyProxiesManager Implementation - DONE
 - Develop ManagerProxy: ERC1967Proxy, ERC1967Upgrade - DONE
-- Develop payout receiving contract
+- Develop payout receiving contract - DONE
+- Make sure all contracts have working dependencies - DONE
 
-- Remove accounting redundancies between factory/registry/manager
-- Try deploy saloon oon github page
+- Emit events and do Gas Optimizations
 - Connect saloon to MetaMask
-- Make sure all contracts have working dependencies like safeTransfer and etc
 - Come up with contract deployment script so everything is deployed atomically in the right order
 - Test on testnet and front end integration
 - Test on mainnet and front end integration
@@ -100,9 +88,21 @@ ManagerProxy:
 
 ---
 
-PayoutWallet:
+SaloonWallet:
 
-- time limit on how long the hunter has to withdraw winnings (1 year)
+- view functions
+- implement same view functions in Manager
+
+### TODOs by Frontend and web3 integration:
+
+- Connect wallet button
+- Read Bounty details from SCs
+
+- We are fetching Pool values from the blockchain, how are we doing that?
+  - Just fetching it from etherscan?
+  - Fecthing from our contracts?
+    - How do we do that?
+      - Have front end function that call view functions every X seconds
 
 ### Contract Deployment script/order (First to last)
 
@@ -113,6 +113,7 @@ Implementation
 UpgradeableBeacon
 Manager Implementation
 ManagerProxy
+Initialize Implementation
 
 ## Ramblings, notes and observations
 

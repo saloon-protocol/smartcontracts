@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.7.0) (proxy/beacon/BeaconProxy.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.10;
 
-import "./IBeacon.sol";
-import "../Proxy.sol";
-import "../ERC1967/ERC1967Upgrade.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol";
+import "openzeppelin-contracts/contracts/proxy/Proxy.sol";
+import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
+import "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
 
 /**
  * @dev This contract implements a proxy that gets the implementation address for each call from an {UpgradeableBeacon}.
@@ -29,12 +29,12 @@ contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
      * - `beacon` must be a contract with the interface {IBeacon}.
      */
     function initialize(
-        address _beacon,
+        address _beaconAddress,
         bytes memory _data,
         address _manager
-    ) payable initializer {
-        _upgradeBeaconToAndCall(_beacon, _data, false);
-        _setAdmind(manager);
+    ) external payable initializer {
+        _upgradeBeaconToAndCall(_beaconAddress, _data, false);
+        _changeAdmin(_manager);
     }
 
     /**
@@ -71,7 +71,7 @@ contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
      * @dev Fallback function that delegates calls to the address returned by `_implementation()`. Will run if call data
      * is empty.
      */
-    receive() external payable virtual override onlyManager {
+    receive() external payable virtual override {
         // access control
         require(StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender);
         _fallback();

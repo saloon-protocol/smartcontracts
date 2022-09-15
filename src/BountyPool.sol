@@ -1,20 +1,20 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
-import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
+import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+// import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-
-// todo import safe library for openzeppeling safeTransfer()
+import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
+import "./SaloonWallet.sol";
 
 //  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
 
-contract BountyPool is ReentrancyGuard {
+contract BountyPool is Ownable, Initializable {
+    using SafeERC20 for IERC20;
     //#################### State Variables *****************\\
-    
+
     //todo possibly make this a constant
-    address public immutable manager;
-    
+    address public manager;
 
     bool public APYdropped;
 
@@ -28,7 +28,6 @@ contract BountyPool is ReentrancyGuard {
     uint256 public stakersDeposit;
     uint256 public bountyBalance = projectDeposit + stakersDeposit;
 
-    // TODO perhaps this is done in the payout address...
     uint256 public saloonBountyCommission =
         (bountyBalance * BOUNTY_COMMISSION) / DENOMINATOR;
     // bountyBalance - % commission
@@ -48,6 +47,7 @@ contract BountyPool is ReentrancyGuard {
     mapping(address => uint256) public lastClaimed;
     // staker address => stakerInfo array
     mapping(address => StakerInfo[]) public staker;
+
     address[] public stakerList;
     // staker address => amount => timelock time
     mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
@@ -90,45 +90,49 @@ contract BountyPool is ReentrancyGuard {
 
     //#################### Modifiers END *****************\\
 
-    // TODO Create Init function
-    // constructor(address _projectWallet, address _manager) {
-    //     projectWallet = _projectWallet;
-    //     manager = _manager;
-    // }
+    function initialize(address _manager) external initializer onlyOwner {
+        manager = _manager;
+    }
 
     //#################### Functions *******************\\
-
-    // NOT NEEDED -  WHITELIST PROXY
-    // function updateProxyWhitelist(address _proxy, bool _whitelist)
-    //     external
-    //     onlyManager
-    // {
-    //     proxyWhitelist[_proxy] = _whitelist;
-    // }
 
     // ADMIN PAY BOUNTY public
     // this implementation uses investors funds first before project deposit,
     // future implementation might use a more hybrid and sophisticated splitting of costs.
     // todo cache variables to make it more gas effecient
-    function payBounty(address _token, address _saloonWallet, address _hunter, uint256 _amount)
-        public
-        onlyManager
-        returns (bool)
-    {
+    function payBounty(
+        address _token,
+        address _saloonWallet,
+        address _hunter,
+        uint256 _amount
+    ) public onlyManager returns (bool) {
         // check if stakersDeposit is enough
         if (stakersDeposit >= _amount) {
             // decrease stakerDeposit
             stakersDeposit -= _amount;
+            // cache length
+            uint256 length = stakerList.length;
             // if staker deposit == 0
             if (stakersDeposit == 0) {
                 for (uint256 i; i < length; ++i) {
+                    // update stakerInfo struct
+                    StakerInfo memory newInfo;
+                    newInfo.balanceTimeStamp = block.timestamp;
+                    newInfo.stakerBalance = 0;
+
                     address stakerAddress = stakerList[i]; //todo cache stakerList before
-                    staker[stakerAddress].stakerBalance = 0;
-                    staker[stakerAddress].timeStamp = block.timestamp;
+                    staker[stakerAddress].push(newInfo);
+
                     // clean stakerList array
                     delete stakerList;
-                    // transfer  to saloonWallet address
-                    _token.safeTransfer(_saloonWallet, _amount);
+
+                    // deduct saloon commission and transfer
+                    calculateCommissioAndTransferPayout(
+                        _token,
+                        _hunter,
+                        _saloonWallet,
+                        _amount
+                    );
 
                     // todo Emit event with timestamp and amount
                     return true;
@@ -137,18 +141,29 @@ contract BountyPool is ReentrancyGuard {
             // calculate percentage of stakersDeposit
             uint256 percentage = _amount / stakersDeposit;
             // loop through all stakers and deduct percentage from their balances
-            uint256 length = stakerList.length;
             for (uint256 i; i < length; ++i) {
                 address stakerAddress = stakerList[i]; //todo cache stakerList before
-                staker[stakerAddress].stakerBalance =
-                    staker[stakerAddress].stakerBalance -
-                    ((staker[stakerAddress].stakerBalance * percentage) /
-                        DENOMINATOR);
-                staker[stakerAddress].timeStamp = block.timestamp;
+                uint256 arraySize = staker[stakerAddress].length - 1;
+                uint256 oldStakerBalance = staker[stakerAddress][arraySize]
+                    .stakerBalance;
+
+                // update stakerInfo struct
+                StakerInfo memory newInfo;
+                newInfo.balanceTimeStamp = block.timestamp;
+                newInfo.stakerBalance =
+                    oldStakerBalance -
+                    ((oldStakerBalance * percentage) / DENOMINATOR);
+
+                staker[stakerAddress].push(newInfo);
             }
-           
-            // transfer to saloon funds address
-            _token.safeTransfer(_saloonWallet, _amount);
+
+            // deduct saloon commission and transfer
+            calculateCommissioAndTransferPayout(
+                _token,
+                _hunter,
+                _saloonWallet,
+                _amount
+            );
 
             // todo Emit event with timestamp and amount
 
@@ -157,9 +172,14 @@ contract BountyPool is ReentrancyGuard {
             // reset baalnce of all stakers
             uint256 length = stakerList.length;
             for (uint256 i; i < length; ++i) {
-                address stakerAddress = stakerList[i]; //   TODO cache stakerList before
-                staker[stakerAddress].stakerBalance = 0;
-                staker[stakerAddress].timeStamp = block.timestamp;
+                // update stakerInfo struct
+                StakerInfo memory newInfo;
+                newInfo.balanceTimeStamp = block.timestamp;
+                newInfo.stakerBalance = 0;
+
+                address stakerAddress = stakerList[i]; //todo cache stakerList before
+                staker[stakerAddress].push(newInfo);
+
                 // clean stakerList array
                 delete stakerList;
             }
@@ -171,19 +191,45 @@ contract BountyPool is ReentrancyGuard {
             // set stakers deposit to 0
             stakersDeposit = 0;
 
-            // transfer funds to saloon address
-            _token.safeTransfer(_saloonWallet, _amount);
+            // deduct saloon commission and transfer
+            calculateCommissioAndTransferPayout(
+                _token,
+                _hunter,
+                _saloonWallet,
+                _amount
+            );
 
             // todo Emit event with timestamp and amount
             return true;
         }
     }
 
+    function calculateCommissioAndTransferPayout(
+        address _token,
+        address _hunter,
+        address _saloonWallet,
+        uint256 _amount
+    ) internal returns (bool) {
+        // deduct saloon commission
+        uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
+        uint256 hunterPayout = _amount - saloonCommission;
+        // transfer to hunter
+        IERC20(_token).safeTransfer(_hunter, hunterPayout); //todo maybe transfer to payout address
+        // transfer commission to saloon address
+        IERC20(_token).safeTransfer(_saloonWallet, saloonCommission);
+
+        return true;
+    }
+
     // ADMIN HARVEST FEES public
-    function collectSaloonPremiumFees(address _token, address _saloonWallet) external onlyManager returns (uint) {
+    function collectSaloonPremiumFees(address _token, address _saloonWallet)
+        external
+        onlyManager
+        returns (uint256)
+    {
         // send current fees to saloon address
-        _token.safeTransfer(_saloonWallet, saloonPremiumFees);
-        uint totalCollected = saloonPremiumFees;
+        IERC20(_token).safeTransfer(_saloonWallet, saloonPremiumFees);
+        uint256 totalCollected = saloonPremiumFees;
         // reset claimable fees
         saloonPremiumFees = 0;
 
@@ -194,9 +240,13 @@ contract BountyPool is ReentrancyGuard {
 
     // PROJECT DEPOSIT
     // project must approve this address first.
-    function bountyDeposit(address _token, address _projectWallet, uint256 _amount) external onlyManager returns (bool) {
+    function bountyDeposit(
+        address _token,
+        address _projectWallet,
+        uint256 _amount
+    ) external onlyManager returns (bool) {
         // transfer from project account
-        _token.safeTransferFrom(_projectWallet, address(this), _amount);
+        IERC20(_token).safeTransferFrom(_projectWallet, address(this), _amount);
 
         // update deposit variable
         projectDeposit += _amount;
@@ -216,11 +266,11 @@ contract BountyPool is ReentrancyGuard {
     // this will serve two purposes:
     // 1. sign of good faith and working payment system
     // 2. if theres is ever a problem with payment the initial premium deposit can be used as a buffer so users can still be paid while issue is fixed.
-    function setDesiredAPY(address _token, address _projectWallet, uint256 _desiredAPY)
-        external
-        onlyManager
-        returns (bool)
-    {
+    function setDesiredAPY(
+        address _token,
+        address _projectWallet,
+        uint256 _desiredAPY
+    ) external onlyManager returns (bool) {
         // set timelock on this???
         // make sure APY has right amount of decimals (1e18)
 
@@ -234,7 +284,11 @@ contract BountyPool is ReentrancyGuard {
             uint256 difference = newRequiredPremiumBalancePerPeriod -
                 currentPremiumBalance;
             // transfer to this address
-            _token.safeTransferFrom(_projectWallet, address(this), difference);
+            IERC20(_token).safeTransferFrom(
+                _projectWallet,
+                address(this),
+                difference
+            );
             // increase premium
             premiumBalance += difference;
         }
@@ -258,9 +312,14 @@ contract BountyPool is ReentrancyGuard {
 
     // PROJECT PAY weekly/monthly PREMIUM to this address
     // this address needs to be approved first
-    function billFortnightlyPremium(address _token, address _projectWallet) public onlyManagerOrSelf returns (bool) {
+    function billFortnightlyPremium(address _token, address _projectWallet)
+        public
+        onlyManagerOrSelf
+        returns (bool)
+    {
         uint256 currentPremiumBalance = premiumBalance;
         uint256 minimumRequiredBalance = requiredPremiumBalancePerPeriod;
+        uint256 stakersDeposits = stakersDeposit;
         // check if current premium balance is less than required
         if (currentPremiumBalance < minimumRequiredBalance) {
             uint256 lastPaid = lastTimePaid;
@@ -269,14 +328,14 @@ contract BountyPool is ReentrancyGuard {
             // check when function was called last time and pay premium according to how much time has passed since then.
             uint256 sinceLastPaid = block.timestamp - lastPaid;
 
-            if (sinceLastPaid > poolPeriod) {
+            if (sinceLastPaid > paymentPeriod) {
                 // multiple by `sinceLastPaid` instead of two weeks
                 uint256 fortnightlyPremiumOwed = ((
-                    ((stakersDeposit * desiredAPY) / DENOMINATOR)
+                    ((stakersDeposits * desiredAPY) / DENOMINATOR)
                 ) / YEAR) * sinceLastPaid;
 
                 if (
-                    !_token.safeTransferFrom(
+                    !IERC20(_token).safeTransferFrom(
                         _projectWallet,
                         address(this),
                         fortnightlyPremiumOwed
@@ -284,6 +343,7 @@ contract BountyPool is ReentrancyGuard {
                 ) {
                     // if transfer fails APY is reset and premium is paid with new APY
                     // register new APYperiod
+
                     APYperiods memory newAPYperiod;
                     newAPYperiod.timeStamp = block.timestamp;
                     newAPYperiod.periodAPY = currentAPY;
@@ -291,28 +351,29 @@ contract BountyPool is ReentrancyGuard {
                     // set new APY
                     desiredAPY = currentAPY;
 
-                    uint256 newFortnightlyPremiumOwed = (((stakersDeposit *
+                    uint256 newFortnightlyPremiumOwed = (((stakersDeposits *
                         desiredAPY) / DENOMINATOR) / YEAR) * sinceLastPaid;
+                    {
+                        // Calculate saloon fee
+                        uint256 saloonFee = (newFortnightlyPremiumOwed *
+                            PREMIUM_COMMISSION) / DENOMINATOR;
 
-                    // Calculate saloon fee
-                    uint256 saloonFee = (newFortnightlyPremiumOwed *
-                        PREMIUM_COMMISSION) / DENOMINATOR;
+                        // update saloon claimable fee
+                        saloonPremiumFees += saloonFee;
 
-                    // update saloon claimable fee
-                    saloonPremiumFees += saloonFee;
+                        // update premiumBalance
+                        premiumBalance += newFortnightlyPremiumOwed;
 
-                    // update premiumBalance
-                    premiumBalance += newFortnightlyPremiumOwed;
+                        lastTimePaid = block.timestamp;
 
-                    lastTimePaid = block.timestamp;
+                        uint256 newRequiredPremiumBalancePerPeriod = (((poolCap *
+                                desiredAPY) / DENOMINATOR) / YEAR) *
+                                paymentPeriod;
 
-                    uint256 newRequiredPremiumBalancePerPeriod = (((poolCap *
-                        desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
-
-                    requiredPremiumBalancePerPeriod = newRequiredPremiumBalancePerPeriod;
-
+                        requiredPremiumBalancePerPeriod = newRequiredPremiumBalancePerPeriod;
+                    }
                     // try transferring again...
-                    _token.safeTransferFrom(
+                    IERC20(_token).safeTransferFrom(
                         _projectWallet,
                         address(this),
                         newFortnightlyPremiumOwed
@@ -341,10 +402,10 @@ contract BountyPool is ReentrancyGuard {
                 }
             } else {
                 uint256 fortnightlyPremiumOwed = (((stakersDeposit *
-                    desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
+                    desiredAPY) / DENOMINATOR) / YEAR) * paymentPeriod;
 
                 if (
-                    !_token.safeTransferFrom(
+                    !IERC20(_token).safeTransferFrom(
                         _projectWallet,
                         address(this),
                         fortnightlyPremiumOwed
@@ -360,27 +421,28 @@ contract BountyPool is ReentrancyGuard {
                     desiredAPY = currentAPY;
 
                     uint256 newFortnightlyPremiumOwed = (((stakersDeposit *
-                        desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
+                        desiredAPY) / DENOMINATOR) / YEAR) * paymentPeriod;
+                    {
+                        // Calculate saloon fee
+                        uint256 saloonFee = (newFortnightlyPremiumOwed *
+                            PREMIUM_COMMISSION) / DENOMINATOR;
 
-                    // Calculate saloon fee
-                    uint256 saloonFee = (newFortnightlyPremiumOwed *
-                        PREMIUM_COMMISSION) / DENOMINATOR;
+                        // update saloon claimable fee
+                        saloonPremiumFees += saloonFee;
 
-                    // update saloon claimable fee
-                    saloonPremiumFees += saloonFee;
+                        // update premiumBalance
+                        premiumBalance += newFortnightlyPremiumOwed;
 
-                    // update premiumBalance
-                    premiumBalance += newFortnightlyPremiumOwed;
+                        lastTimePaid = block.timestamp;
 
-                    lastTimePaid = block.timestamp;
+                        uint256 newRequiredPremiumBalancePerPeriod = (((poolCap *
+                                desiredAPY) / DENOMINATOR) / YEAR) *
+                                paymentPeriod;
 
-                    uint256 newRequiredPremiumBalancePerPeriod = (((poolCap *
-                        desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
-
-                    requiredPremiumBalancePerPeriod = newRequiredPremiumBalancePerPeriod;
-
+                        requiredPremiumBalancePerPeriod = newRequiredPremiumBalancePerPeriod;
+                    }
                     // try transferring again...
-                    _token.safeTransferFrom(
+                    IERC20(_token).safeTransferFrom(
                         _projectWallet,
                         address(this),
                         newFortnightlyPremiumOwed
@@ -415,7 +477,7 @@ contract BountyPool is ReentrancyGuard {
     // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
     // timelock on this?
 
-    function scheduleprojectDepositWithdrawal(uint256 _amount) {
+    function scheduleprojectDepositWithdrawal(uint256 _amount) external {
         projectWithdrawalTimeLock[_amount] = block.timestamp + poolPeriod;
 
         //todo emit event -> necessary to predict payout payment in the following week
@@ -423,7 +485,11 @@ contract BountyPool is ReentrancyGuard {
     }
 
     // PROJECT DEPOSIT WITHDRAWAL
-    function projectDepositWithdrawal(address _token, address _projectWallet, uint256 _amount) external returns (bool) {
+    function projectDepositWithdrawal(
+        address _token,
+        address _projectWallet,
+        uint256 _amount
+    ) external returns (bool) {
         // timelock on this.
         require(
             projectWithdrawalTimeLock[_amount] < block.timestamp &&
@@ -432,34 +498,36 @@ contract BountyPool is ReentrancyGuard {
         );
 
         projectDeposit -= _amount;
-        _token.safeTransfer(_projectWallet, _amount);
+        IERC20(_token).safeTransfer(_projectWallet, _amount);
         // todo emit event
         return true;
     }
 
     // STAKING
     // staker needs to approve this address first
-    function stake(address _token, address _staker, uint256 _amount)
-        external
-        onlyManager
-        nonReentrant
-        returns (bool)
-    {
+    function stake(
+        address _token,
+        address _staker,
+        uint256 _amount
+    ) external onlyManager returns (bool) {
         // dont allow staking if stakerDeposit >= poolCap
         require(
             stakersDeposit + _amount <= poolCap,
             "Staking Pool already full"
         );
+        uint256 arraySize = staker[_staker].length - 1;
 
         // Push to stakerList array if previous balance = 0
-        if (staker[_staker][-1].stakerBalance == 0) {
+        if (staker[_staker][arraySize].stakerBalance == 0) {
             stakerList.push(_staker);
         }
 
         // update stakerInfo struct
         StakerInfo memory newInfo;
         newInfo.balanceTimeStamp = block.timestamp;
-        newInfo.stakerBalance = staker[_staker][-1].stakerBalance + _amount;
+        newInfo.stakerBalance =
+            staker[_staker][arraySize].stakerBalance +
+            _amount;
 
         // save info to storage
         staker[_staker].push(newInfo);
@@ -468,7 +536,7 @@ contract BountyPool is ReentrancyGuard {
         stakersDeposit += _amount;
 
         // transferFrom to this address
-        _token.safeTransferFrom(_staker, address(this), _amount);
+        IERC20(_token).safeTransferFrom(_staker, address(this), _amount);
 
         return true;
     }
@@ -476,10 +544,16 @@ contract BountyPool is ReentrancyGuard {
     function askForUnstake(address _staker, uint256 _amount)
         external
         onlyManager
+        returns (bool)
     {
-        require(staker[_staker].stakerBalance >= _amount, "Insuficcient balance");
-        stakerTimeLock[_staker][_amount] = block.timestamp + poolPeriod;
+        uint256 arraySize = staker[_staker].length - 1;
+        require(
+            staker[_staker][arraySize].stakerBalance >= _amount,
+            "Insuficcient balance"
+        );
 
+        stakerTimelock[_staker][_amount] = block.timestamp + poolPeriod;
+        return true;
         //todo emit event -> necessary to predict payout payment in the following week
         //todo OR have variable that gets updated with new values? - forgot what we discussed about this
     }
@@ -487,12 +561,11 @@ contract BountyPool is ReentrancyGuard {
     // UNSTAKING
     // allow instant withdraw if stakerDeposit >= poolCap or APY = 0%
     // otherwise have to wait for timelock period
-    function unstake(address _token, address _staker, uint256 _amount)
-        external
-        onlyManager
-        nonReentrant
-        returns (bool)
-    {
+    function unstake(
+        address _token,
+        address _staker,
+        uint256 _amount
+    ) external onlyManager returns (bool) {
         // allow for immediate withdrawal if APY drops from desired APY
         // going to need to create an extra variable for storing this when apy changes for worse
         if (desiredAPY != 0 || APYdropped == true) {
@@ -501,23 +574,26 @@ contract BountyPool is ReentrancyGuard {
                     stakerTimelock[_staker][_amount] != 0,
                 "Timelock not finished or started"
             );
+            uint256 arraySize = staker[_staker].length - 1;
 
             // decrease staker balance
             // update stakerInfo struct
             StakerInfo memory newInfo;
             newInfo.balanceTimeStamp = block.timestamp;
-            newInfo.stakerBalance = staker[_staker][-1].stakerBalance - _amount;
+            newInfo.stakerBalance =
+                staker[_staker][arraySize].stakerBalance -
+                _amount;
 
             address[] memory stakersList = stakerList;
             if (newInfo.stakerBalance == 0) {
                 // loop through stakerlist
-                uint256 length = stakersList.length(); // can you do length on memory arrays?
+                uint256 length = stakersList.length; // can you do length on memory arrays?
                 for (uint256 i; i < length; ) {
                     // find staker
                     if (stakersList[i] == _staker) {
                         // exchange it with last address in array
-                        address lastAddress = stakersList[-1];
-                        stakerList[-1] = _staker;
+                        address lastAddress = stakersList[length - 1];
+                        stakerList[length - 1] = _staker;
                         stakerList[i] = lastAddress;
                         // pop it
                         stakerList.pop();
@@ -536,67 +612,41 @@ contract BountyPool is ReentrancyGuard {
             stakersDeposit -= _amount;
 
             // transfer it out
-            _token.safeTransfer(_staker, _amount);
+            IERC20(_token).safeTransfer(_staker, _amount);
 
             return true;
         }
     }
 
     // claim premium
-    function claimPremium(address _token, address _staker) external onlyManager nonReentrant returns(owedPremium){
+    function claimPremium(
+        address _token,
+        address _staker,
+        address _projectWallet
+    ) external onlyManager returns (uint256, bool) {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
-        lastTimeClaimed = lastClaimed[_staker];
+        uint256 lastTimeClaimed = lastClaimed[_staker];
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
         uint256 paymentPeriod = poolPeriod;
         StakerInfo[] memory stakerInfo = staker[_staker];
+        uint256 stakerLength = stakerInfo.length;
         // if last time premium was called > 1 period
 
         if (sinceLastClaimed > paymentPeriod) {
-            uint256 length = APYrecords.length();
-            // loop through APY periods (reversely) until last missed period is found
-            uint256 lastMissed;
-            uint256 totalPremiumToClaim;
-            for (uint256 i = length - 1; i == 0; --i) {
-                if (APYrecords.timeStamp[i] < lastTimeClaimed) {
-                    lastMissed = i + 1;
-                }
-            }
-            // loop through all missed periods
-            for (uint256 i = lastMissed; i < length; ++i) {
-                uint256 periodStart = APYrecords[i].timeStamp;
-                // period end end is equal NOW for last APY that has been set
-                uint256 periodEnd = APYrecords[i + 1].timeStamp != 0
-                    ? APYrecords[i + 1].timeStamp
-                    : block.timestamp;
-                uint256 periodLength = periodEnd - periodStart;
-                // loop through stakers balance fluctiation during this period
-
-                uint256 stakerLength = stakerInfo.length();
-                uint256 periodTotalBalance;
-                for (uint256 j; j < stakerLength; ++j) {
-                    // check staker balance at that moment
-                    if (
-                        stakerInfo[j].balanceTimeStamp > periodStart &&
-                        stakerInfo[j].balanceTimeStamp < periodEnd
-                    ) {
-                        // add it to that period total
-                        periodTotalBalance += stakerInfo[j].stakerBalance;
-                    }
-                }
-
-                //calcualte owed APY for that period: (APY * amount / Seconds in a year) * number of seconds in X period
-                totalPremiumToClaim +=
-                    (((periodTotalBalance * desiredAPY) / DENOMINATOR) / YEAR) *
-                    periodLength;
-            }
+            uint256 totalPremiumToClaim = calculatePremiumToClaim(
+                lastTimeClaimed,
+                stakerInfo,
+                stakerLength
+            );
             // Calculate saloon fee
             uint256 saloonFee = (totalPremiumToClaim * PREMIUM_COMMISSION) /
                 DENOMINATOR;
             // subtract saloon fee
             totalPremiumToClaim -= saloonFee;
-            uint owedPremium = totalPremiumToClaim
-            if (!_token.safeTransfer(_staker, owedPremium)) {
-                billFortnightlyPremium();
+            uint256 owedPremium = totalPremiumToClaim;
+
+            if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
+                billFortnightlyPremium(_token, _projectWallet);
                 // if function above changes APY than accounting is going to get messed up,
                 // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
                 // if function above fails then it fails...
@@ -607,12 +657,12 @@ contract BountyPool is ReentrancyGuard {
 
             // update last time claimed
             lastClaimed[_staker] = block.timestamp;
-            return true;
+            return (owedPremium, true);
         } else {
             // calculate currently owed for the week
-
-            uint256 owedPremium = (((stakerInfo[-1].stakerBalance *
-                desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
+            uint256 owedPremium = (((stakerInfo[stakerLength - 1]
+                .stakerBalance * desiredAPY) / DENOMINATOR) / YEAR) *
+                poolPeriod;
             // pay current period owed
 
             // Calculate saloon fee
@@ -621,8 +671,8 @@ contract BountyPool is ReentrancyGuard {
             // subtract saloon fee
             owedPremium -= saloonFee;
 
-            if (!_token.safeTransfer(_staker, owedPremium)) {
-                billFortnightlyPremium();
+            if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
+                billFortnightlyPremium(_token, _projectWallet);
                 // if function above changes APY than accounting is going to get messed up,
                 // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
                 // if function above fails then it fails...
@@ -633,10 +683,53 @@ contract BountyPool is ReentrancyGuard {
 
             // update last time claimed
             lastClaimed[_staker] = block.timestamp;
-            return true;
+            return (owedPremium, true);
+        }
+    }
+
+    function calculatePremiumToClaim(
+        uint256 _lastTimeClaimed,
+        StakerInfo[] memory _stakerInfo,
+        uint256 _stakerLength
+    ) internal view returns (uint256) {
+        uint256 length = APYrecords.length;
+        // loop through APY periods (reversely) until last missed period is found
+        uint256 lastMissed;
+        uint256 totalPremiumToClaim;
+        for (uint256 i = length - 1; i == 0; --i) {
+            if (APYrecords[i].timeStamp < _lastTimeClaimed) {
+                lastMissed = i + 1;
+            }
+        }
+        // loop through all missed periods
+        for (uint256 i = lastMissed; i < length; ++i) {
+            uint256 periodStart = APYrecords[i].timeStamp;
+            // period end end is equal NOW for last APY that has been set
+            uint256 periodEnd = APYrecords[i + 1].timeStamp != 0
+                ? APYrecords[i + 1].timeStamp
+                : block.timestamp;
+            uint256 periodLength = periodEnd - periodStart;
+            // loop through stakers balance fluctiation during this period
+
+            uint256 periodTotalBalance;
+            for (uint256 j; j < _stakerLength; ++j) {
+                // check staker balance at that moment
+                if (
+                    _stakerInfo[j].balanceTimeStamp > periodStart &&
+                    _stakerInfo[j].balanceTimeStamp < periodEnd
+                ) {
+                    // add it to that period total
+                    periodTotalBalance += _stakerInfo[j].stakerBalance;
+                }
+            }
+
+            //calcualte owed APY for that period: (APY * amount / Seconds in a year) * number of seconds in X period
+            totalPremiumToClaim +=
+                (((periodTotalBalance * desiredAPY) / DENOMINATOR) / YEAR) *
+                periodLength;
         }
 
-        return false;
+        return totalPremiumToClaim;
     }
 
     ///// VIEW FUNCTIONS /////
@@ -682,7 +775,11 @@ contract BountyPool is ReentrancyGuard {
         view
         returns (uint256, uint256)
     {
-        return (staker[_staker].stakerBalance, staker[_staker].timeStamp);
+        uint256 length = staker[_staker].length;
+        return (
+            staker[_staker][length - 1].stakerBalance,
+            staker[_staker][length - 1].balanceTimeStamp
+        );
     }
 
     //todo view user current claimable premium ???

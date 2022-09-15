@@ -9,28 +9,39 @@ import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 // import "../core/interfaces/IAddressProvider.sol";
 // import "../core/interfaces/IAccessController.sol";
 // import { CustomErrors } from "../libraries/CustomErrors.sol";
+import "./SaloonWallet.sol";
+import "./BountyProxyFactory.sol";
+import "./IBountyProxyFactory.sol";
+import "./BountyPool.sol";
+
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "./UUPSUPgradeable.sol";
+import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 //// THOUGHTS:
 // Planning to separate this into contracts:
 // 1. Registry contract that holds varaibles
 // 2. Manager Contract that hold state changing functions and inherits Registry
 
-contract BountyProxiesManager is Owner, UUPSUPgradeable {
+contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     /// PUBLIC STORAGE ///
 
-    /// @inheritdoc IMIMOProxyRegistry
-    IBountyProxyFactory public immutable factory;
+    event DeployNewBounty(
+        address indexed sender,
+        address indexed _projectWallet,
+        BountyPool newProxyAddress
+    );
+
     // should this be a constant?
-    address public immutable beacon;
+    IBountyProxyFactory public immutable factory;
+    UpgradeableBeacon public immutable beacon;
     address public immutable bountyImplementation;
-    address public saloonWallet;
+    SaloonWallet public saloonWallet;
 
     struct Bounties {
         string projectName;
         address projectWallet;
-        address proxyAddress;
+        BountyPool proxyAddress;
         address token;
     }
 
@@ -41,7 +52,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     mapping(address => bool) public tokenWhitelist;
 
     modifier onlySaloon() {
-        require(msg.sender == owner, "Only Saloon allowed");
+        require(msg.sender == owner(), "Only Saloon allowed");
         _;
     }
 
@@ -49,7 +60,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     /// @param factory_ The base contract of the factory
     constructor(
         IBountyProxyFactory factory_,
-        address _beacon,
+        UpgradeableBeacon _beacon,
         address _bountyImplementation
     ) {
         factory = factory_;
@@ -60,35 +71,39 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     function _authorizeUpgrade(address newImplementation)
         internal
         virtual
-        overried
+        override
         onlySaloon
     {}
 
+    //////// UPDATE SALOON WALLET FOR HUNTER PAYOUTS ////// done
+    function updateSaloonWallet(address _newWallet) external onlySaloon {
+        require(_newWallet != address(0), "Address cant be zero");
+        saloonWallet = SaloonWallet(_newWallet);
+    }
+
     //////// WITHDRAW FROM SALOON WALLET ////// done
-    function withdrawSaloonFunds(
+    function withdrawSaloon(
         address _token,
         address _to,
         uint256 _amount
     ) external onlySaloon returns (bool) {
-        require(_to != 0, "Address Zero");
+        require(_to != address(0), "Address Zero");
         saloonWallet.withdrawSaloonFunds(_token, _to, _amount);
         return true;
     }
 
-    //////// UPDATE SALOON WALLET FOR HUNTER PAYOUTS ////// done
-    function updateSaloonWallet(address _newWallet) external onlySaloon {
-        require(_newWallet != 0, "Address cant be zero");
-        saloonWallet = _newWallet;
-    }
-
     ///// DEPLOY NEW BOUNTY ////// done
-    function deployNewBounty(bytes memory _data)
-        external
-        onlySaloon
-        returns (address, bool)
-    {
+    function deployNewBounty(
+        bytes memory _data,
+        string memory _projectName,
+        address _token,
+        address _projectWallet
+    ) external onlySaloon returns (BountyPool, bool) {
         // revert if project name already has bounty
-        require(bountyDetails[_projectName] == 0, "Project already has bounty");
+        require(
+            bountyDetails[_projectName].proxyAddress != BountyPool(address(0)),
+            "Project already has bounty"
+        );
 
         require(tokenWhitelist[_token] == true, "Token not approved");
 
@@ -98,7 +113,11 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
         newBounty.token = _token;
 
         // call factory to deploy bounty
-        address newProxyAddress = factory.deployBounty(beacon, _data);
+        BountyPool newProxyAddress = factory.deployBounty(
+            address(beacon),
+            _projectWallet,
+            _data
+        );
 
         newBounty.proxyAddress = newProxyAddress;
 
@@ -110,6 +129,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
 
         //  NOT NEEDED  update proxyWhitelist in implementation
         // bountyImplementation.updateProxyWhitelist(newProxyAddress, true);
+        emit DeployNewBounty(msg.sender, _projectWallet, newProxyAddress);
 
         return (newProxyAddress, true);
     }
@@ -124,8 +144,6 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
         // call (currently non-existent) pause function?
         // look up address by name
         Bounties memory bounty = bountyDetails[_projectName];
-        // exclude proxy from proxyWhitelist in bounty implementation
-        bountyImplementation.updateProxyWhitelist(bounty.proxyAddress, false);
 
         return true;
     }
@@ -146,7 +164,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     function billPremiumForAll() external returns (bool) {
         // cache bounty bounties listt
         Bounties[] memory bountiesArray = bountiesList;
-        uint256 length = bountiesArray.length();
+        uint256 length = bountiesArray.length;
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
             // collect the premium fees from bounty
@@ -159,18 +177,23 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     }
 
     /// ADMIN WITHDRAWAL FROM POOL  TO PAY BOUNTY /// done
-    function payHackerBounty(
+    function payBounty(
         string memory _projectName,
         address _hunter,
         uint256 _amount
     ) external onlySaloon returns (bool) {
         bountyDetails[_projectName].proxyAddress.payBounty(
             bountyDetails[_projectName].token,
+            address(saloonWallet),
             _hunter,
             _amount
         );
         // update saloonWallet variables
-        saloonWallet.bountyPaid();
+        saloonWallet.bountyPaid(
+            bountyDetails[_projectName].token,
+            _hunter,
+            _amount
+        );
         return true;
     }
 
@@ -178,13 +201,17 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     function withdrawSaloonPremiumFees() external onlySaloon returns (bool) {
         // cache bounty bounties listt
         Bounties[] memory bountiesArray = bountiesList;
-        uint256 length = bountiesArray.length();
+        uint256 length = bountiesArray.length;
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
             // collect the premium fees from bounty
             uint256 totalCollected = bountiesArray[i]
                 .proxyAddress
-                .collectSaloonPremiumFees(bountiesArray[i].token);
+                .collectSaloonPremiumFees(
+                    bountiesArray[i].token,
+                    address(saloonWallet)
+                );
+
             saloonWallet.premiumFeesCollected(
                 bountiesArray[i].token,
                 totalCollected
@@ -199,7 +226,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
         onlySaloon
         returns (bool)
     {
-        require(_newImplementation != 0, "Address zero");
+        require(_newImplementation != address(0), "Address zero");
         beacon.upgradeTo(_newImplementation);
 
         return true;
@@ -208,7 +235,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     ///????????????? ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY /// ????????
 
     /// ADMIN UPDATE APPROVED TOKENS /// done
-    function updateTokenWhitelist(address _token, address whitelisted)
+    function updateTokenWhitelist(address _token, bool whitelisted)
         external
         onlySaloon
         returns (bool)
@@ -233,7 +260,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
         // set cap
         bounty.proxyAddress.setPoolCap(_poolCap);
         // set APY
-        bounty.proxyAddress.desiredAPY(
+        bounty.proxyAddress.setDesiredAPY(
             bounty.token,
             bounty.projectWallet,
             _desiredAPY
@@ -341,9 +368,10 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     {
         Bounties memory bounty = bountyDetails[_projectName];
 
-        uint256 premiumClaimed = bounty.proxyAddress.claimPremium(
+        (uint256 premiumClaimed, ) = bounty.proxyAddress.claimPremium(
             bounty.token,
-            msg.sender
+            msg.sender,
+            bounty.projectWallet
         );
 
         return premiumClaimed;
@@ -354,7 +382,7 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
     ///////////////////////// VIEW FUNCTIONS //////////////////////
 
     // Function to view all bounties name string // done
-    function viewAllBountiesByName() external view returns (Bounties[]) {
+    function viewAllBountiesByName() external view returns (Bounties[] memory) {
         return bountiesList;
     }
 
@@ -397,7 +425,10 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
         returns (uint256)
     {
         Bounties memory bounty = bountyDetails[_projectName];
-        return bounty.proxyAddress.viewUserStakingBalance(msg.sender);
+        (uint256 stakingBalance, ) = bounty.proxyAddress.viewUserStakingBalance(
+            msg.sender
+        );
+        return stakingBalance;
     }
 
     // Function to find bounty proxy and wallet address by Name // done
@@ -406,7 +437,35 @@ contract BountyProxiesManager is Owner, UUPSUPgradeable {
         view
         returns (address)
     {
-        return bountyDetails[_projectName].proxyAddress;
+        return address(bountyDetails[_projectName].proxyAddress);
+    }
+
+    function viewSaloonBalance() external view returns (uint256) {
+        return saloonWallet.viewSaloonBalance();
+    }
+
+    function viewTotalEarnedSaloon() external view returns (uint256) {
+        return saloonWallet.viewTotalEarnedSaloon();
+    }
+
+    function viewTotalHackerPayouts() external view returns (uint256) {
+        return saloonWallet.viewTotalHackerPayouts();
+    }
+
+    function viewHunterTotalTokenPayouts(address _token, address _hunter)
+        external
+        view
+        returns (uint256)
+    {
+        return saloonWallet.viewHunterTotalTokenPayouts(_token, _hunter);
+    }
+
+    function viewTotalSaloonCommission() external view returns (uint256) {
+        return saloonWallet.viewTotalSaloonCommission();
+    }
+
+    function viewTotalPremiums() external view returns (uint256) {
+        return saloonWallet.viewTotalPremiums();
     }
 
     ///////////////////////    VIEW FUNCTIONS END  ////////////////////////

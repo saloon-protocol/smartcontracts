@@ -1,0 +1,492 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "VERSION",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_beacon",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_projectWallet",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
+      "name": "deployBounty",
+      "outputs": [
+        {
+          "internalType": "contract BountyPool",
+          "name": "proxy",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "proxy",
+          "type": "address"
+        }
+      ],
+      "name": "isProxy",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "result",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "ast": {
+    "absolutePath": "/Users/vitorfrasson/code/Saloon/smartcontracts/src/IBountyProxyFactory.sol",
+    "exportedSymbols": {
+      "Address": [
+        2269
+      ],
+      "BountyPool": [
+        4126
+      ],
+      "BountyProxy": [
+        5221
+      ],
+      "Context": [
+        2291
+      ],
+      "ERC1967Upgrade": [
+        520
+      ],
+      "IBeacon": [
+        582
+      ],
+      "IBountyProxyFactory": [
+        5352
+      ],
+      "IERC1822Proxiable": [
+        122
+      ],
+      "IERC20": [
+        1589
+      ],
+      "IERC20Permit": [
+        1650
+      ],
+      "Initializable": [
+        808
+      ],
+      "Ownable": [
+        112
+      ],
+      "Proxy": [
+        572
+      ],
+      "SafeERC20": [
+        1939
+      ],
+      "SaloonWallet": [
+        5601
+      ],
+      "StorageSlot": [
+        2351
+      ]
+    },
+    "id": 5353,
+    "license": "Unlicense",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5322,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "38:23:21"
+      },
+      {
+        "absolutePath": "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyProxy.sol",
+        "file": "./BountyProxy.sol",
+        "id": 5323,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 5353,
+        "sourceUnit": 5222,
+        "src": "63:27:21",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyPool.sol",
+        "file": "./BountyPool.sol",
+        "id": 5324,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 5353,
+        "sourceUnit": 4127,
+        "src": "91:26:21",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IBountyProxyFactory",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 5325,
+          "nodeType": "StructuredDocumentation",
+          "src": "119:77:21",
+          "text": "@title IBountyProxyFactory\n @notice Deploys new proxies with CREATE2."
+        },
+        "fullyImplemented": false,
+        "id": 5352,
+        "linearizedBaseContracts": [
+          5352
+        ],
+        "name": "IBountyProxyFactory",
+        "nameLocation": "206:19:21",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "documentation": {
+              "id": 5326,
+              "nodeType": "StructuredDocumentation",
+              "src": "271:119:21",
+              "text": "@notice Mapping to track all deployed proxies.\n @param proxy The address of the proxy to make the check for."
+            },
+            "functionSelector": "29710388",
+            "id": 5333,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isProxy",
+            "nameLocation": "404:7:21",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5329,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5328,
+                  "mutability": "mutable",
+                  "name": "proxy",
+                  "nameLocation": "420:5:21",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5333,
+                  "src": "412:13:21",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5327,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "412:7:21",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "411:15:21"
+            },
+            "returnParameters": {
+              "id": 5332,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5331,
+                  "mutability": "mutable",
+                  "name": "result",
+                  "nameLocation": "455:6:21",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5333,
+                  "src": "450:11:21",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 5330,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "450:4:21",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "449:13:21"
+            },
+            "scope": 5352,
+            "src": "395:68:21",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 5334,
+              "nodeType": "StructuredDocumentation",
+              "src": "469:136:21",
+              "text": "@notice The release version of PRBProxy.\n @dev This is stored in the factory rather than the proxy to save gas for end users."
+            },
+            "functionSelector": "ffa1ad74",
+            "id": 5339,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "VERSION",
+            "nameLocation": "619:7:21",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5335,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "626:2:21"
+            },
+            "returnParameters": {
+              "id": 5338,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5337,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5339,
+                  "src": "652:7:21",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5336,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "652:7:21",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "651:9:21"
+            },
+            "scope": 5352,
+            "src": "610:51:21",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "d83a0cd6",
+            "id": 5351,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "deployBounty",
+            "nameLocation": "916:12:21",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5346,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5341,
+                  "mutability": "mutable",
+                  "name": "_beacon",
+                  "nameLocation": "946:7:21",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5351,
+                  "src": "938:15:21",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5340,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "938:7:21",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5343,
+                  "mutability": "mutable",
+                  "name": "_projectWallet",
+                  "nameLocation": "971:14:21",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5351,
+                  "src": "963:22:21",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5342,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "963:7:21",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5345,
+                  "mutability": "mutable",
+                  "name": "_data",
+                  "nameLocation": "1008:5:21",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5351,
+                  "src": "995:18:21",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 5344,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "995:5:21",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "928:91:21"
+            },
+            "returnParameters": {
+              "id": 5350,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5349,
+                  "mutability": "mutable",
+                  "name": "proxy",
+                  "nameLocation": "1049:5:21",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5351,
+                  "src": "1038:16:21",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_BountyPool_$4126",
+                    "typeString": "contract BountyPool"
+                  },
+                  "typeName": {
+                    "id": 5348,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 5347,
+                      "name": "BountyPool",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 4126,
+                      "src": "1038:10:21"
+                    },
+                    "referencedDeclaration": 4126,
+                    "src": "1038:10:21",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_BountyPool_$4126",
+                      "typeString": "contract BountyPool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1037:18:21"
+            },
+            "scope": 5352,
+            "src": "907:149:21",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5353,
+        "src": "196:862:21",
+        "usedErrors": []
+      }
+    ],
+    "src": "38:1021:21"
+  }
+}

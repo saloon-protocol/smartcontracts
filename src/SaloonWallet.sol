@@ -1,7 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
+import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract SaloonWallet {
+    using SafeERC20 for IERC20;
+
     uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
     uint256 public constant DENOMINATOR = 100 * 1e18;
 
@@ -10,6 +14,7 @@ contract SaloonWallet {
     // premium fees to collect
     uint256 public premiumFees;
     uint256 public saloonTotalBalance;
+    uint256 public cummulativeCommission;
     uint256 public cummulativeHackerPayouts;
 
     // hunter balance per token
@@ -43,7 +48,7 @@ contract SaloonWallet {
         cummulativeHackerPayouts += hunterPayout;
         saloonTokenBalance[_token] += saloonCommission;
         saloonTotalBalance += saloonCommission;
-        // set timelock for saloon to be able to withdraw hunters payout (1 year)
+        cummulativeCommission += saloonCommission;
     }
 
     function premiumFeesCollected(address _token, uint256 _amount)
@@ -67,33 +72,49 @@ contract SaloonWallet {
         saloonTokenBalance[_token] -= _amount;
         saloonTotalBalance -= _amount;
 
-        _token.safeTransfer(_to, _amount);
+        IERC20(_token).safeTransfer(_to, _amount);
 
         return true;
     }
 
-    // HUNTER WITHDRAW PAYOUT
-    function withdrawHackerPayout(address _token, address _hunter)
-        external
-        onlyManager
-        returns (bool)
-    {
-        uint256 payout = hunterTokenBalance[_hunter][_token];
-        hunterTokenBalance[_hunter][_token] -= payout;
-        _token.safeTransfer(_hunter, payout);
-        return true;
-    }
+    ///////////////////////   VIEW FUNCTIONS  ////////////////////////
 
-    // VIEW SALOON TOTAL BALANCE
+    // VIEW SALOON CURRENT TOTAL BALANCE
     function viewSaloonBalance() external view returns (uint256) {
         return saloonTotalBalance;
     }
 
-    // VIEW TOTAL HELD PAYOUTS - commission - fees
+    // VIEW COMMISSIONS PLUS PREMIUM
+    function viewTotalEarnedSaloon() external view returns (uint256) {
+        uint256 premiums = viewTotalPremiums();
+        uint256 commissions = viewTotalSaloonCommission();
 
-    // VIEW CUMMULATIVE HACKER PAYOUTS
+        return premiums + commissions;
+    }
+
+    // VIEW TOTAL PAYOUTS MADE - commission - fees
+    function viewTotalHackerPayouts() external view returns (uint256) {
+        return cummulativeHackerPayouts;
+    }
+
+    // view hacker payouts by hunter
+    function viewHunterTotalTokenPayouts(address _token, address _hunter)
+        external
+        view
+        returns (uint256)
+    {
+        return hunterTokenBalance[_hunter][_token];
+    }
 
     // VIEW TOTAL COMMISSION
+    function viewTotalSaloonCommission() public view returns (uint256) {
+        return cummulativeCommission;
+    }
 
     // VIEW TOTAL IN PREMIUMS
+    function viewTotalPremiums() public view returns (uint256) {
+        return premiumFees;
+    }
+
+    ///////////////////////    VIEW FUNCTIONS END  ////////////////////////
 }

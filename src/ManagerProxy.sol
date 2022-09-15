@@ -3,8 +3,8 @@
 
 pragma solidity ^0.8.0;
 
-import "./Proxy.sol";
-import "./ERC1967Upgrade.sol";
+import "openzeppelin-contracts/contracts/proxy/Proxy.sol";
+import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
@@ -26,25 +26,8 @@ contract ERC1967Proxy is Proxy, ERC1967Upgrade {
         address _admin
     ) payable {
         _upgradeToAndCall(_logic, _data, false);
-        _setAdmin(_admin);
+        _changeAdmin(_admin);
     }
-
-    //?????????????? FUNCTION TO UPGRADE ADMIN?????????????
-
-    ///// MAYBE CHANGE THIS TO UUPSUPgradeable and delete belwo function -DONE
-    // function upgradeImplementation(address _newImplementation)
-    //     external
-    //     returns (bool)
-    // {
-    //     // timelock this?
-    //     require(
-    //         StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender,
-    //         "Not Admin"
-    //     );
-    //     if (_upgradeToAndCall(_newImplementation, 0, false)) {
-    //         return true;
-    //     }
-    // }
 
     /**
      * @dev Returns the current implementation address.
