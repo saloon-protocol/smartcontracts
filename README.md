@@ -2,6 +2,14 @@
 
 [forge](https://book.getfoundry.sh/forge/)
 
+## SC Frontend integrationd TODOs:
+
+- Emit event updating total payout balance everytime the balance is changed (stake, unstake, project deposit, project withdrawal)
+
+- Emit event updating poolCap
+- Emit event APY
+- Emit event updating stakerDeposit (stake, unstake)
+
 ## Basic Flow
 
 The Manager contract controls it all, it is the only contract that we and any users have to interact with. This makes it simple and straightforward, not juggling different contracts addresses on front end or anything, just need to keep track of this one.
