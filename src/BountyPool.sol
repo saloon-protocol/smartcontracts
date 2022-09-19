@@ -123,9 +123,6 @@ contract BountyPool is Ownable, Initializable {
                     address stakerAddress = stakerList[i]; //todo cache stakerList before
                     staker[stakerAddress].push(newInfo);
 
-                    // clean stakerList array
-                    delete stakerList;
-
                     // deduct saloon commission and transfer
                     calculateCommissioAndTransferPayout(
                         _token,
@@ -137,6 +134,9 @@ contract BountyPool is Ownable, Initializable {
                     // todo Emit event with timestamp and amount
                     return true;
                 }
+
+                // clean stakerList array
+                delete stakerList;
             }
             // calculate percentage of stakersDeposit
             uint256 percentage = _amount / stakersDeposit;
@@ -180,9 +180,10 @@ contract BountyPool is Ownable, Initializable {
                 address stakerAddress = stakerList[i]; //todo cache stakerList before
                 staker[stakerAddress].push(newInfo);
 
-                // clean stakerList array
-                delete stakerList;
+                
             }
+            // clean stakerList array
+            delete stakerList;
             // if stakersDeposit not enough use projectDeposit to pay the rest
             uint256 remainingCost = _amount - stakersDeposit;
             // descrease project deposit by the remaining amount

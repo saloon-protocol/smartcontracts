@@ -43,6 +43,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         address projectWallet;
         BountyPool proxyAddress;
         address token;
+        bool dead;
     }
 
     Bounties[] public bountiesList;
@@ -54,6 +55,11 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     modifier onlySaloon() {
         require(msg.sender == owner(), "Only Saloon allowed");
         _;
+    }
+
+    function notDead(bool _isDead) internal pure returns (bool) {
+        // if notDead is false return bounty is live(true)
+        return _isDead == false ? true : false;
     }
 
     // factory address might not be known at the time of deployment
@@ -134,7 +140,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         return (newProxyAddress, true);
     }
 
-    ///// KILL BOUNTY //// done
+    ///// KILL BOUNTY ////
     function killBounty(string memory _projectName)
         external
         onlySaloon
@@ -143,16 +149,23 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         // attempt to withdraw all money?
         // call (currently non-existent) pause function?
         // look up address by name
-        Bounties memory bounty = bountyDetails[_projectName];
+        bountyDetails[_projectName].dead = true;
 
         return true;
     }
 
     ///// PUBLIC PAY PREMIUM FOR ONE BOUNTY // done
+    // todo cache variables for gas efficiency
     function billPremiumForOnePool(string memory _projectName)
         external
         returns (bool)
     {
+        // check if active
+        require(
+            notDead(bountyDetails[_projectName].dead) == true,
+            "Bounty is Dead"
+        );
+        // bill
         bountyDetails[_projectName].proxyAddress.billFortnightlyPremium(
             bountyDetails[_projectName].token,
             bountyDetails[_projectName].projectWallet
@@ -168,6 +181,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
             // collect the premium fees from bounty
+            if (notDead(bountiesArray[i].dead) == true) {
+                continue; // killed bounties are supposed to be skipped.
+            }
             bountiesArray[i].proxyAddress.billFortnightlyPremium(
                 bountiesArray[i].token,
                 bountiesArray[i].projectWallet
@@ -182,6 +198,10 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         address _hunter,
         uint256 _amount
     ) external onlySaloon returns (bool) {
+        require(
+            notDead(bountyDetails[_projectName].dead) == true,
+            "Bounty is Dead"
+        );
         bountyDetails[_projectName].proxyAddress.payBounty(
             bountyDetails[_projectName].token,
             address(saloonWallet),
@@ -204,6 +224,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         uint256 length = bountiesArray.length;
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
+            if (notDead(bountiesArray[i].dead) == true) {
+                continue; // killed bounties are supposed to be skipped.
+            }
             // collect the premium fees from bounty
             uint256 totalCollected = bountiesArray[i]
                 .proxyAddress
@@ -254,6 +277,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         // look for project address
         Bounties memory bounty = bountyDetails[_projectName];
 
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+
         // require msg.sender == projectWallet
         require(msg.sender == bounty.projectWallet, "Not project owner");
 
@@ -275,6 +301,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         returns (bool)
     {
         Bounties memory bounty = bountyDetails[_projectName];
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+
         // check if msg.sender is allowed
         require(msg.sender == bounty.projectWallet, "Not project owner");
         // do deposit
@@ -295,6 +324,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         // cache bounty
         Bounties memory bounty = bountyDetails[_projectName];
 
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+
         // check if caller is project
         require(msg.sender == bounty.projectWallet, "Not project owner");
 
@@ -311,6 +343,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     ) external returns (bool) {
         // cache bounty
         Bounties memory bounty = bountyDetails[_projectName];
+
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
 
         // check if caller is project
         require(msg.sender == bounty.projectWallet, "Not project owner");
@@ -331,6 +366,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         returns (bool)
     {
         Bounties memory bounty = bountyDetails[_projectName];
+
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
         bounty.proxyAddress.stake(bounty.token, msg.sender, _amount);
 
         return true;
@@ -342,6 +380,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         returns (bool)
     {
         Bounties memory bounty = bountyDetails[_projectName];
+
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
 
         //todo should all these function check return value like this?
         if (bounty.proxyAddress.askForUnstake(msg.sender, _amount)) {
@@ -356,6 +397,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     {
         Bounties memory bounty = bountyDetails[_projectName];
 
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+
         if (bounty.proxyAddress.unstake(bounty.token, msg.sender, _amount)) {
             return true;
         }
@@ -367,6 +411,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         returns (uint256)
     {
         Bounties memory bounty = bountyDetails[_projectName];
+
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
 
         (uint256 premiumClaimed, ) = bounty.proxyAddress.claimPremium(
             bounty.token,
