@@ -179,8 +179,6 @@ contract BountyPool is Ownable, Initializable {
 
                 address stakerAddress = stakerList[i]; //todo cache stakerList before
                 staker[stakerAddress].push(newInfo);
-
-                
             }
             // clean stakerList array
             delete stakerList;

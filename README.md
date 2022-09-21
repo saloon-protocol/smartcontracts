@@ -37,9 +37,9 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Develop payout receiving contract - DONE
 - Make sure all contracts have working dependencies - DONE
 
+- Come up with contract deployment script so everything is deployed atomically in the right order
 - Emit events and do Gas Optimizations
 - Connect saloon to MetaMask
-- Come up with contract deployment script so everything is deployed atomically in the right order
 - Test on testnet and front end integration
 - Test on mainnet and front end integration
 - Learn [this](https://www.youtube.com/watch?v=YpEm9Ki0qLE&t=622s) to learn about storage collisions.
@@ -51,7 +51,7 @@ The Manager contract controls it all, it is the only contract that we and any us
 
 BountyPool:
 
-- Update saloonWallet as function input for all functions that take it)
+- Update unstake function to check if unstake has been scheduled, if not schedule one
 - EVENTS (and small todos)
 
 Next version:
@@ -117,11 +117,13 @@ SaloonWallet:
 BountyProxy
 Factory
 PayoutWallet
-Implementation
+Bounty Implementation
 UpgradeableBeacon
 Manager Implementation
 ManagerProxy
+
 Initialize Implementation
+Initialize Proxy
 
 ## Ramblings, notes and observations
 
