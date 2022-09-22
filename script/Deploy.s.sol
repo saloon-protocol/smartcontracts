@@ -18,26 +18,26 @@ contract MyScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         bytes memory data = "";
-        BountyProxy bountyProxy = new BountyProxy();
-        BountyProxyFactory proxyFactory = new BountyProxyFactory();
+        // BountyProxy bountyProxy = new BountyProxy();
+        // BountyProxyFactory proxyFactory = new BountyProxyFactory();
         BountyPool bountyPoool = new BountyPool();
-        UpgradeableBeacon beacon = new UpgradeableBeacon(address(bountyPoool));
-        BountyProxiesManager bountyProxiesManager = new BountyProxiesManager(
-            proxyFactory,
-            beacon,
-            address(bountyPoool)
-        );
-        ManagerProxy managerProxy = new ManagerProxy(
-            address(bountyProxiesManager),
-            data,
-            msg.sender
-        );
-        bountyPoool.initialize(address(managerProxy));
-        bountyProxy.initialize(address(beacon), data, address(managerProxy));
-        proxyFactory.initiliaze(
-            payable(address(bountyProxy)),
-            address(managerProxy)
-        );
+        // UpgradeableBeacon beacon = new UpgradeableBeacon(address(bountyPoool));
+        // BountyProxiesManager bountyProxiesManager = new BountyProxiesManager(
+        //     proxyFactory,
+        //     beacon,
+        //     address(bountyPoool)
+        // );
+        // ManagerProxy managerProxy = new ManagerProxy(
+        //     address(bountyProxiesManager),
+        //     data,
+        //     msg.sender
+        // );
+        // bountyPoool.initialize(address(managerProxy));
+        // bountyProxy.initialize(address(beacon), data, address(managerProxy));
+        // proxyFactory.initiliaze(
+        //     payable(address(bountyProxy)),
+        //     address(managerProxy)
+        // );
 
         vm.stopBroadcast();
     }
