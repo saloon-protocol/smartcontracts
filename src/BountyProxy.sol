@@ -33,7 +33,7 @@ contract BountyProxy is Proxy, ERC1967Upgrade, Initializable {
         bytes memory _data,
         address _manager
     ) external payable initializer {
-        require(StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender);
+        // require(StorageSlot.getAddressSlot(_ADMIN_SLOT).value == msg.sender);
         _upgradeBeaconToAndCall(_beaconAddress, _data, false);
         _changeAdmin(_manager);
     }

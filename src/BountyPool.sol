@@ -28,14 +28,11 @@ contract BountyPool is Ownable, Initializable {
     uint256 public stakersDeposit;
     uint256 public bountyBalance = projectDeposit + stakersDeposit;
 
-    uint256 public saloonBountyCommission =
-        (bountyBalance * BOUNTY_COMMISSION) / DENOMINATOR;
+    uint256 public saloonBountyCommission;
     // bountyBalance - % commission
-    uint256 public bountyHackerPayout = bountyBalance - saloonBountyCommission;
 
     uint256 public saloonPremiumFees;
     uint256 public premiumBalance;
-    uint256 public currentAPY = premiumBalance / poolCap;
     uint256 public desiredAPY;
     uint256 public poolCap;
     uint256 public lastTimePaid;
@@ -63,7 +60,12 @@ contract BountyPool is Ownable, Initializable {
     }
 
     APYperiods[] public APYrecords;
+
     //#################### State Variables End *****************\\
+
+    function initialize(address _manager) external initializer onlyOwner {
+        manager = _manager;
+    }
 
     //#################### Modifiers *****************\\
 
@@ -82,10 +84,6 @@ contract BountyPool is Ownable, Initializable {
     }
 
     //#################### Modifiers END *****************\\
-
-    function initialize(address _manager) external initializer onlyOwner {
-        manager = _manager;
-    }
 
     //#################### Functions *******************\\
 
@@ -338,10 +336,10 @@ contract BountyPool is Ownable, Initializable {
 
                     APYperiods memory newAPYperiod;
                     newAPYperiod.timeStamp = block.timestamp;
-                    newAPYperiod.periodAPY = currentAPY;
+                    newAPYperiod.periodAPY = viewcurrentAPY();
                     APYrecords.push(newAPYperiod);
                     // set new APY
-                    desiredAPY = currentAPY;
+                    desiredAPY = viewcurrentAPY();
 
                     uint256 newFortnightlyPremiumOwed = (((stakersDeposits *
                         desiredAPY) / DENOMINATOR) / YEAR) * sinceLastPaid;
@@ -407,10 +405,10 @@ contract BountyPool is Ownable, Initializable {
                     // register new APYperiod
                     APYperiods memory newAPYperiod;
                     newAPYperiod.timeStamp = block.timestamp;
-                    newAPYperiod.periodAPY = currentAPY;
+                    newAPYperiod.periodAPY = viewcurrentAPY();
                     APYrecords.push(newAPYperiod);
                     // set new APY
-                    desiredAPY = currentAPY;
+                    desiredAPY = viewcurrentAPY();
 
                     uint256 newFortnightlyPremiumOwed = (((stakersDeposit *
                         desiredAPY) / DENOMINATOR) / YEAR) * paymentPeriod;
@@ -726,9 +724,17 @@ contract BountyPool is Ownable, Initializable {
 
     ///// VIEW FUNCTIONS /////
 
+    // View currentAPY
+    function viewcurrentAPY() public view returns (uint256) {
+        uint256 apy = premiumBalance / poolCap;
+        return apy;
+    }
+
     // View total balance
     function viewHackerPayout() external view returns (uint256) {
-        return bountyHackerPayout;
+        uint256 saloonCommission = (bountyBalance * BOUNTY_COMMISSION) /
+            DENOMINATOR;
+        return bountyBalance - saloonCommission;
     }
 
     // View stakersDeposit balance
