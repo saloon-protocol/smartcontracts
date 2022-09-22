@@ -327,7 +327,7 @@
   },
   "ast": {
     "absolutePath": "src/IBountyProxyFactory.sol",
-    "id": 23161,
+    "id": 23148,
     "exportedSymbols": {
       "Address": [
         19769
@@ -336,7 +336,7 @@
         21781
       ],
       "BountyProxy": [
-        23019
+        23006
       ],
       "Context": [
         19791
@@ -348,7 +348,7 @@
         18082
       ],
       "IBountyProxyFactory": [
-        23160
+        23147
       ],
       "IERC1822Proxiable": [
         17622
@@ -372,7 +372,7 @@
         19439
       ],
       "SaloonWallet": [
-        23453
+        23440
       ],
       "StorageSlot": [
         19851
@@ -382,7 +382,7 @@
     "src": "38:1021:27",
     "nodes": [
       {
-        "id": 23130,
+        "id": 23117,
         "nodeType": "PragmaDirective",
         "src": "38:23:27",
         "literals": [
@@ -393,40 +393,40 @@
         ]
       },
       {
-        "id": 23131,
+        "id": 23118,
         "nodeType": "ImportDirective",
         "src": "63:27:27",
         "absolutePath": "src/BountyProxy.sol",
         "file": "./BountyProxy.sol",
         "nameLocation": "-1:-1:-1",
-        "scope": 23161,
-        "sourceUnit": 23020,
+        "scope": 23148,
+        "sourceUnit": 23007,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 23132,
+        "id": 23119,
         "nodeType": "ImportDirective",
         "src": "91:26:27",
         "absolutePath": "src/BountyPool.sol",
         "file": "./BountyPool.sol",
         "nameLocation": "-1:-1:-1",
-        "scope": 23161,
+        "scope": 23148,
         "sourceUnit": 21782,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 23160,
+        "id": 23147,
         "nodeType": "ContractDefinition",
         "src": "196:862:27",
         "nodes": [
           {
-            "id": 23141,
+            "id": 23128,
             "nodeType": "FunctionDefinition",
             "src": "395:68:27",
             "documentation": {
-              "id": 23134,
+              "id": 23121,
               "nodeType": "StructuredDocumentation",
               "src": "271:119:27",
               "text": "@notice Mapping to track all deployed proxies.\n @param proxy The address of the proxy to make the check for."
@@ -438,17 +438,17 @@
             "name": "isProxy",
             "nameLocation": "404:7:27",
             "parameters": {
-              "id": 23137,
+              "id": 23124,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23136,
+                  "id": 23123,
                   "mutability": "mutable",
                   "name": "proxy",
                   "nameLocation": "420:5:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23141,
+                  "scope": 23128,
                   "src": "412:13:27",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -457,7 +457,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 23135,
+                    "id": 23122,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "412:7:27",
@@ -473,17 +473,17 @@
               "src": "411:15:27"
             },
             "returnParameters": {
-              "id": 23140,
+              "id": 23127,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23139,
+                  "id": 23126,
                   "mutability": "mutable",
                   "name": "result",
                   "nameLocation": "455:6:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23141,
+                  "scope": 23128,
                   "src": "450:11:27",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -492,7 +492,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 23138,
+                    "id": 23125,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "450:4:27",
@@ -506,17 +506,17 @@
               ],
               "src": "449:13:27"
             },
-            "scope": 23160,
+            "scope": 23147,
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 23147,
+            "id": 23134,
             "nodeType": "FunctionDefinition",
             "src": "610:51:27",
             "documentation": {
-              "id": 23142,
+              "id": 23129,
               "nodeType": "StructuredDocumentation",
               "src": "469:136:27",
               "text": "@notice The release version of PRBProxy.\n @dev This is stored in the factory rather than the proxy to save gas for end users."
@@ -528,23 +528,23 @@
             "name": "VERSION",
             "nameLocation": "619:7:27",
             "parameters": {
-              "id": 23143,
+              "id": 23130,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "626:2:27"
             },
             "returnParameters": {
-              "id": 23146,
+              "id": 23133,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23145,
+                  "id": 23132,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23147,
+                  "scope": 23134,
                   "src": "652:7:27",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -553,7 +553,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 23144,
+                    "id": 23131,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "652:7:27",
@@ -567,13 +567,13 @@
               ],
               "src": "651:9:27"
             },
-            "scope": 23160,
+            "scope": 23147,
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 23159,
+            "id": 23146,
             "nodeType": "FunctionDefinition",
             "src": "907:149:27",
             "functionSelector": "d83a0cd6",
@@ -583,17 +583,17 @@
             "name": "deployBounty",
             "nameLocation": "916:12:27",
             "parameters": {
-              "id": 23154,
+              "id": 23141,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23149,
+                  "id": 23136,
                   "mutability": "mutable",
                   "name": "_beacon",
                   "nameLocation": "946:7:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23159,
+                  "scope": 23146,
                   "src": "938:15:27",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -602,7 +602,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 23148,
+                    "id": 23135,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "938:7:27",
@@ -616,12 +616,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 23151,
+                  "id": 23138,
                   "mutability": "mutable",
                   "name": "_projectWallet",
                   "nameLocation": "971:14:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23159,
+                  "scope": 23146,
                   "src": "963:22:27",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -630,7 +630,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 23150,
+                    "id": 23137,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "963:7:27",
@@ -644,12 +644,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 23153,
+                  "id": 23140,
                   "mutability": "mutable",
                   "name": "_data",
                   "nameLocation": "1008:5:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23159,
+                  "scope": 23146,
                   "src": "995:18:27",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -658,7 +658,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 23152,
+                    "id": 23139,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "995:5:27",
@@ -673,17 +673,17 @@
               "src": "928:91:27"
             },
             "returnParameters": {
-              "id": 23158,
+              "id": 23145,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23157,
+                  "id": 23144,
                   "mutability": "mutable",
                   "name": "proxy",
                   "nameLocation": "1049:5:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23159,
+                  "scope": 23146,
                   "src": "1038:16:27",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -692,10 +692,10 @@
                     "typeString": "contract BountyPool"
                   },
                   "typeName": {
-                    "id": 23156,
+                    "id": 23143,
                     "nodeType": "UserDefinedTypeName",
                     "pathNode": {
-                      "id": 23155,
+                      "id": 23142,
                       "name": "BountyPool",
                       "nodeType": "IdentifierPath",
                       "referencedDeclaration": 21781,
@@ -713,7 +713,7 @@
               ],
               "src": "1037:18:27"
             },
-            "scope": 23160,
+            "scope": 23147,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -725,18 +725,18 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "documentation": {
-          "id": 23133,
+          "id": 23120,
           "nodeType": "StructuredDocumentation",
           "src": "119:77:27",
           "text": "@title IBountyProxyFactory\n @notice Deploys new proxies with CREATE2."
         },
         "fullyImplemented": false,
         "linearizedBaseContracts": [
-          23160
+          23147
         ],
         "name": "IBountyProxyFactory",
         "nameLocation": "206:19:27",
-        "scope": 23161,
+        "scope": 23148,
         "usedErrors": []
       }
     ],

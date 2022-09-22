@@ -52,11 +52,6 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     // Token address => approved or not
     mapping(address => bool) public tokenWhitelist;
 
-    modifier onlySaloon() {
-        require(msg.sender == owner(), "Only Saloon allowed");
-        _;
-    }
-
     function notDead(bool _isDead) internal pure returns (bool) {
         // if notDead is false return bounty is live(true)
         return _isDead == false ? true : false;
@@ -78,11 +73,11 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         internal
         virtual
         override
-        onlySaloon
+        onlyOwner
     {}
 
     //////// UPDATE SALOON WALLET FOR HUNTER PAYOUTS ////// done
-    function updateSaloonWallet(address _newWallet) external onlySaloon {
+    function updateSaloonWallet(address _newWallet) external onlyOwner {
         require(_newWallet != address(0), "Address cant be zero");
         saloonWallet = SaloonWallet(_newWallet);
     }
@@ -92,7 +87,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         address _token,
         address _to,
         uint256 _amount
-    ) external onlySaloon returns (bool) {
+    ) external onlyOwner returns (bool) {
         require(_to != address(0), "Address Zero");
         saloonWallet.withdrawSaloonFunds(_token, _to, _amount);
         return true;
@@ -104,7 +99,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         string memory _projectName,
         address _token,
         address _projectWallet
-    ) external onlySaloon returns (BountyPool, bool) {
+    ) external onlyOwner returns (BountyPool, bool) {
         // revert if project name already has bounty
         require(
             bountyDetails[_projectName].proxyAddress != BountyPool(address(0)),
@@ -143,7 +138,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     ///// KILL BOUNTY ////
     function killBounty(string memory _projectName)
         external
-        onlySaloon
+        onlyOwner
         returns (bool)
     {
         // attempt to withdraw all money?
@@ -197,7 +192,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         string memory _projectName,
         address _hunter,
         uint256 _amount
-    ) external onlySaloon returns (bool) {
+    ) external onlyOwner returns (bool) {
         require(
             notDead(bountyDetails[_projectName].dead) == true,
             "Bounty is Dead"
@@ -218,7 +213,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     }
 
     /// ADMIN CLAIM PREMIUM FEES for ALL BOUNTIES/// done
-    function withdrawSaloonPremiumFees() external onlySaloon returns (bool) {
+    function withdrawSaloonPremiumFees() external onlyOwner returns (bool) {
         // cache bounty bounties listt
         Bounties[] memory bountiesArray = bountiesList;
         uint256 length = bountiesArray.length;
@@ -246,7 +241,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     /// ADMIN update BountyPool IMPLEMENTATION ADDRESS of UPGRADEABLEBEACON /// done
     function updateBountyPoolImplementation(address _newImplementation)
         external
-        onlySaloon
+        onlyOwner
         returns (bool)
     {
         require(_newImplementation != address(0), "Address zero");
@@ -260,7 +255,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     /// ADMIN UPDATE APPROVED TOKENS /// done
     function updateTokenWhitelist(address _token, bool whitelisted)
         external
-        onlySaloon
+        onlyOwner
         returns (bool)
     {
         tokenWhitelist[_token] = whitelisted;

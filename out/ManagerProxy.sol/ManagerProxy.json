@@ -283,7 +283,7 @@
   },
   "ast": {
     "absolutePath": "src/ManagerProxy.sol",
-    "id": 23204,
+    "id": 23192,
     "exportedSymbols": {
       "Address": [
         19769
@@ -301,7 +301,7 @@
         17622
       ],
       "ManagerProxy": [
-        23203
+        23191
       ],
       "Ownable": [
         17612
@@ -317,7 +317,7 @@
     "src": "114:1440:28",
     "nodes": [
       {
-        "id": 23161,
+        "id": 23149,
         "nodeType": "PragmaDirective",
         "src": "114:23:28",
         "literals": [
@@ -328,52 +328,52 @@
         ]
       },
       {
-        "id": 23162,
+        "id": 23150,
         "nodeType": "ImportDirective",
         "src": "139:58:28",
         "absolutePath": "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "file": "openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "nameLocation": "-1:-1:-1",
-        "scope": 23204,
+        "scope": 23192,
         "sourceUnit": 18073,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 23163,
+        "id": 23151,
         "nodeType": "ImportDirective",
         "src": "198:75:28",
         "absolutePath": "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "file": "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "nameLocation": "-1:-1:-1",
-        "scope": 23204,
+        "scope": 23192,
         "sourceUnit": 18021,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 23164,
+        "id": 23152,
         "nodeType": "ImportDirective",
         "src": "274:61:28",
         "absolutePath": "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
         "file": "openzeppelin-contracts/contracts/access/Ownable.sol",
         "nameLocation": "-1:-1:-1",
-        "scope": 23204,
+        "scope": 23192,
         "sourceUnit": 17613,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 23203,
+        "id": 23191,
         "nodeType": "ContractDefinition",
         "src": "710:843:28",
         "nodes": [
           {
-            "id": 23190,
+            "id": 23178,
             "nodeType": "FunctionDefinition",
             "src": "1101:188:28",
             "body": {
-              "id": 23189,
+              "id": 23177,
               "nodeType": "Block",
               "src": "1203:86:28",
               "statements": [
@@ -381,11 +381,11 @@
                   "expression": {
                     "arguments": [
                       {
-                        "id": 23180,
+                        "id": 23168,
                         "name": "_logic",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 23172,
+                        "referencedDeclaration": 23160,
                         "src": "1231:6:28",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -393,11 +393,11 @@
                         }
                       },
                       {
-                        "id": 23181,
+                        "id": 23169,
                         "name": "_data",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 23174,
+                        "referencedDeclaration": 23162,
                         "src": "1239:5:28",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
@@ -406,7 +406,7 @@
                       },
                       {
                         "hexValue": "66616c7365",
-                        "id": 23182,
+                        "id": 23170,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -436,7 +436,7 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 23179,
+                      "id": 23167,
                       "name": "_upgradeToAndCall",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -447,7 +447,7 @@
                         "typeString": "function (address,bytes memory,bool)"
                       }
                     },
-                    "id": 23183,
+                    "id": 23171,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -462,7 +462,7 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 23184,
+                  "id": 23172,
                   "nodeType": "ExpressionStatement",
                   "src": "1213:39:28"
                 },
@@ -470,11 +470,11 @@
                   "expression": {
                     "arguments": [
                       {
-                        "id": 23186,
+                        "id": 23174,
                         "name": "_admin",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 23176,
+                        "referencedDeclaration": 23164,
                         "src": "1275:6:28",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -489,7 +489,7 @@
                           "typeString": "address"
                         }
                       ],
-                      "id": 23185,
+                      "id": 23173,
                       "name": "_changeAdmin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -500,7 +500,7 @@
                         "typeString": "function (address)"
                       }
                     },
-                    "id": 23187,
+                    "id": 23175,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -515,14 +515,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 23188,
+                  "id": 23176,
                   "nodeType": "ExpressionStatement",
                   "src": "1262:20:28"
                 }
               ]
             },
             "documentation": {
-              "id": 23170,
+              "id": 23158,
               "nodeType": "StructuredDocumentation",
               "src": "763:333:28",
               "text": " @dev Initializes the upgradeable proxy with an initial implementation specified by `_logic`.\n If `_data` is nonempty, it's used as data in a delegate call to `_logic`. This will typically be an encoded\n function call, and allows initializing the storage of the proxy like a Solidity constructor."
@@ -533,17 +533,17 @@
             "name": "",
             "nameLocation": "-1:-1:-1",
             "parameters": {
-              "id": 23177,
+              "id": 23165,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23172,
+                  "id": 23160,
                   "mutability": "mutable",
                   "name": "_logic",
                   "nameLocation": "1130:6:28",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23190,
+                  "scope": 23178,
                   "src": "1122:14:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -552,7 +552,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 23171,
+                    "id": 23159,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1122:7:28",
@@ -566,12 +566,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 23174,
+                  "id": 23162,
                   "mutability": "mutable",
                   "name": "_data",
                   "nameLocation": "1159:5:28",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23190,
+                  "scope": 23178,
                   "src": "1146:18:28",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -580,7 +580,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 23173,
+                    "id": 23161,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "1146:5:28",
@@ -593,12 +593,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 23176,
+                  "id": 23164,
                   "mutability": "mutable",
                   "name": "_admin",
                   "nameLocation": "1182:6:28",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23190,
+                  "scope": 23178,
                   "src": "1174:14:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -607,7 +607,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 23175,
+                    "id": 23163,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1174:7:28",
@@ -623,22 +623,22 @@
               "src": "1112:82:28"
             },
             "returnParameters": {
-              "id": 23178,
+              "id": 23166,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1203:0:28"
             },
-            "scope": 23203,
+            "scope": 23191,
             "stateMutability": "payable",
             "virtual": false,
             "visibility": "public"
           },
           {
-            "id": 23202,
+            "id": 23190,
             "nodeType": "FunctionDefinition",
             "src": "1367:184:28",
             "body": {
-              "id": 23201,
+              "id": 23189,
               "nodeType": "Block",
               "src": "1492:59:28",
               "statements": [
@@ -648,7 +648,7 @@
                     "expression": {
                       "argumentTypes": [],
                       "expression": {
-                        "id": 23197,
+                        "id": 23185,
                         "name": "ERC1967Upgrade",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
@@ -659,7 +659,7 @@
                           "typeString": "type(contract ERC1967Upgrade)"
                         }
                       },
-                      "id": 23198,
+                      "id": 23186,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -673,7 +673,7 @@
                         "typeString": "function () view returns (address)"
                       }
                     },
-                    "id": 23199,
+                    "id": 23187,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -688,8 +688,8 @@
                       "typeString": "address"
                     }
                   },
-                  "functionReturnParameters": 23196,
-                  "id": 23200,
+                  "functionReturnParameters": 23184,
+                  "id": 23188,
                   "nodeType": "Return",
                   "src": "1502:42:28"
                 }
@@ -699,7 +699,7 @@
               18037
             ],
             "documentation": {
-              "id": 23191,
+              "id": 23179,
               "nodeType": "StructuredDocumentation",
               "src": "1295:67:28",
               "text": " @dev Returns the current implementation address."
@@ -710,29 +710,29 @@
             "name": "_implementation",
             "nameLocation": "1376:15:28",
             "overrides": {
-              "id": 23193,
+              "id": 23181,
               "nodeType": "OverrideSpecifier",
               "overrides": [],
               "src": "1448:8:28"
             },
             "parameters": {
-              "id": 23192,
+              "id": 23180,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1391:2:28"
             },
             "returnParameters": {
-              "id": 23196,
+              "id": 23184,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 23195,
+                  "id": 23183,
                   "mutability": "mutable",
                   "name": "impl",
                   "nameLocation": "1482:4:28",
                   "nodeType": "VariableDeclaration",
-                  "scope": 23202,
+                  "scope": 23190,
                   "src": "1474:12:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -741,7 +741,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 23194,
+                    "id": 23182,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1474:7:28",
@@ -756,7 +756,7 @@
               ],
               "src": "1473:14:28"
             },
-            "scope": 23203,
+            "scope": 23191,
             "stateMutability": "view",
             "virtual": true,
             "visibility": "internal"
@@ -766,25 +766,25 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 23166,
+              "id": 23154,
               "name": "Proxy",
               "nodeType": "IdentifierPath",
               "referencedDeclaration": 18072,
               "src": "735:5:28"
             },
-            "id": 23167,
+            "id": 23155,
             "nodeType": "InheritanceSpecifier",
             "src": "735:5:28"
           },
           {
             "baseName": {
-              "id": 23168,
+              "id": 23156,
               "name": "ERC1967Upgrade",
               "nodeType": "IdentifierPath",
               "referencedDeclaration": 18020,
               "src": "742:14:28"
             },
-            "id": 23169,
+            "id": 23157,
             "nodeType": "InheritanceSpecifier",
             "src": "742:14:28"
           }
@@ -793,20 +793,20 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "documentation": {
-          "id": 23165,
+          "id": 23153,
           "nodeType": "StructuredDocumentation",
           "src": "337:372:28",
           "text": " @dev This contract implements an upgradeable proxy. It is upgradeable because calls are delegated to an\n implementation address that can be changed. This address is stored in storage in the location specified by\n https://eips.ethereum.org/EIPS/eip-1967[EIP1967], so that it doesn't conflict with the storage layout of the\n implementation behind the proxy."
         },
         "fullyImplemented": true,
         "linearizedBaseContracts": [
-          23203,
+          23191,
           18020,
           18072
         ],
         "name": "ManagerProxy",
         "nameLocation": "719:12:28",
-        "scope": 23204,
+        "scope": 23192,
         "usedErrors": []
       }
     ],

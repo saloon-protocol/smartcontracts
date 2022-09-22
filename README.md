@@ -43,6 +43,9 @@ The Manager contract controls it all, it is the only contract that we and any us
 - Test on testnet and front end integration
 - Test on mainnet and front end integration
 - Learn [this](https://www.youtube.com/watch?v=YpEm9Ki0qLE&t=622s) to learn about storage collisions.
+
+-Implement storage gap? https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/access/OwnableUpgradeable.sol#L89-L95
+
 - Launch mainnet
 
 - Start Working on version 2
@@ -301,3 +304,25 @@ Saloon Global Staking (Future Feature):
 
 - Pool #2 pays bounty and now instead of holding a total of 100K, it only has 50K
 - User staking amount decreases from 10 to 9.5
+
+## Foundry terminal calls
+
+--- SALOON CALLS / TX
+
+cast send --rpc-url https://rinkeby.infura.io/v3/c520361dc356433d881e7cb3a00193e7 0xbc833ab6040942c6eda44e556d632663871c6886 "updateTokenWhitelist(address,bool))(bool)" 0xDf032Bc4B9dC2782Bb09352007D4C57B75160B15 true --private-key=52cb6347e0d4e2142efc9b346fa5cf8ae83152a3e56dc620d8181156fba479af --- WORKING
+
+cast call --rpc-url https://eth-goerli.g.alchemy.com/v2/iBAIDbGjZbzc47BXJFUoVnU8iIhaOGzi 0x787e757f506f0e64ef625aac6b2fdb758d49987d \
+"owner()"
+
+--- SALOON DEPLOY
+
+forge script script/Deploy.s.sol:MyScript --rpc-url https://rinkeby.infura.io/v3/c520361dc356433d881e7cb3a00193e7 --broadcast --verify -vvvv
+
+forge script script/Deploy.s.sol:MyScript --rpc-url https://eth-goerli.g.alchemy.com/v2/iBAIDbGjZbzc47BXJFUoVnU8iIhaOGzi --broadcast --verify -vvvv
+
+--- WETH CALLS
+
+cast call --rpc-url https://rinkeby.infura.io/v3/c520361dc356433d881e7cb3a00193e7 0xDf032Bc4B9dC2782Bb09352007D4C57B75160B15 \
+"balanceOf(address)(uint256)" 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc
+
+cast send --value 0.1ether --rpc-url INSERT_PRC_URL 0xDf032Bc4B9dC2782Bb09352007D4C57B75160B15 "deposit()" --private-key=INSERT_HERE
