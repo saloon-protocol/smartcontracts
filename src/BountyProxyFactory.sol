@@ -1,23 +1,20 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity >=0.8.4;
+pragma solidity 0.8.10;
 
 import "openzeppelin-contracts/contracts/proxy/Clones.sol";
 import "./BountyProxy.sol";
 import "./IBountyProxyFactory.sol";
 import "./BountyPool.sol";
+import "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-// import "./interfaces/IMIMOProxy.sol";
-// import "./interfaces/IMIMOProxyFactory.sol";
-// import "./MIMOProxy.sol";
-
-// contract BountyProxyFactory is IMIMOProxyFactory {
-contract BountyProxyFactory {
+contract BountyProxyFactory is Ownable, Initializable {
     using Clones for address;
     /// PUBLIC STORAGE ///
 
-    address payable public immutable bountyProxyBase;
+    address payable public bountyProxyBase;
 
-    address public immutable manager;
+    address public manager;
 
     uint256 public constant VERSION = 1;
 
@@ -26,7 +23,11 @@ contract BountyProxyFactory {
     /// @dev Internal mapping to track all deployed proxies.
     mapping(address => bool) internal _proxies;
 
-    constructor(address payable _bountyProxyBase, address _manager) {
+    function initiliaze(address payable _bountyProxyBase, address _manager)
+        external
+        initializer
+        onlyOwner
+    {
         bountyProxyBase = _bountyProxyBase;
         manager = _manager;
     }

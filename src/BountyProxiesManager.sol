@@ -33,7 +33,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     );
 
     // should this be a constant?
-    IBountyProxyFactory public immutable factory;
+    BountyProxyFactory public immutable factory;
     UpgradeableBeacon public immutable beacon;
     address public immutable bountyImplementation;
     SaloonWallet public saloonWallet;
@@ -65,7 +65,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     // factory address might not be known at the time of deployment
     /// @param factory_ The base contract of the factory
     constructor(
-        IBountyProxyFactory factory_,
+        BountyProxyFactory factory_,
         UpgradeableBeacon _beacon,
         address _bountyImplementation
     ) {

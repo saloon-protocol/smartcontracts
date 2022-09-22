@@ -52,9 +52,6 @@ contract BountyPool is Ownable, Initializable {
     // staker address => amount => timelock time
     mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
 
-    // NOT NEEDED - proxy address =>
-    // mapping(address => uint256) public proxyWhitelist;
-
     struct StakerInfo {
         uint256 stakerBalance;
         uint256 balanceTimeStamp;
@@ -74,12 +71,8 @@ contract BountyPool is Ownable, Initializable {
         require(msg.sender == manager, "Only manager allowed");
         _;
     }
-    // todo maybe make this check at the manager level
-    // modifier onlyProxy() {
-    //     require(proxyWhitelist[msg.sender] != 0, "Address not whitelisted");
-    //     _;
-    // }
-    //todo  maybe make this check at the manager level
+
+    //todo  maybe make this check at the manager level ????
     modifier onlyManagerOrSelf() {
         require(
             msg.sender == manager || msg.sender == address(this),

@@ -72,146 +72,384 @@
     "sourceMap": "",
     "linkReferences": {}
   },
+  "methodIdentifiers": {
+    "VERSION()": "ffa1ad74",
+    "deployBounty(address,address,bytes)": "d83a0cd6",
+    "isProxy(address)": "29710388"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"VERSION\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_beacon\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_projectWallet\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"deployBounty\",\"outputs\":[{\"internalType\":\"contract BountyPool\",\"name\":\"proxy\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proxy\",\"type\":\"address\"}],\"name\":\"isProxy\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"result\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"VERSION()\":{\"details\":\"This is stored in the factory rather than the proxy to save gas for end users.\"},\"isProxy(address)\":{\"params\":{\"proxy\":\"The address of the proxy to make the check for.\"}}},\"title\":\"IBountyProxyFactory\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"VERSION()\":{\"notice\":\"The release version of PRBProxy.\"},\"isProxy(address)\":{\"notice\":\"Mapping to track all deployed proxies.\"}},\"notice\":\"Deploys new proxies with CREATE2.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/IBountyProxyFactory.sol\":\"IBountyProxyFactory\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":solmate/=lib/solmate/src/\"]},\"sources\":{\"lib/openzeppelin-contracts/contracts/access/Ownable.sol\":{\"keccak256\":\"0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://40fb1b5102468f783961d0af743f91b9980cf66b50d1d12009f6bb1869cea4d2\",\"dweb:/ipfs/QmYqEbJML4jB1GHbzD4cUZDtJg5wVwNm3vDJq1GbyDus8y\"]},\"lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol\":{\"keccak256\":\"0x1d4afe6cb24200cc4545eed814ecf5847277dfe5d613a1707aad5fceecebcfff\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://383fb7b8181016ac5ccf07bc9cdb7c1b5045ea36e2cc4df52bcbf20396fc7688\",\"dweb:/ipfs/QmYJ7Cg4WmE3rR8KGQxjUCXFfTH6TcwZ2Z1f6tPrq7jHFr\"]},\"lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol\":{\"keccak256\":\"0xabf3f59bc0e5423eae45e459dbe92e7052c6983628d39008590edc852a62f94a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://89c2a0f70157c13845be5cb49b078a6374fee3a78fa950052a3af26190255da8\",\"dweb:/ipfs/QmUcvMEQH1oMM2pUyMuDiBUKdvvnTz1NRB8bmPHrVq8725\"]},\"lib/openzeppelin-contracts/contracts/proxy/Proxy.sol\":{\"keccak256\":\"0xc130fe33f1b2132158531a87734153293f6d07bc263ff4ac90e85da9c82c0e27\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://8831721b6f4cc26534d190f9f1631c3f59c9ff38efdd911f85e0882b8e360472\",\"dweb:/ipfs/QmQZnLErZNStirSQ13ZNWQgvEYUtGE5tXYwn4QUPaVUfPN\"]},\"lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol\":{\"keccak256\":\"0xd50a3421ac379ccb1be435fa646d66a65c986b4924f0849839f08692f39dde61\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ada1e030c0231db8d143b44ce92b4d1158eedb087880cad6d8cc7bd7ebe7b354\",\"dweb:/ipfs/QmWZ2NHZweRpz1U9GF6R1h65ri76dnX7fNxLBeM2t5N5Ce\"]},\"lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol\":{\"keccak256\":\"0x2a21b14ff90012878752f230d3ffd5c3405e5938d06c97a7d89c0a64561d0d66\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3313a8f9bb1f9476857c9050067b31982bf2140b83d84f3bc0cec1f62bbe947f\",\"dweb:/ipfs/Qma17Pk8NRe7aB4UD3jjVxk7nSFaov3eQyv86hcyqkwJRV\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34\",\"dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol\":{\"keccak256\":\"0xf41ca991f30855bf80ffd11e9347856a517b977f0a6c2d52e6421a99b7840329\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b2717fd2bdac99daa960a6de500754ea1b932093c946388c381da48658234b95\",\"dweb:/ipfs/QmP6QVMn6UeA3ByahyJbYQr5M6coHKBKsf3ySZSfbyA8R7\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol\":{\"keccak256\":\"0x7c8534a4ab2bce9671eb177ee4bc14d13070ba99216d9ff1ad780f80932036e3\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e4a95178e17978575e5d219032dcb3055f4e6e149e70b9fe2fddd4c27d6e808f\",\"dweb:/ipfs/QmXev38xdrQxe1WcRn43JBmna69wandvvzL1vN6j3bvGCz\"]},\"lib/openzeppelin-contracts/contracts/utils/Address.sol\":{\"keccak256\":\"0x9720545d8ea1f76222f98683f861f919e9c28bd5d5503caa7e3620a21b6aaa24\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fe3dac0e0258d8396c33fd27c277699a9bfac198f2cb45632c4f5df2c2ca895a\",\"dweb:/ipfs/QmfEWsX7aGpWN9wooHiQo1XjiGM1h6iXeaeMTAJ1TUcnts\"]},\"lib/openzeppelin-contracts/contracts/utils/Context.sol\":{\"keccak256\":\"0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6df0ddf21ce9f58271bdfaa85cde98b200ef242a05a3f85c2bc10a8294800a92\",\"dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3\"]},\"lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol\":{\"keccak256\":\"0xd5c50c54bf02740ebd122ff06832546cb5fa84486d52695a9ccfd11666e0c81d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://39e096c60a6eb1c6a257122d515496bd92d0c6a693a8f07acb6aa4b1263e95d4\",\"dweb:/ipfs/QmPs5trJBacCiSkezP6tpevapuRYWNY6mqSFzsMCJj7e6B\"]},\"src/BountyPool.sol\":{\"keccak256\":\"0x2f12e039a272de542cd10156652a1956ed79d77a6a4014a53fa3b8ef6a4e96a0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://be974a446bf17cde4ba22cd48a3581117b725484ab1e58da8bd2a7bff3443cab\",\"dweb:/ipfs/QmSSnpimHykPBbTAT5x4Pqdkh5ToQzz19WS85coRjwvsgQ\"]},\"src/BountyProxy.sol\":{\"keccak256\":\"0x73eeec8cfa4b1025d395922024ff439c3ce2518998adc6e2e9a3223d10796183\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://87abcb0d34ccf4692b5602cb40c3b5b87f07b3f404cb925bb627cd3d77862ffa\",\"dweb:/ipfs/QmRVCCqG8NXdQVDoZEbJadmMh6SNb12DXApgH4z5VedwTo\"]},\"src/IBountyProxyFactory.sol\":{\"keccak256\":\"0x5bdbb6f484684e4275a8ab786594fbf85332a97c59645c27ff109608427ff5a4\",\"license\":\"Unlicense\",\"urls\":[\"bzz-raw://585d7f9ab699aff436a5e1bb225bf95a1010a6597c2756bc138ee89b08d6e301\",\"dweb:/ipfs/QmbjYVmeyCmx2sAUvZqSUyiRB6bzG2aL779RULTBvXL9mw\"]},\"src/SaloonWallet.sol\":{\"keccak256\":\"0x8a87a154d9075479b4414592bbcf99987eb82f38aac906d9946fbaa9c2df9d54\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a210019265e6191f1955296155971917760939f9f194d4f54d38a08b0f228a9b\",\"dweb:/ipfs/QmRMRXSXvV9Ld4tgsqEJiJGE3QQGYg3kodpRMDSuCmfvsM\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.10+commit.fc410830"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "VERSION",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_beacon",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "_projectWallet",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "_data",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "deployBounty",
+          "outputs": [
+            {
+              "internalType": "contract BountyPool",
+              "name": "proxy",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "proxy",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isProxy",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "result",
+              "type": "bool"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "VERSION()": {
+            "details": "This is stored in the factory rather than the proxy to save gas for end users."
+          },
+          "isProxy(address)": {
+            "params": {
+              "proxy": "The address of the proxy to make the check for."
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "VERSION()": {
+            "notice": "The release version of PRBProxy."
+          },
+          "isProxy(address)": {
+            "notice": "Mapping to track all deployed proxies."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":ds-test/=lib/ds-test/src/",
+        ":forge-std/=lib/forge-std/src/",
+        ":openzeppelin-contracts/=lib/openzeppelin-contracts/",
+        ":solmate/=lib/solmate/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/IBountyProxyFactory.sol": "IBountyProxyFactory"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/openzeppelin-contracts/contracts/access/Ownable.sol": {
+        "keccak256": "0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673",
+        "urls": [
+          "bzz-raw://40fb1b5102468f783961d0af743f91b9980cf66b50d1d12009f6bb1869cea4d2",
+          "dweb:/ipfs/QmYqEbJML4jB1GHbzD4cUZDtJg5wVwNm3vDJq1GbyDus8y"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol": {
+        "keccak256": "0x1d4afe6cb24200cc4545eed814ecf5847277dfe5d613a1707aad5fceecebcfff",
+        "urls": [
+          "bzz-raw://383fb7b8181016ac5ccf07bc9cdb7c1b5045ea36e2cc4df52bcbf20396fc7688",
+          "dweb:/ipfs/QmYJ7Cg4WmE3rR8KGQxjUCXFfTH6TcwZ2Z1f6tPrq7jHFr"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol": {
+        "keccak256": "0xabf3f59bc0e5423eae45e459dbe92e7052c6983628d39008590edc852a62f94a",
+        "urls": [
+          "bzz-raw://89c2a0f70157c13845be5cb49b078a6374fee3a78fa950052a3af26190255da8",
+          "dweb:/ipfs/QmUcvMEQH1oMM2pUyMuDiBUKdvvnTz1NRB8bmPHrVq8725"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol": {
+        "keccak256": "0xc130fe33f1b2132158531a87734153293f6d07bc263ff4ac90e85da9c82c0e27",
+        "urls": [
+          "bzz-raw://8831721b6f4cc26534d190f9f1631c3f59c9ff38efdd911f85e0882b8e360472",
+          "dweb:/ipfs/QmQZnLErZNStirSQ13ZNWQgvEYUtGE5tXYwn4QUPaVUfPN"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol": {
+        "keccak256": "0xd50a3421ac379ccb1be435fa646d66a65c986b4924f0849839f08692f39dde61",
+        "urls": [
+          "bzz-raw://ada1e030c0231db8d143b44ce92b4d1158eedb087880cad6d8cc7bd7ebe7b354",
+          "dweb:/ipfs/QmWZ2NHZweRpz1U9GF6R1h65ri76dnX7fNxLBeM2t5N5Ce"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol": {
+        "keccak256": "0x2a21b14ff90012878752f230d3ffd5c3405e5938d06c97a7d89c0a64561d0d66",
+        "urls": [
+          "bzz-raw://3313a8f9bb1f9476857c9050067b31982bf2140b83d84f3bc0cec1f62bbe947f",
+          "dweb:/ipfs/Qma17Pk8NRe7aB4UD3jjVxk7nSFaov3eQyv86hcyqkwJRV"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b",
+        "urls": [
+          "bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34",
+          "dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol": {
+        "keccak256": "0xf41ca991f30855bf80ffd11e9347856a517b977f0a6c2d52e6421a99b7840329",
+        "urls": [
+          "bzz-raw://b2717fd2bdac99daa960a6de500754ea1b932093c946388c381da48658234b95",
+          "dweb:/ipfs/QmP6QVMn6UeA3ByahyJbYQr5M6coHKBKsf3ySZSfbyA8R7"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol": {
+        "keccak256": "0x7c8534a4ab2bce9671eb177ee4bc14d13070ba99216d9ff1ad780f80932036e3",
+        "urls": [
+          "bzz-raw://e4a95178e17978575e5d219032dcb3055f4e6e149e70b9fe2fddd4c27d6e808f",
+          "dweb:/ipfs/QmXev38xdrQxe1WcRn43JBmna69wandvvzL1vN6j3bvGCz"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/Address.sol": {
+        "keccak256": "0x9720545d8ea1f76222f98683f861f919e9c28bd5d5503caa7e3620a21b6aaa24",
+        "urls": [
+          "bzz-raw://fe3dac0e0258d8396c33fd27c277699a9bfac198f2cb45632c4f5df2c2ca895a",
+          "dweb:/ipfs/QmfEWsX7aGpWN9wooHiQo1XjiGM1h6iXeaeMTAJ1TUcnts"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/Context.sol": {
+        "keccak256": "0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7",
+        "urls": [
+          "bzz-raw://6df0ddf21ce9f58271bdfaa85cde98b200ef242a05a3f85c2bc10a8294800a92",
+          "dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3"
+        ],
+        "license": "MIT"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol": {
+        "keccak256": "0xd5c50c54bf02740ebd122ff06832546cb5fa84486d52695a9ccfd11666e0c81d",
+        "urls": [
+          "bzz-raw://39e096c60a6eb1c6a257122d515496bd92d0c6a693a8f07acb6aa4b1263e95d4",
+          "dweb:/ipfs/QmPs5trJBacCiSkezP6tpevapuRYWNY6mqSFzsMCJj7e6B"
+        ],
+        "license": "MIT"
+      },
+      "src/BountyPool.sol": {
+        "keccak256": "0x2f12e039a272de542cd10156652a1956ed79d77a6a4014a53fa3b8ef6a4e96a0",
+        "urls": [
+          "bzz-raw://be974a446bf17cde4ba22cd48a3581117b725484ab1e58da8bd2a7bff3443cab",
+          "dweb:/ipfs/QmSSnpimHykPBbTAT5x4Pqdkh5ToQzz19WS85coRjwvsgQ"
+        ],
+        "license": "MIT"
+      },
+      "src/BountyProxy.sol": {
+        "keccak256": "0x73eeec8cfa4b1025d395922024ff439c3ce2518998adc6e2e9a3223d10796183",
+        "urls": [
+          "bzz-raw://87abcb0d34ccf4692b5602cb40c3b5b87f07b3f404cb925bb627cd3d77862ffa",
+          "dweb:/ipfs/QmRVCCqG8NXdQVDoZEbJadmMh6SNb12DXApgH4z5VedwTo"
+        ],
+        "license": "MIT"
+      },
+      "src/IBountyProxyFactory.sol": {
+        "keccak256": "0x5bdbb6f484684e4275a8ab786594fbf85332a97c59645c27ff109608427ff5a4",
+        "urls": [
+          "bzz-raw://585d7f9ab699aff436a5e1bb225bf95a1010a6597c2756bc138ee89b08d6e301",
+          "dweb:/ipfs/QmbjYVmeyCmx2sAUvZqSUyiRB6bzG2aL779RULTBvXL9mw"
+        ],
+        "license": "Unlicense"
+      },
+      "src/SaloonWallet.sol": {
+        "keccak256": "0x8a87a154d9075479b4414592bbcf99987eb82f38aac906d9946fbaa9c2df9d54",
+        "urls": [
+          "bzz-raw://a210019265e6191f1955296155971917760939f9f194d4f54d38a08b0f228a9b",
+          "dweb:/ipfs/QmRMRXSXvV9Ld4tgsqEJiJGE3QQGYg3kodpRMDSuCmfvsM"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
   "ast": {
-    "absolutePath": "/Users/vitorfrasson/code/Saloon/smartcontracts/src/IBountyProxyFactory.sol",
+    "absolutePath": "src/IBountyProxyFactory.sol",
+    "id": 23075,
     "exportedSymbols": {
       "Address": [
-        4056
+        19769
       ],
       "BountyPool": [
-        5913
+        21684
       ],
       "BountyProxy": [
-        7162
+        22933
       ],
       "Context": [
-        4078
+        19791
       ],
       "ERC1967Upgrade": [
-        2307
+        18020
       ],
       "IBeacon": [
-        2369
+        18082
       ],
       "IBountyProxyFactory": [
-        7293
+        23074
       ],
       "IERC1822Proxiable": [
-        1909
+        17622
       ],
       "IERC20": [
-        3376
+        19089
       ],
       "IERC20Permit": [
-        3437
+        19150
       ],
       "Initializable": [
-        2595
+        18308
       ],
       "Ownable": [
-        1899
+        17612
       ],
       "Proxy": [
-        2359
+        18072
       ],
       "SafeERC20": [
-        3726
+        19439
       ],
       "SaloonWallet": [
-        7586
+        23367
       ],
       "StorageSlot": [
-        4138
+        19851
       ]
     },
-    "id": 7294,
-    "license": "Unlicense",
     "nodeType": "SourceUnit",
+    "src": "38:1021:27",
     "nodes": [
       {
-        "id": 7263,
+        "id": 23044,
+        "nodeType": "PragmaDirective",
+        "src": "38:23:27",
         "literals": [
           "solidity",
           "^",
           "0.8",
           ".4"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "38:23:22"
+        ]
       },
       {
-        "absolutePath": "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyProxy.sol",
+        "id": 23045,
+        "nodeType": "ImportDirective",
+        "src": "63:27:27",
+        "absolutePath": "src/BountyProxy.sol",
         "file": "./BountyProxy.sol",
-        "id": 7264,
         "nameLocation": "-1:-1:-1",
-        "nodeType": "ImportDirective",
-        "scope": 7294,
-        "sourceUnit": 7163,
-        "src": "63:27:22",
+        "scope": 23075,
+        "sourceUnit": 22934,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyPool.sol",
+        "id": 23046,
+        "nodeType": "ImportDirective",
+        "src": "91:26:27",
+        "absolutePath": "src/BountyPool.sol",
         "file": "./BountyPool.sol",
-        "id": 7265,
         "nameLocation": "-1:-1:-1",
-        "nodeType": "ImportDirective",
-        "scope": 7294,
-        "sourceUnit": 5914,
-        "src": "91:26:22",
+        "scope": 23075,
+        "sourceUnit": 21685,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "abstract": false,
-        "baseContracts": [],
-        "canonicalName": "IBountyProxyFactory",
-        "contractDependencies": [],
-        "contractKind": "interface",
-        "documentation": {
-          "id": 7266,
-          "nodeType": "StructuredDocumentation",
-          "src": "119:77:22",
-          "text": "@title IBountyProxyFactory\n @notice Deploys new proxies with CREATE2."
-        },
-        "fullyImplemented": false,
-        "id": 7293,
-        "linearizedBaseContracts": [
-          7293
-        ],
-        "name": "IBountyProxyFactory",
-        "nameLocation": "206:19:22",
+        "id": 23074,
         "nodeType": "ContractDefinition",
+        "src": "196:862:27",
         "nodes": [
           {
+            "id": 23055,
+            "nodeType": "FunctionDefinition",
+            "src": "395:68:27",
             "documentation": {
-              "id": 7267,
+              "id": 23048,
               "nodeType": "StructuredDocumentation",
-              "src": "271:119:22",
+              "src": "271:119:27",
               "text": "@notice Mapping to track all deployed proxies.\n @param proxy The address of the proxy to make the check for."
             },
             "functionSelector": "29710388",
-            "id": 7274,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isProxy",
-            "nameLocation": "404:7:22",
-            "nodeType": "FunctionDefinition",
+            "nameLocation": "404:7:27",
             "parameters": {
-              "id": 7270,
+              "id": 23051,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7269,
+                  "id": 23050,
                   "mutability": "mutable",
                   "name": "proxy",
-                  "nameLocation": "420:5:22",
+                  "nameLocation": "420:5:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7274,
-                  "src": "412:13:22",
+                  "scope": 23055,
+                  "src": "412:13:27",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -219,10 +457,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 7268,
+                    "id": 23049,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "412:7:22",
+                    "src": "412:7:27",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -232,21 +470,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "411:15:22"
+              "src": "411:15:27"
             },
             "returnParameters": {
-              "id": 7273,
+              "id": 23054,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7272,
+                  "id": 23053,
                   "mutability": "mutable",
                   "name": "result",
-                  "nameLocation": "455:6:22",
+                  "nameLocation": "455:6:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7274,
-                  "src": "450:11:22",
+                  "scope": 23055,
+                  "src": "450:11:27",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -254,10 +492,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 7271,
+                    "id": 23052,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "450:4:22",
+                    "src": "450:4:27",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -266,48 +504,48 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "449:13:22"
+              "src": "449:13:27"
             },
-            "scope": 7293,
-            "src": "395:68:22",
+            "scope": 23074,
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           },
           {
+            "id": 23061,
+            "nodeType": "FunctionDefinition",
+            "src": "610:51:27",
             "documentation": {
-              "id": 7275,
+              "id": 23056,
               "nodeType": "StructuredDocumentation",
-              "src": "469:136:22",
+              "src": "469:136:27",
               "text": "@notice The release version of PRBProxy.\n @dev This is stored in the factory rather than the proxy to save gas for end users."
             },
             "functionSelector": "ffa1ad74",
-            "id": 7280,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "VERSION",
-            "nameLocation": "619:7:22",
-            "nodeType": "FunctionDefinition",
+            "nameLocation": "619:7:27",
             "parameters": {
-              "id": 7276,
+              "id": 23057,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "626:2:22"
+              "src": "626:2:27"
             },
             "returnParameters": {
-              "id": 7279,
+              "id": 23060,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7278,
+                  "id": 23059,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7280,
-                  "src": "652:7:22",
+                  "scope": 23061,
+                  "src": "652:7:27",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -315,10 +553,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7277,
+                    "id": 23058,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "652:7:22",
+                    "src": "652:7:27",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -327,36 +565,36 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "651:9:22"
+              "src": "651:9:27"
             },
-            "scope": 7293,
-            "src": "610:51:22",
+            "scope": 23074,
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           },
           {
+            "id": 23073,
+            "nodeType": "FunctionDefinition",
+            "src": "907:149:27",
             "functionSelector": "d83a0cd6",
-            "id": 7292,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "deployBounty",
-            "nameLocation": "916:12:22",
-            "nodeType": "FunctionDefinition",
+            "nameLocation": "916:12:27",
             "parameters": {
-              "id": 7287,
+              "id": 23068,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7282,
+                  "id": 23063,
                   "mutability": "mutable",
                   "name": "_beacon",
-                  "nameLocation": "946:7:22",
+                  "nameLocation": "946:7:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7292,
-                  "src": "938:15:22",
+                  "scope": 23073,
+                  "src": "938:15:27",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -364,10 +602,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 7281,
+                    "id": 23062,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "938:7:22",
+                    "src": "938:7:27",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -378,13 +616,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 7284,
+                  "id": 23065,
                   "mutability": "mutable",
                   "name": "_projectWallet",
-                  "nameLocation": "971:14:22",
+                  "nameLocation": "971:14:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7292,
-                  "src": "963:22:22",
+                  "scope": 23073,
+                  "src": "963:22:27",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -392,10 +630,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 7283,
+                    "id": 23064,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "963:7:22",
+                    "src": "963:7:27",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -406,13 +644,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 7286,
+                  "id": 23067,
                   "mutability": "mutable",
                   "name": "_data",
-                  "nameLocation": "1008:5:22",
+                  "nameLocation": "1008:5:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7292,
-                  "src": "995:18:22",
+                  "scope": 23073,
+                  "src": "995:18:27",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -420,10 +658,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 7285,
+                    "id": 23066,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "995:5:22",
+                    "src": "995:5:27",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -432,61 +670,77 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "928:91:22"
+              "src": "928:91:27"
             },
             "returnParameters": {
-              "id": 7291,
+              "id": 23072,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7290,
+                  "id": 23071,
                   "mutability": "mutable",
                   "name": "proxy",
-                  "nameLocation": "1049:5:22",
+                  "nameLocation": "1049:5:27",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7292,
-                  "src": "1038:16:22",
+                  "scope": 23073,
+                  "src": "1038:16:27",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_BountyPool_$5913",
+                    "typeIdentifier": "t_contract$_BountyPool_$21684",
                     "typeString": "contract BountyPool"
                   },
                   "typeName": {
-                    "id": 7289,
+                    "id": 23070,
                     "nodeType": "UserDefinedTypeName",
                     "pathNode": {
-                      "id": 7288,
+                      "id": 23069,
                       "name": "BountyPool",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 5913,
-                      "src": "1038:10:22"
+                      "referencedDeclaration": 21684,
+                      "src": "1038:10:27"
                     },
-                    "referencedDeclaration": 5913,
-                    "src": "1038:10:22",
+                    "referencedDeclaration": 21684,
+                    "src": "1038:10:27",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_BountyPool_$5913",
+                      "typeIdentifier": "t_contract$_BountyPool_$21684",
                       "typeString": "contract BountyPool"
                     }
                   },
                   "visibility": "internal"
                 }
               ],
-              "src": "1037:18:22"
+              "src": "1037:18:27"
             },
-            "scope": 7293,
-            "src": "907:149:22",
+            "scope": 23074,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 7294,
-        "src": "196:862:22",
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IBountyProxyFactory",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 23047,
+          "nodeType": "StructuredDocumentation",
+          "src": "119:77:27",
+          "text": "@title IBountyProxyFactory\n @notice Deploys new proxies with CREATE2."
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          23074
+        ],
+        "name": "IBountyProxyFactory",
+        "nameLocation": "206:19:27",
+        "scope": 23075,
         "usedErrors": []
       }
     ],
-    "src": "38:1021:22"
-  }
+    "license": "Unlicense"
+  },
+  "id": 27
 }

@@ -2,14 +2,16 @@
   "_format": "ethers-rs-sol-cache-3",
   "paths": {
     "artifacts": "out",
+    "build_infos": "out/build-info",
     "sources": "src",
     "tests": "test",
+    "scripts": "script",
     "libraries": [
       "lib"
     ]
   },
   "files": {
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/ds-test/src/test.sol": {
+    "lib/ds-test/src/test.sol": {
       "lastModificationDate": 1657928508673,
       "contentHash": "962996f0e05d5218857a538a62d7c47e",
       "sourceName": "lib/ds-test/src/test.sol",
@@ -18,6 +20,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -28,11 +33,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -43,15 +50,18 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/access/Ownable.sol": {
-      "lastModificationDate": 1657928731780,
-      "contentHash": "e436cea06129be2c73cda4b1acc848b5",
-      "sourceName": "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+    "lib/forge-std/src/Script.sol": {
+      "lastModificationDate": 1663751048723,
+      "contentHash": "571dde8775a6214a03d6772ee330ead5",
+      "sourceName": "lib/forge-std/src/Script.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -62,11 +72,215 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol"
+      ],
+      "versionRequirement": ">=0.6.0, <0.9.0",
+      "artifacts": {
+        "Script": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "Script.sol/Script.json"
+        }
+      }
+    },
+    "lib/forge-std/src/StdJson.sol": {
+      "lastModificationDate": 1663751048723,
+      "contentHash": "75c782f20a301ab9827060a03da071e4",
+      "sourceName": "lib/forge-std/src/StdJson.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Vm.sol"
+      ],
+      "versionRequirement": ">=0.6.0, <0.9.0",
+      "artifacts": {
+        "stdJson": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "StdJson.sol/stdJson.json"
+        }
+      }
+    },
+    "lib/forge-std/src/Vm.sol": {
+      "lastModificationDate": 1663751048724,
+      "contentHash": "b6f9fc36c328cbcc9d7ec66274503668",
+      "sourceName": "lib/forge-std/src/Vm.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.6.0, <0.9.0",
+      "artifacts": {
+        "Vm": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "Vm.sol/Vm.json"
+        }
+      }
+    },
+    "lib/forge-std/src/console.sol": {
+      "lastModificationDate": 1663751048724,
+      "contentHash": "100b8a33b917da1147740d7ab8b0ded3",
+      "sourceName": "lib/forge-std/src/console.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.4.22, <0.9.0",
+      "artifacts": {
+        "console": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "console.sol/console.json"
+        }
+      }
+    },
+    "lib/forge-std/src/console2.sol": {
+      "lastModificationDate": 1663751048725,
+      "contentHash": "5df91f8e93efbfcccf68973dc1b74a70",
+      "sourceName": "lib/forge-std/src/console2.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.4.22, <0.9.0",
+      "artifacts": {
+        "console2": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "console2.sol/console2.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1657928731780,
+      "contentHash": "e436cea06129be2c73cda4b1acc848b5",
+      "sourceName": "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -79,7 +293,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol": {
+    "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol": {
       "lastModificationDate": 1657928731798,
       "contentHash": "2858d98e74e67987ec81b39605230b74",
       "sourceName": "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
@@ -88,6 +302,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -98,11 +315,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -113,7 +332,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/Clones.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/Clones.sol": {
       "lastModificationDate": 1657928731826,
       "contentHash": "8d03477cb67af28579646fdb2508ddb0",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
@@ -122,6 +341,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -132,11 +354,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -147,7 +371,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol": {
       "lastModificationDate": 1657928731827,
       "contentHash": "6baa887a798e95b14f34e093f117e9b2",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
@@ -156,6 +380,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -166,11 +393,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -186,7 +415,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol": {
       "lastModificationDate": 1657928731827,
       "contentHash": "40b3d81a836d50ff47e03893dcaaf204",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
@@ -195,6 +424,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -205,11 +437,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -220,7 +454,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol": {
       "lastModificationDate": 1657928731829,
       "contentHash": "b6bd23bf19e90b771337037706470933",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
@@ -229,6 +463,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -239,11 +476,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -254,7 +493,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol": {
       "lastModificationDate": 1657928731829,
       "contentHash": "8ffefb755605824cf730ce4092b2f581",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
@@ -263,6 +502,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -273,11 +515,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -289,11 +533,11 @@
       "versionRequirement": "^0.8.0",
       "artifacts": {
         "UpgradeableBeacon": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "UpgradeableBeacon.sol/UpgradeableBeacon.json"
+          "0.8.10+commit.fc410830.Darwin.appleclang": "beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json"
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol": {
       "lastModificationDate": 1657928731830,
       "contentHash": "bcba485bbfd0aab6b8875b58224f6330",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
@@ -302,6 +546,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -312,11 +559,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -329,7 +578,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol": {
+    "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol": {
       "lastModificationDate": 1657928731830,
       "contentHash": "5e95368c9b763cfa31ba0fe1309acc60",
       "sourceName": "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
@@ -338,6 +587,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -348,11 +600,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -369,7 +623,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol": {
+    "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol": {
       "lastModificationDate": 1657928731836,
       "contentHash": "92cc1aad41bdb18ca20f6e03f461de7d",
       "sourceName": "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
@@ -378,6 +632,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -388,11 +645,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -407,7 +666,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
+    "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
       "lastModificationDate": 1657928731836,
       "contentHash": "ad7c2d0af148c8f9f097d65deeb4da6b",
       "sourceName": "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
@@ -416,6 +675,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -426,11 +688,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -441,7 +705,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+    "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
       "lastModificationDate": 1657928731839,
       "contentHash": "909ab67fc5c25033fe6cd364f8c056f9",
       "sourceName": "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
@@ -450,6 +714,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -460,11 +727,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -477,7 +746,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol": {
+    "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol": {
       "lastModificationDate": 1657928731844,
       "contentHash": "fb77f144244b9ab12533aa6ce85ef8c5",
       "sourceName": "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
@@ -486,6 +755,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -496,11 +768,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -511,7 +785,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol": {
+    "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol": {
       "lastModificationDate": 1663211713976,
       "contentHash": "c992b3f2f1fca0c64d0f734906cdee27",
       "sourceName": "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
@@ -520,6 +794,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -530,11 +807,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -549,7 +828,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/utils/Address.sol": {
+    "lib/openzeppelin-contracts/contracts/utils/Address.sol": {
       "lastModificationDate": 1657928731855,
       "contentHash": "02560bbb9e081911e486286da3fa761f",
       "sourceName": "lib/openzeppelin-contracts/contracts/utils/Address.sol",
@@ -558,6 +837,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -568,11 +850,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -583,7 +867,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/utils/Context.sol": {
+    "lib/openzeppelin-contracts/contracts/utils/Context.sol": {
       "lastModificationDate": 1657928731856,
       "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
       "sourceName": "lib/openzeppelin-contracts/contracts/utils/Context.sol",
@@ -592,6 +876,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -602,11 +889,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -617,7 +906,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol": {
+    "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol": {
       "lastModificationDate": 1657928731857,
       "contentHash": "f993f8f50186952a59ee5e3a30b68222",
       "sourceName": "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
@@ -626,6 +915,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -636,11 +928,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [],
@@ -651,15 +945,18 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyPool.sol": {
-      "lastModificationDate": 1663633317741,
-      "contentHash": "1f5050fc47f54847adea4edea496499d",
-      "sourceName": "src/BountyPool.sol",
+    "script/Deploy.s.sol": {
+      "lastModificationDate": 1663809644955,
+      "contentHash": "9ca4b429ebdba8bf0f48495f21ec56ea",
+      "sourceName": "script/Deploy.s.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -670,11 +967,82 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Script.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "src/BountyPool.sol",
+        "src/BountyProxiesManager.sol",
+        "src/BountyProxy.sol",
+        "src/BountyProxyFactory.sol",
+        "src/IBountyProxyFactory.sol",
+        "src/ManagerProxy.sol",
+        "src/SaloonWallet.sol"
+      ],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "MyScript": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "Deploy.s.sol/MyScript.json"
+        }
+      }
+    },
+    "src/BountyPool.sol": {
+      "lastModificationDate": 1663806476515,
+      "contentHash": "332a59a76bfdb2b19ef076383f3564c2",
+      "sourceName": "src/BountyPool.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -694,15 +1062,18 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyProxiesManager.sol": {
-      "lastModificationDate": 1663626142503,
-      "contentHash": "6a96218f3ad58b28f0417a7a31ac4937",
+    "src/BountyProxiesManager.sol": {
+      "lastModificationDate": 1663807553412,
+      "contentHash": "b8e5f5d8d03cfec4761296c6ee632fec",
       "sourceName": "src/BountyProxiesManager.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -713,11 +1084,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -751,7 +1124,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyProxy.sol": {
+    "src/BountyProxy.sol": {
       "lastModificationDate": 1663633300499,
       "contentHash": "3694bb5cc8f4d929853eb7c58a5122c1",
       "sourceName": "src/BountyProxy.sol",
@@ -760,6 +1133,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -770,11 +1146,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -793,15 +1171,18 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/BountyProxyFactory.sol": {
-      "lastModificationDate": 1663227393085,
-      "contentHash": "ae3d0ad59083137afd17466b628eafd5",
+    "src/BountyProxyFactory.sol": {
+      "lastModificationDate": 1663807342979,
+      "contentHash": "1207e733309d204413c87795a642b9d7",
       "sourceName": "src/BountyProxyFactory.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -812,11 +1193,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -838,14 +1221,14 @@
         "src/IBountyProxyFactory.sol",
         "src/SaloonWallet.sol"
       ],
-      "versionRequirement": ">=0.8.4",
+      "versionRequirement": "=0.8.10",
       "artifacts": {
         "BountyProxyFactory": {
           "0.8.10+commit.fc410830.Darwin.appleclang": "BountyProxyFactory.sol/BountyProxyFactory.json"
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/IBountyProxyFactory.sol": {
+    "src/IBountyProxyFactory.sol": {
       "lastModificationDate": 1663227290959,
       "contentHash": "703192297278bbce1ec2fbef733cf05a",
       "sourceName": "src/IBountyProxyFactory.sol",
@@ -854,6 +1237,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -864,11 +1250,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -895,15 +1283,18 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/ManagerProxy.sol": {
-      "lastModificationDate": 1663228626528,
-      "contentHash": "25c0b225b8acd4562b3c4ca10e39cca7",
+    "src/ManagerProxy.sol": {
+      "lastModificationDate": 1663807187130,
+      "contentHash": "a3030e67c320e0277d6030b8170189f7",
       "sourceName": "src/ManagerProxy.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -914,11 +1305,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -933,12 +1326,12 @@
       ],
       "versionRequirement": "^0.8.0",
       "artifacts": {
-        "ERC1967Proxy": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "ManagerProxy.sol/ERC1967Proxy.json"
+        "ManagerProxy": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "ManagerProxy.sol/ManagerProxy.json"
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/SaloonWallet.sol": {
+    "src/SaloonWallet.sol": {
       "lastModificationDate": 1663217671375,
       "contentHash": "6f01c6f4c0bbbf9794eda65e93f4b40a",
       "sourceName": "src/SaloonWallet.sol",
@@ -947,6 +1340,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -957,11 +1353,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -977,7 +1375,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/UpgradeableBeacon.sol": {
+    "src/UpgradeableBeacon.sol": {
       "lastModificationDate": 1663204297944,
       "contentHash": "9ca5007acd30cf49d7ff24d1c0665f6c",
       "sourceName": "src/UpgradeableBeacon.sol",
@@ -986,6 +1384,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -996,11 +1397,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
@@ -1016,7 +1419,7 @@
         }
       }
     },
-    "/Users/vitorfrasson/code/Saloon/smartcontracts/src/test/Contract.t.sol": {
+    "src/test/Contract.t.sol": {
       "lastModificationDate": 1657928507746,
       "contentHash": "7016738fe305fd90c36ea69a5cb2a78c",
       "sourceName": "src/test/Contract.t.sol",
@@ -1025,6 +1428,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
           },
           "outputSelection": {
             "*": {
@@ -1035,11 +1441,13 @@
                 "abi",
                 "evm.bytecode",
                 "evm.deployedBytecode",
-                "evm.methodIdentifiers"
+                "evm.methodIdentifiers",
+                "metadata"
               ]
             }
           },
-          "evmVersion": "london"
+          "evmVersion": "london",
+          "libraries": {}
         }
       },
       "imports": [
