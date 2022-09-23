@@ -63,7 +63,7 @@ contract BountyPool is Ownable, Initializable {
 
     //#################### State Variables End *****************\\
 
-    function initialize(address _manager) external initializer onlyOwner {
+    function initializeImplementation(address _manager) public initializer {
         manager = _manager;
     }
 

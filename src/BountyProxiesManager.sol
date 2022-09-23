@@ -14,7 +14,7 @@ import "./BountyProxyFactory.sol";
 import "./IBountyProxyFactory.sol";
 import "./BountyPool.sol";
 
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
@@ -23,7 +23,7 @@ import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 // 1. Registry contract that holds varaibles
 // 2. Manager Contract that hold state changing functions and inherits Registry
 
-contract BountyProxiesManager is Ownable, UUPSUpgradeable {
+contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     /// PUBLIC STORAGE ///
 
     event DeployNewBounty(
@@ -33,9 +33,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     );
 
     // should this be a constant?
-    BountyProxyFactory public immutable factory;
-    UpgradeableBeacon public immutable beacon;
-    address public immutable bountyImplementation;
+    BountyProxyFactory public factory;
+    UpgradeableBeacon public beacon;
+    address public bountyImplementation;
     SaloonWallet public saloonWallet;
 
     struct Bounties {
@@ -58,15 +58,25 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     }
 
     // factory address might not be known at the time of deployment
-    /// @param factory_ The base contract of the factory
-    constructor(
-        BountyProxyFactory factory_,
+    /// @param _factory The base contract of the factory
+    // constructor(
+    //     BountyProxyFactory factory_,
+    //     UpgradeableBeacon _beacon,
+    //     address _bountyImplementation
+    // ) {
+    //     factory = factory_;
+    //     beacon = _beacon;
+    //     bountyImplementation = _bountyImplementation;
+    // }
+    function initialize(
+        BountyProxyFactory _factory,
         UpgradeableBeacon _beacon,
         address _bountyImplementation
-    ) {
-        factory = factory_;
+    ) public initializer {
+        factory = _factory;
         beacon = _beacon;
         bountyImplementation = _bountyImplementation;
+        __Ownable_init();
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -102,7 +112,7 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
     ) external onlyOwner returns (BountyPool, bool) {
         // revert if project name already has bounty
         require(
-            bountyDetails[_projectName].proxyAddress != BountyPool(address(0)),
+            bountyDetails[_projectName].proxyAddress == BountyPool(address(0)),
             "Project already has bounty"
         );
 
@@ -116,9 +126,9 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         // call factory to deploy bounty
         BountyPool newProxyAddress = factory.deployBounty(
             address(beacon),
-            _projectWallet,
             _data
         );
+        newProxyAddress.initializeImplementation(address(this));
 
         newBounty.proxyAddress = newProxyAddress;
 
@@ -480,6 +490,13 @@ contract BountyProxiesManager is Ownable, UUPSUpgradeable {
         returns (address)
     {
         return address(bountyDetails[_projectName].proxyAddress);
+    }
+
+    function viewBountyOwner(string memory _projectName)external
+        view
+        returns (address)
+    {
+        return address(bountyDetails[_projectName].projectWallet);
     }
 
     function viewSaloonBalance() external view returns (uint256) {

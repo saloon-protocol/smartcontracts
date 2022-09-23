@@ -12,7 +12,7 @@ contract BountyProxyFactory is Ownable, Initializable {
     using Clones for address;
     /// PUBLIC STORAGE ///
 
-    address payable public bountyProxyBase;
+    address public bountyProxyBase;
 
     address public manager;
 
@@ -37,15 +37,15 @@ contract BountyProxyFactory is Ownable, Initializable {
         _;
     }
 
-    function deployBounty(
-        address _beacon,
-        address _projectWallet,
-        bytes memory _data
-    ) public onlyManager returns (BountyPool bountyPool) {
-        address payable proxy = payable(Clones.clone(bountyProxyBase));
+    function deployBounty(address _beacon, bytes memory _data)
+        public
+        onlyManager
+        returns (BountyPool proxy)
+    {
+        proxy = BountyPool(bountyProxyBase.clone());
 
-        BountyProxy newBounty = BountyProxy(proxy);
-        BountyPool bountyPool = BountyPool(proxy);
+        BountyProxy newBounty = BountyProxy(payable(address(proxy)));
         newBounty.initialize(_beacon, _data, msg.sender);
+        // proxy.initializeImplementation(msg.sender);
     }
 }

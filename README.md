@@ -309,20 +309,33 @@ Saloon Global Staking (Future Feature):
 
 --- SALOON CALLS / TX
 
-cast send --rpc-url https://rinkeby.infura.io/v3/c520361dc356433d881e7cb3a00193e7 0xbc833ab6040942c6eda44e556d632663871c6886 "updateTokenWhitelist(address,bool))(bool)" 0xDf032Bc4B9dC2782Bb09352007D4C57B75160B15 true --private-key=52cb6347e0d4e2142efc9b346fa5cf8ae83152a3e56dc620d8181156fba479af --- WORKING
+cast send --rpc-url $MUMBAI_RPC_URL 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c "updateTokenWhitelist(address,bool))(bool)" 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 true --private-key=52cb6347e0d4e2142efc9b346fa5cf8ae83152a3e56dc620d8181156fba479af --- WORKING
 
-cast call --rpc-url https://eth-goerli.g.alchemy.com/v2/iBAIDbGjZbzc47BXJFUoVnU8iIhaOGzi 0x787e757f506f0e64ef625aac6b2fdb758d49987d \
+cast call --rpc-url $MUMBAI_RPC_URL 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c \
 "owner()"
 
 --- SALOON DEPLOY
 
-forge script script/Deploy.s.sol:MyScript --rpc-url https://rinkeby.infura.io/v3/c520361dc356433d881e7cb3a00193e7 --broadcast --verify -vvvv
+forge script script/Deploy.s.sol:MyScript --rpc-url $MUMBAI_RPC_URL --etherscan-api-key $POLYSCAN_KEY --broadcast --verify -vvvv
 
 forge script script/Deploy.s.sol:MyScript --rpc-url https://eth-goerli.g.alchemy.com/v2/iBAIDbGjZbzc47BXJFUoVnU8iIhaOGzi --broadcast --verify -vvvv
 
+--- SALOON INITIALIZE
+
+cast send --rpc-url https://polygon-mumbai.g.alchemy.com/v2/MFd0LBZozOhdiLbJPopgwAMbqIxeZSC7 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c "initialize(address,address,address))(bool)" 0xc4dd0da241d9cdaad40b51d0961a690094ab104d 0xc1dbb838e1e87054e19d51cba38bc40ffb6816a4 0x0143b00b69ec6e3277d3f474a73499c0923fd42a --private-key=52cb6347e0d4e2142efc9b346fa5cf8ae83152a3e56dc620d8181156fba479af
+
+--- SALOON deployNewBounty
+
+cast send --rpc-url $MUMBAI_RPC_URL --private-key=$PRIVATE_KEY 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c "deployNewBounty(bytes,string,address,address)(bool)" "wut" "yeehaw" 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889
+0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc
+
+--- SALOON projectDeposit
+
+cast send --rpc-url $MUMBAI_RPC_URL 0x17953109e19c16c33fcde66d5ce94773003704e9 "projectDeposit(string,uint256)(bool)" "YEEHAW" 100000000000000000 --private-key=$PRIVATE_KEY
+
 --- WETH CALLS
 
-cast call --rpc-url https://rinkeby.infura.io/v3/c520361dc356433d881e7cb3a00193e7 0xDf032Bc4B9dC2782Bb09352007D4C57B75160B15 \
+cast call --rpc-url https://polygon-mumbai.g.alchemy.com/v2/MFd0LBZozOhdiLbJPopgwAMbqIxeZSC7 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 \
 "balanceOf(address)(uint256)" 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc
 
-cast send --value 0.1ether --rpc-url INSERT_PRC_URL 0xDf032Bc4B9dC2782Bb09352007D4C57B75160B15 "deposit()" --private-key=INSERT_HERE
+cast send --value 1ether --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "deposit()" --private-key=$PRIVATE_KEY
