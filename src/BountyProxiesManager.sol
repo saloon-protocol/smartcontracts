@@ -439,10 +439,34 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     //?????? Function to view TVL , average APY and remaining  amount to reach total CAP of all pools together //
+    function viewBountyInfo(string memory _projectName)
+        external
+        view
+        returns (
+            uint256 payout,
+            uint256 apy,
+            uint256 staked,
+            uint256 poolCap
+        )
+    {
+        payout = viewBountyPayout(_projectName);
+        staked = viewstakersDeposit(_projectName);
+        apy = viewDesiredAPY(_projectName);
+        poolCap = viewPoolCap(_projectName);
+    }
+
+    function viewPoolCap(string memory _projectName)
+        public
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewPoolCap();
+    }
 
     // Function to view Total Balance of Pool By Project Name // done
     function viewBountyPayout(string memory _projectName)
-        external
+        public
         view
         returns (uint256)
     {
@@ -462,12 +486,21 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
     // Function to view Total Staker Balance of Pool By Project Name // done
     function viewstakersDeposit(string memory _projectName)
-        external
+        public
         view
         returns (uint256)
     {
         Bounties memory bounty = bountyDetails[_projectName];
         return bounty.proxyAddress.viewStakersDeposit();
+    }
+
+    function viewDesiredAPY(string memory _projectName)
+        public
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewDesireAPY();
     }
 
     // Function to view individual Staker Balance in Pool by Project Name // done
@@ -492,13 +525,15 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         return address(bountyDetails[_projectName].proxyAddress);
     }
 
-    function viewBountyOwner(string memory _projectName)external
+    function viewBountyOwner(string memory _projectName)
+        external
         view
         returns (address)
     {
         return address(bountyDetails[_projectName].projectWallet);
     }
 
+    //  SALOON WALLET VIEW FUNCTIONS
     function viewSaloonBalance() external view returns (uint256) {
         return saloonWallet.viewSaloonBalance();
     }

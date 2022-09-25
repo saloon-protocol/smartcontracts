@@ -4,6 +4,8 @@
 
 ## SC Frontend integrationd TODOs:
 
+- Think about token approval process. When/how is the user asked to approve tokens for staking?
+
 - Emit event updating total payout balance everytime the balance is changed (stake, unstake, project deposit, project withdrawal)
 
 - Emit event updating poolCap
@@ -338,4 +340,6 @@ cast send --rpc-url $MUMBAI_RPC_URL 0x17953109e19c16c33fcde66d5ce94773003704e9 "
 cast call --rpc-url https://polygon-mumbai.g.alchemy.com/v2/MFd0LBZozOhdiLbJPopgwAMbqIxeZSC7 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 \
 "balanceOf(address)(uint256)" 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc
 
-cast send --value 1ether --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "deposit()" --private-key=$PRIVATE_KEY
+cast send --value 0.1ether --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "deposit()" --private-key=$PRIVATE_KEY
+
+cast send --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "approve(address,uint256)" --private-key=$PRIVATE_KEY
