@@ -32,6 +32,40 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         BountyPool newProxyAddress
     );
 
+    event BountyKilled(string indexed projectName);
+
+    event PremiumBilled(
+        string indexed projectName,
+        address indexed projectWallet
+        // should maybe get amount as well?
+    );
+
+    event SaloonFundsWithdrawal(address indexed token, uint256 indexed amount);
+
+    event BountyPaid(
+        address indexed token,
+        address indexed hunter,
+        uint256 indexed amount
+    );
+
+    event PoolCapAndAPYChanged(
+        string indexed projectName,
+        uint256 indexed poolCap,
+        uint256 indexed apy
+    );
+
+    event HackerPayoutChanged(
+        string indexed projectName,
+        uint256 indexed oldAmount,
+        uint256 indexed newAmount
+    );
+
+    event StakedAmountChanged(
+        string indexed projectName,
+        uint256 indexed previousStaked,
+        uint256 indexed newStaked
+    );
+
     // should this be a constant?
     BountyProxyFactory public factory;
     UpgradeableBeacon public beacon;
@@ -100,6 +134,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     ) external onlyOwner returns (bool) {
         require(_to != address(0), "Address Zero");
         saloonWallet.withdrawSaloonFunds(_token, _to, _amount);
+
+        emit SaloonFundsWithdrawal(_token, _amount);
         return true;
     }
 
@@ -156,6 +192,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // look up address by name
         bountyDetails[_projectName].dead = true;
 
+        emit BountyKilled(_projectName);
         return true;
     }
 
@@ -175,6 +212,11 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             bountyDetails[_projectName].token,
             bountyDetails[_projectName].projectWallet
         );
+
+        emit PremiumBilled(
+            _projectName,
+            bountyDetails[_projectName].projectWallet
+        );
         return true;
     }
 
@@ -191,6 +233,10 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             }
             bountiesArray[i].proxyAddress.billFortnightlyPremium(
                 bountiesArray[i].token,
+                bountiesArray[i].projectWallet
+            );
+            emit PremiumBilled(
+                bountiesArray[i].projectName,
                 bountiesArray[i].projectWallet
             );
         }
@@ -219,6 +265,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _hunter,
             _amount
         );
+
+        emit BountyPaid(bountyDetails[_projectName].token, _hunter, _amount);
         return true;
     }
 
@@ -245,6 +293,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
                 totalCollected
             );
         }
+        // TODO EMIT EVENTS
         return true;
     }
 
@@ -256,7 +305,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     {
         require(_newImplementation != address(0), "Address zero");
         beacon.upgradeTo(_newImplementation);
-
+        // TODO EMIT EVENTS
         return true;
     }
 
@@ -269,6 +318,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         returns (bool)
     {
         tokenWhitelist[_token] = whitelisted;
+
+        // TODO EMIT EVENTS
     }
 
     //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME///// done
@@ -297,6 +348,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _desiredAPY
         );
 
+        emit PoolCapAndAPYChanged(_projectName, _poolCap, _desiredAPY);
         return true;
     }
 
@@ -309,6 +361,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
+        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+
         // check if msg.sender is allowed
         require(msg.sender == bounty.projectWallet, "Not project owner");
         // do deposit
@@ -317,6 +371,10 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             bounty.projectWallet,
             _amount
         );
+
+        uint256 newPayout = oldPayout + _amount;
+
+        emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
 
         return true;
     }
@@ -355,6 +413,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if caller is project
         require(msg.sender == bounty.projectWallet, "Not project owner");
 
+        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+
         // schedule withdrawal
         bounty.proxyAddress.projectDepositWithdrawal(
             bounty.token,
@@ -362,6 +422,9 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _amount
         );
 
+        uint256 newPayout = oldPayout - _amount;
+
+        emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
         return true;
     }
 
@@ -374,8 +437,17 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
+
+        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+        uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
+
         bounty.proxyAddress.stake(bounty.token, msg.sender, _amount);
 
+        uint256 newPayout = oldPayout + _amount;
+        uint256 newStaked = previousStaked + _amount;
+
+        emit StakedAmountChanged(_projectName, previousStaked, newStaked);
+        emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
         return true;
     }
 
@@ -405,7 +477,15 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
+        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+        uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
+
         if (bounty.proxyAddress.unstake(bounty.token, msg.sender, _amount)) {
+            uint256 newPayout = oldPayout - _amount;
+            uint256 newStaked = previousStaked - _amount;
+
+            emit StakedAmountChanged(_projectName, previousStaked, newStaked);
+            emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
             return true;
         }
     }
@@ -449,10 +529,19 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             uint256 poolCap
         )
     {
-        payout = viewBountyPayout(_projectName);
+        payout = viewHackerPayout(_projectName);
         staked = viewstakersDeposit(_projectName);
         apy = viewDesiredAPY(_projectName);
         poolCap = viewPoolCap(_projectName);
+    }
+
+    function viewBountyBalance(string memory _projectName)
+        public
+        view
+        returns (uint256)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        return bounty.proxyAddress.viewBountyBalance();
     }
 
     function viewPoolCap(string memory _projectName)
@@ -465,7 +554,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // Function to view Total Balance of Pool By Project Name // done
-    function viewBountyPayout(string memory _projectName)
+    function viewHackerPayout(string memory _projectName)
         public
         view
         returns (uint256)
@@ -500,7 +589,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         returns (uint256)
     {
         Bounties memory bounty = bountyDetails[_projectName];
-        return bounty.proxyAddress.viewDesireAPY();
+        return bounty.proxyAddress.viewDesiredAPY();
     }
 
     // Function to view individual Staker Balance in Pool by Project Name // done

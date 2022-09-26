@@ -26,10 +26,8 @@ contract BountyPool is Ownable, Initializable {
 
     uint256 public projectDeposit;
     uint256 public stakersDeposit;
-    uint256 public bountyBalance = projectDeposit + stakersDeposit;
 
     uint256 public saloonBountyCommission;
-    // bountyBalance - % commission
 
     uint256 public saloonPremiumFees;
     uint256 public premiumBalance;
@@ -732,9 +730,16 @@ contract BountyPool is Ownable, Initializable {
 
     // View total balance
     function viewHackerPayout() external view returns (uint256) {
-        uint256 saloonCommission = (bountyBalance * BOUNTY_COMMISSION) /
+        uint256 totalBalance = projectDeposit + stakersDeposit;
+        uint256 saloonCommission = (totalBalance * BOUNTY_COMMISSION) /
             DENOMINATOR;
-        return bountyBalance - saloonCommission;
+
+        return totalBalance - saloonCommission;
+    }
+
+    function viewBountyBalance() external view returns (uint256) {
+        uint256 totalBalance = projectDeposit + stakersDeposit;
+        return totalBalance;
     }
 
     // View stakersDeposit balance
@@ -758,7 +763,7 @@ contract BountyPool is Ownable, Initializable {
     }
 
     // View APY
-    function viewDesireAPY() external view returns (uint256) {
+    function viewDesiredAPY() external view returns (uint256) {
         return desiredAPY;
     }
 

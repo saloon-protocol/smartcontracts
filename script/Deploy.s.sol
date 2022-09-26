@@ -48,6 +48,10 @@ contract MyScript is Script {
         // approve transferFrom
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         manager.projectDeposit("YEEHAW", 0.1 ether);
+        manager.setBountyCapAndAPY("YEEHAW", 0.5 ether, 100 ether);
+        manager.viewBountyInfo("YEEHAW");
+        manager.viewProjectDeposit("YEEHAW");
+        manager.viewBountyBalance("YEEHAW");
         vm.stopBroadcast();
     }
 }
