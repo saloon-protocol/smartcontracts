@@ -320,13 +320,15 @@ cast call --rpc-url $MUMBAI_RPC_URL 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c \
 
 forge script script/Deploy.s.sol:MyScript --rpc-url $MUMBAI_RPC_URL --etherscan-api-key $POLYSCAN_KEY --broadcast --verify -vvvv
 
+forge script script/Interact.s.sol:BountyInteract --rpc-url $MUMBAI_RPC_URL --etherscan-api-key $POLYSCAN_KEY --broadcast --verify -vvvv
+
 --- SALOON INITIALIZE
 
 cast send --rpc-url https://polygon-mumbai.g.alchemy.com/v2/MFd0LBZozOhdiLbJPopgwAMbqIxeZSC7 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c "initialize(address,address,address))(bool)" 0xc4dd0da241d9cdaad40b51d0961a690094ab104d 0xc1dbb838e1e87054e19d51cba38bc40ffb6816a4 0x0143b00b69ec6e3277d3f474a73499c0923fd42a --private-key=52cb6347e0d4e2142efc9b346fa5cf8ae83152a3e56dc620d8181156fba479af
 
 --- SALOON deployNewBounty
 
-cast send --rpc-url $MUMBAI_RPC_URL --private-key=$PRIVATE_KEY 0xe3c7ed5d7e0bcb49ecaf060a93aa2e460a053f2c "deployNewBounty(bytes,string,address,address)(bool)" "wut" "yeehaw" 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889
+cast send --rpc-url $MUMBAI_RPC_URL --private-key=$PRIVATE_KEY 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F "deployNewBounty(bytes,string,address,address)(bool)" "0" "Testing" 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889
 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc
 
 --- SALOON projectDeposit
@@ -347,3 +349,11 @@ cast call --rpc-url https://polygon-mumbai.g.alchemy.com/v2/MFd0LBZozOhdiLbJPopg
 cast send --value 0.1ether --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "deposit()" --private-key=$PRIVATE_KEY
 
 cast send --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "approve(address,uint256)" --private-key=$PRIVATE_KEY
+
+---
+
+- get bounty address
+
+cast call --rpc-url $MUMBAI_RPC_URL 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F \ "getBountyAddressByName(string)(address)" "YEEHAW"
+
+- view weth allowance
