@@ -21,7 +21,7 @@ contract BountyInteract is Script {
         address projectwallet = 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc;
         address managerAddress = 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F;
         BountyProxiesManager manager = BountyProxiesManager(managerAddress);
-        string memory bountyName = "TestBounty";
+        string memory bountyName = "TestBounty2";
         manager.deployNewBounty(data, bountyName, wmatic, projectwallet);
         address bountyAddress = manager.getBountyAddressByName(bountyName);
 

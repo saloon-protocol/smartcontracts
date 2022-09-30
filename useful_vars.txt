@@ -1,0 +1,24 @@
+Manager: 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F
+Pool Name: TestBounty
+Pool Proxy: 0x44bBCa2A3627544371B826C3300d0F7D1e68f9d3
+Token: WMATIC 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889
+
+POLYSCAN_KEY=
+
+## Get Project Deposit
+cast call --rpc-url $MUMBAI_RPC_URL 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F \ "viewProjectDeposit(string)(uint256)" "TestBounty"
+
+## Get Bounty Balance
+cast call --rpc-url $MUMBAI_RPC_URL 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F \ "viewBountyBalance(string)(uint256)" "TestBounty"
+
+## Approve Pool to take WMATIC
+cast send --rpc-url $MUMBAI_RPC_URL 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 "approve(address,uint256)" --private-key=$PRIVATE_KEY 0x44bBCa2A3627544371B826C3300d0F7D1e68f9d3 1000000000000000000
+
+## Stake (Not working)
+cast send --rpc-url $MUMBAI_RPC_URL --private-key=$PRIVATE_KEY 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F "stake(string,uint256)(bool)" "TestBounty" 1000000000000000
+
+## DeployNewBounty()
+cast send --rpc-url $MUMBAI_RPC_URL --private-key=$PRIVATE_KEY 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F "deployNewBounty(bytes,string,address,address)(bool)" "wut" "yeehaw" 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc
+
+## Forge Interact.s.sol
+forge script script/Interact.s.sol:BountyInteract --rpc-url $MUMBAI_RPC_URL --etherscan-api-key $POLYSCAN_KEY --broadcast --verify -vvvv
