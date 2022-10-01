@@ -122,11 +122,11 @@ contract BountyPool is Ownable, Initializable {
                         _saloonWallet,
                         _amount
                     );
-                    return true;
                 }
 
                 // clean stakerList array
                 delete stakerList;
+                return true;
             }
             // calculate percentage of stakersDeposit
             uint256 percentage = _amount / stakersDeposits;
@@ -158,7 +158,6 @@ contract BountyPool is Ownable, Initializable {
             return true;
         } else {
             // reset baalnce of all stakers
-            uint256 length = stakerList.length;
             for (uint256 i; i < length; ++i) {
                 // update stakerInfo struct
                 StakerInfo memory newInfo;
@@ -496,10 +495,18 @@ contract BountyPool is Ownable, Initializable {
             stakersDeposit + _amount <= poolCap,
             "Staking Pool already full"
         );
-        uint256 arraySize = staker[_staker].length - 1;
+
+        uint256 arrayLength = staker[_staker].length;
+        // uint256 position = arrayLength == 0 ? 0 : arrayLength - 1;
+
+        //  if array length is  == 0 we must push first
+        if (arrayLength == 0) {
+            StakerInfo memory init;
+            staker[_staker].push(init);
+        }
 
         // Push to stakerList array if previous balance = 0
-        if (staker[_staker][arraySize].stakerBalance == 0) {
+        if (staker[_staker][arrayLength].stakerBalance == 0) {
             stakerList.push(_staker);
         }
 
@@ -507,11 +514,17 @@ contract BountyPool is Ownable, Initializable {
         StakerInfo memory newInfo;
         newInfo.balanceTimeStamp = block.timestamp;
         newInfo.stakerBalance =
-            staker[_staker][arraySize].stakerBalance +
+            staker[_staker][arrayLength].stakerBalance +
             _amount;
 
-        // save info to storage
-        staker[_staker].push(newInfo);
+        // if staker is new update array[0] created earlier
+        if (arrayLength == 0) {
+            staker[_staker][arrayLength] = newInfo;
+        } else {
+            // if staker is not new:
+            // save info to storage
+            staker[_staker].push(newInfo);
+        }
 
         // increase global stakersDeposit
         stakersDeposit += _amount;
@@ -527,6 +540,7 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (bool)
     {
+        // this cant be un-initiliazed because its already been when staking
         uint256 arraySize = staker[_staker].length - 1;
         require(
             staker[_staker][arraySize].stakerBalance >= _amount,

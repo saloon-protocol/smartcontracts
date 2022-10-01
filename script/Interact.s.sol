@@ -22,18 +22,21 @@ contract BountyInteract is Script {
         address managerAddress = 0xbA2C02d5c59238d5607aDcbc277c80a51694e73F;
         BountyProxiesManager manager = BountyProxiesManager(managerAddress);
         string memory bountyName = "TestBounty2";
-        manager.deployNewBounty(data, bountyName, wmatic, projectwallet);
-        address bountyAddress = manager.getBountyAddressByName(bountyName);
+        // manager.deployNewBounty(data, bountyName, wmatic, projectwallet);
+        // address bountyAddress = manager.getBountyAddressByName(bountyName);
 
         // CAN PROBABLY COMMENT THIS OUT IF TESTING WITH SAME BOUNTY
-        ERC20(wmatic).approve(bountyAddress, 100 ether);
+        // ERC20(wmatic).approve(bountyAddress, 100 ether);
 
         // FEEL FREE TO DELETE/ADD ANY FUNCTION BELOW
-        manager.projectDeposit(bountyName, 0.1 ether);
-        manager.setBountyCapAndAPY(bountyName, 0.5 ether, 100 ether);
-        manager.viewBountyInfo(bountyName);
-        manager.viewProjectDeposit(bountyName);
-        manager.viewBountyBalance(bountyName);
+        // manager.projectDeposit(bountyName, 0.1 ether);
+        // manager.setBountyCapAndAPY(bountyName, 0.5 ether, 100 ether);
+        // manager.viewBountyInfo(bountyName);
+        // manager.viewProjectDeposit(bountyName);
+        // manager.viewBountyBalance(bountyName);
+        address bountyAddress = manager.getBountyAddressByName(bountyName);
+        // ERC20(wmatic).approve(bountyAddress, 100 ether);
+        manager.stake(bountyName, 0.1 ether);
         vm.stopBroadcast();
     }
 }
