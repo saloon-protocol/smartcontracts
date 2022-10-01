@@ -72,11 +72,10 @@ contract BountyPool is Ownable, Initializable {
         _;
     }
 
-    //todo  maybe make this check at the manager level ????
     modifier onlyManagerOrSelf() {
         require(
             msg.sender == manager || msg.sender == address(this),
-            "Only manager allowed"
+            "Only manager or self allowed"
         );
         _;
     }
@@ -95,21 +94,27 @@ contract BountyPool is Ownable, Initializable {
         address _hunter,
         uint256 _amount
     ) public onlyManager returns (bool) {
+        uint256 stakersDeposits = stakersDeposit;
+
+        // cache list
+        address[] memory stakersList = stakerList;
+        // cache length
+        uint256 length = stakersList.length;
+
         // check if stakersDeposit is enough
-        if (stakersDeposit >= _amount) {
+        if (stakersDeposits >= _amount) {
             // decrease stakerDeposit
-            stakersDeposit -= _amount;
-            // cache length
-            uint256 length = stakerList.length;
+            stakersDeposits -= _amount;
+
             // if staker deposit == 0
-            if (stakersDeposit == 0) {
+            if (stakersDeposits == 0) {
                 for (uint256 i; i < length; ++i) {
                     // update stakerInfo struct
                     StakerInfo memory newInfo;
                     newInfo.balanceTimeStamp = block.timestamp;
                     newInfo.stakerBalance = 0;
 
-                    address stakerAddress = stakerList[i]; //todo cache stakerList before
+                    address stakerAddress = stakersList[i];
                     staker[stakerAddress].push(newInfo);
 
                     // deduct saloon commission and transfer
@@ -119,8 +124,6 @@ contract BountyPool is Ownable, Initializable {
                         _saloonWallet,
                         _amount
                     );
-
-                    // todo Emit event with timestamp and amount
                     return true;
                 }
 
@@ -128,10 +131,10 @@ contract BountyPool is Ownable, Initializable {
                 delete stakerList;
             }
             // calculate percentage of stakersDeposit
-            uint256 percentage = _amount / stakersDeposit;
+            uint256 percentage = _amount / stakersDeposits;
             // loop through all stakers and deduct percentage from their balances
             for (uint256 i; i < length; ++i) {
-                address stakerAddress = stakerList[i]; //todo cache stakerList before
+                address stakerAddress = stakersList[i];
                 uint256 arraySize = staker[stakerAddress].length - 1;
                 uint256 oldStakerBalance = staker[stakerAddress][arraySize]
                     .stakerBalance;
@@ -154,8 +157,6 @@ contract BountyPool is Ownable, Initializable {
                 _amount
             );
 
-            // todo Emit event with timestamp and amount
-
             return true;
         } else {
             // reset baalnce of all stakers
@@ -166,13 +167,13 @@ contract BountyPool is Ownable, Initializable {
                 newInfo.balanceTimeStamp = block.timestamp;
                 newInfo.stakerBalance = 0;
 
-                address stakerAddress = stakerList[i]; //todo cache stakerList before
+                address stakerAddress = stakersList[i];
                 staker[stakerAddress].push(newInfo);
             }
             // clean stakerList array
             delete stakerList;
             // if stakersDeposit not enough use projectDeposit to pay the rest
-            uint256 remainingCost = _amount - stakersDeposit;
+            uint256 remainingCost = _amount - stakersDeposits;
             // descrease project deposit by the remaining amount
             projectDeposit -= remainingCost;
 
@@ -187,7 +188,6 @@ contract BountyPool is Ownable, Initializable {
                 _amount
             );
 
-            // todo Emit event with timestamp and amount
             return true;
         }
     }
@@ -202,7 +202,8 @@ contract BountyPool is Ownable, Initializable {
         uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
         uint256 hunterPayout = _amount - saloonCommission;
         // transfer to hunter
-        IERC20(_token).safeTransfer(_hunter, hunterPayout); //todo maybe transfer to payout address
+        //note maybe have a two step process to transfer payout
+        IERC20(_token).safeTransfer(_hunter, hunterPayout);
         // transfer commission to saloon address
         IERC20(_token).safeTransfer(_saloonWallet, saloonCommission);
 
@@ -222,8 +223,6 @@ contract BountyPool is Ownable, Initializable {
         saloonPremiumFees = 0;
 
         return totalCollected;
-
-        // todo emit event
     }
 
     // PROJECT DEPOSIT
@@ -244,7 +243,7 @@ contract BountyPool is Ownable, Initializable {
 
     // PROJECT SET CAP
     function setPoolCap(uint256 _amount) external onlyManager {
-        // todo two weeks time lock?
+        // note two weeks time lock??
         poolCap = _amount;
     }
 
@@ -259,7 +258,7 @@ contract BountyPool is Ownable, Initializable {
         address _projectWallet,
         uint256 _desiredAPY
     ) external onlyManager returns (bool) {
-        // set timelock on this???
+        // note timelock on this???
         // make sure APY has right amount of decimals (1e18)
 
         // ensure there is enough premium balance to pay stakers new APY for a month
@@ -467,9 +466,6 @@ contract BountyPool is Ownable, Initializable {
 
     function scheduleprojectDepositWithdrawal(uint256 _amount) external {
         projectWithdrawalTimeLock[_amount] = block.timestamp + poolPeriod;
-
-        //todo emit event -> necessary to predict payout payment in the following week
-        //todo OR have variable that gets updated with new values? - forgot what we discussed about this
     }
 
     // PROJECT DEPOSIT WITHDRAWAL
@@ -487,7 +483,6 @@ contract BountyPool is Ownable, Initializable {
 
         projectDeposit -= _amount;
         IERC20(_token).safeTransfer(_projectWallet, _amount);
-        // todo emit event
         return true;
     }
 
@@ -542,8 +537,6 @@ contract BountyPool is Ownable, Initializable {
 
         stakerTimelock[_staker][_amount] = block.timestamp + poolPeriod;
         return true;
-        //todo emit event -> necessary to predict payout payment in the following week
-        //todo OR have variable that gets updated with new values? - forgot what we discussed about this
     }
 
     // UNSTAKING
@@ -635,9 +628,11 @@ contract BountyPool is Ownable, Initializable {
 
             if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
                 billFortnightlyPremium(_token, _projectWallet);
-                // if function above changes APY than accounting is going to get messed up,
-                // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
-                // if function above fails then it fails...
+                /* NOTE: if function above changes APY than accounting is going to get messed up,
+                because the APY used for for new transfer will be different than APY 
+                used to calculate totalPremiumToClaim.
+                If function above fails then it fails... 
+                */
             }
 
             // update premiumBalance
@@ -661,9 +656,11 @@ contract BountyPool is Ownable, Initializable {
 
             if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
                 billFortnightlyPremium(_token, _projectWallet);
-                // if function above changes APY than accounting is going to get messed up,
-                // because the APY used for for new transfer will be different than APY used to calculate totalPremiumToClaim
-                // if function above fails then it fails...
+                /* NOTE: if function above changes APY than accounting is going to get messed up,
+                because the APY used for for new transfer will be different than APY 
+                used to calculate totalPremiumToClaim.
+                If function above fails then it fails... 
+                */
             }
 
             // update premium
@@ -785,9 +782,9 @@ contract BountyPool is Ownable, Initializable {
         );
     }
 
-    //todo view user current claimable premium ???
+    //note view user current claimable premium ???
 
-    //todo view version???
+    //note view version function??
 
     ///// VIEW FUNCTIONS END /////
 }

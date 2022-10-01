@@ -19,7 +19,7 @@ import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 //// THOUGHTS:
-// Planning to separate this into contracts:
+// Planning to separate this into two contracts:
 // 1. Registry contract that holds varaibles
 // 2. Manager Contract that hold state changing functions and inherits Registry
 
@@ -43,15 +43,28 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     event SaloonFundsWithdrawal(address indexed token, uint256 indexed amount);
 
     event BountyPaid(
-        address indexed token,
+        uint256 indexed time,
         address indexed hunter,
-        uint256 indexed amount
+        uint256 indexed amount,
+        address token
+    );
+
+    event BountyPoolImplementationUpdated(address indexed newImplementation);
+
+    event tokenWhitelistUpdated(
+        address indexed token,
+        bool indexed whitelisted
     );
 
     event PoolCapAndAPYChanged(
         string indexed projectName,
         uint256 indexed poolCap,
         uint256 indexed apy
+    );
+
+    event WithdrawalorUnstakeScheduled(
+        string indexed projectName,
+        uint256 indexed amount
     );
 
     event HackerPayoutChanged(
@@ -65,6 +78,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         uint256 indexed previousStaked,
         uint256 indexed newStaked
     );
+
+    event SaloonPremiumCollected(uint256 indexed totalCollected);
 
     // should this be a constant?
     BountyProxyFactory public factory;
@@ -197,7 +212,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     ///// PUBLIC PAY PREMIUM FOR ONE BOUNTY // done
-    // todo cache variables for gas efficiency
     function billPremiumForOnePool(string memory _projectName)
         external
         returns (bool)
@@ -253,6 +267,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             notDead(bountyDetails[_projectName].dead) == true,
             "Bounty is Dead"
         );
+        require(_hunter != address(0), "Hunter address(0)");
+
         bountyDetails[_projectName].proxyAddress.payBounty(
             bountyDetails[_projectName].token,
             address(saloonWallet),
@@ -266,7 +282,12 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _amount
         );
 
-        emit BountyPaid(bountyDetails[_projectName].token, _hunter, _amount);
+        emit BountyPaid(
+            block.timestamp,
+            _hunter,
+            _amount,
+            bountyDetails[_projectName].token
+        );
         return true;
     }
 
@@ -275,6 +296,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // cache bounty bounties listt
         Bounties[] memory bountiesArray = bountiesList;
         uint256 length = bountiesArray.length;
+        uint256 collected;
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
             if (notDead(bountiesArray[i].dead) == true) {
@@ -292,8 +314,9 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
                 bountiesArray[i].token,
                 totalCollected
             );
+            collected = totalCollected;
         }
-        // TODO EMIT EVENTS
+        emit SaloonPremiumCollected(collected);
         return true;
     }
 
@@ -305,25 +328,24 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     {
         require(_newImplementation != address(0), "Address zero");
         beacon.upgradeTo(_newImplementation);
-        // TODO EMIT EVENTS
+        emit BountyPoolImplementationUpdated(_newImplementation);
         return true;
     }
 
-    ///????????????? ADMIN CHANGE ASSIGNED TOKEN TO BOUNTY /// ????????
-
     /// ADMIN UPDATE APPROVED TOKENS /// done
-    function updateTokenWhitelist(address _token, bool whitelisted)
+    function updateTokenWhitelist(address _token, bool _whitelisted)
         external
         onlyOwner
         returns (bool)
     {
-        tokenWhitelist[_token] = whitelisted;
+        tokenWhitelist[_token] = _whitelisted;
 
-        // TODO EMIT EVENTS
+        emit tokenWhitelistUpdated(_token, _whitelisted);
+        return true;
     }
 
-    //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME///// done
-    // time locked
+    //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME/////
+    // note: should this be time locked??
     // fails if msg.sender != project owner
     function setBountyCapAndAPY(
         string memory _projectName,
@@ -352,7 +374,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         return true;
     }
 
-    /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL by NAME/////// done
+    /////// PROJECTS FUNCTION TO DEPOSIT INTO POOL by NAME///////
     function projectDeposit(string memory _projectName, uint256 _amount)
         external
         returns (bool)
@@ -396,6 +418,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // schedule withdrawal
         bounty.proxyAddress.scheduleprojectDepositWithdrawal(_amount);
 
+        emit WithdrawalorUnstakeScheduled(_projectName, _amount);
         return true;
     }
 
@@ -461,8 +484,9 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        //todo should all these function check return value like this?
+        //note should all these function check return value like this?
         if (bounty.proxyAddress.askForUnstake(msg.sender, _amount)) {
+            emit WithdrawalorUnstakeScheduled(_projectName, _amount);
             return true;
         }
     }
@@ -509,7 +533,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         return premiumClaimed;
     }
 
-    // ??????????/  STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? //////
+    // ??????????/  STAKER FUNCTION TO STAKE INTO GLOBAL POOL??????????? ////// - maybe on future version
 
     ///////////////////////// VIEW FUNCTIONS //////////////////////
 
@@ -518,7 +542,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         return bountiesList;
     }
 
-    //?????? Function to view TVL , average APY and remaining  amount to reach total CAP of all pools together //
     function viewBountyInfo(string memory _projectName)
         external
         view
