@@ -13,7 +13,6 @@ contract BountyPool is Ownable, Initializable {
     using SafeERC20 for IERC20;
     //#################### State Variables *****************\\
 
-    //todo possibly make this a constant
     address public manager;
 
     bool public APYdropped;
@@ -87,7 +86,6 @@ contract BountyPool is Ownable, Initializable {
     // ADMIN PAY BOUNTY public
     // this implementation uses investors funds first before project deposit,
     // future implementation might use a more hybrid and sophisticated splitting of costs.
-    // todo cache variables to make it more gas effecient
     function payBounty(
         address _token,
         address _saloonWallet,
