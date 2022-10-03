@@ -1257,8 +1257,8 @@
       }
     },
     "src/BountyPool.sol": {
-      "lastModificationDate": 1664613982764,
-      "contentHash": "434f743775c488452cc8eebb568c3690",
+      "lastModificationDate": 1664614231294,
+      "contentHash": "cbdc26f6283d1bf75c09f12c117e1501",
       "sourceName": "src/BountyPool.sol",
       "solcConfig": {
         "settings": {
@@ -1665,9 +1665,48 @@
         }
       }
     },
+    "src/test/ERC21.sol": {
+      "lastModificationDate": 1664775324669,
+      "contentHash": "eaba6b73fc35d54e17c881055ec57b49",
+      "sourceName": "src/test/ERC21.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "ERC21": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "ERC21.sol/ERC21.json"
+        }
+      }
+    },
     "src/test/ManagerProxy.t.sol": {
-      "lastModificationDate": 1663885260992,
-      "contentHash": "a279eebf329d10880f987436f357c7a4",
+      "lastModificationDate": 1664780823576,
+      "contentHash": "be679816f626e45d99c32f59442160df",
       "sourceName": "src/test/ManagerProxy.t.sol",
       "solcConfig": {
         "settings": {
@@ -1697,7 +1736,40 @@
         }
       },
       "imports": [
-        "lib/ds-test/src/test.sol"
+        "lib/ds-test/src/test.sol",
+        "lib/forge-std/src/Script.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "src/BountyPool.sol",
+        "src/BountyProxiesManager.sol",
+        "src/BountyProxy.sol",
+        "src/BountyProxyFactory.sol",
+        "src/IBountyProxyFactory.sol",
+        "src/ManagerProxy.sol",
+        "src/SaloonWallet.sol"
       ],
       "versionRequirement": "=0.8.10",
       "artifacts": {
