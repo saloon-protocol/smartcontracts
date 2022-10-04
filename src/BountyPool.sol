@@ -288,6 +288,27 @@ contract BountyPool is Ownable, Initializable {
         // set APY
         desiredAPY = _desiredAPY;
 
+        // loop through stakerList array and push new balance for new APY period time stamp for every staker
+        address[] memory stakersList = stakerList;
+        uint256 length = stakersList.length;
+        for (uint256 i; i < length; ) {
+            address stakerAddress = stakersList[i];
+            uint256 arraySize = staker[stakerAddress].length - 1;
+
+            StakerInfo memory newInfo;
+            // get last balance
+            newInfo.stakerBalance = staker[stakerAddress][arraySize]
+                .stakerBalance;
+            // update current time
+            newInfo.balanceTimeStamp = block.timestamp;
+            // push to array so user can claim it.
+            staker[stakerAddress].push(newInfo);
+
+            unchecked {
+                ++i;
+            }
+        }
+
         // disable instant withdrawals
         APYdropped = false;
 
@@ -580,7 +601,7 @@ contract BountyPool is Ownable, Initializable {
             address[] memory stakersList = stakerList;
             if (newInfo.stakerBalance == 0) {
                 // loop through stakerlist
-                uint256 length = stakersList.length; // can you do length on memory arrays?
+                uint256 length = stakersList.length;
                 for (uint256 i; i < length; ) {
                     // find staker
                     if (stakersList[i] == _staker) {
@@ -717,12 +738,17 @@ contract BountyPool is Ownable, Initializable {
                 ) {
                     // add it to that period total
                     periodTotalBalance += _stakerInfo[j].stakerBalance;
+                    /* note: stakerInfo is updated for every user everytime 
+                    APY changes. 
+                    
+                    */
                 }
             }
 
             //calcualte owed APY for that period: (APY * amount / Seconds in a year) * number of seconds in X period
             totalPremiumToClaim +=
-                (((periodTotalBalance * desiredAPY) / DENOMINATOR) / YEAR) *
+                (((periodTotalBalance * APYrecords[i + 1].periodAPY) /
+                    DENOMINATOR) / YEAR) *
                 periodLength;
         }
 

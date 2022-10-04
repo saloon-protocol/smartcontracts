@@ -1110,6 +1110,86 @@
         }
       }
     },
+    "lib/solmate/src/tokens/ERC20.sol": {
+      "lastModificationDate": 1657928637975,
+      "contentHash": "a0b1801a2ffe030a0f4ff4d508ceb74f",
+      "sourceName": "lib/solmate/src/tokens/ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "ERC20": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "ERC20.sol/ERC20.json"
+        }
+      }
+    },
+    "lib/solmate/src/utils/SafeTransferLib.sol": {
+      "lastModificationDate": 1657928637977,
+      "contentHash": "2de39f553e7ea0899eb4c6fa167f4083",
+      "sourceName": "lib/solmate/src/utils/SafeTransferLib.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/solmate/src/tokens/ERC20.sol"
+      ],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "SafeTransferLib": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "SafeTransferLib.sol/SafeTransferLib.json"
+        }
+      }
+    },
     "script/Deploy.s.sol": {
       "lastModificationDate": 1664611750106,
       "contentHash": "4dac7f5c4d16250adfc86f7054dc8744",
@@ -1665,48 +1745,9 @@
         }
       }
     },
-    "src/test/ERC21.sol": {
-      "lastModificationDate": 1664775324669,
-      "contentHash": "eaba6b73fc35d54e17c881055ec57b49",
-      "sourceName": "src/test/ERC21.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": ">=0.8.0",
-      "artifacts": {
-        "ERC21": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "ERC21.sol/ERC21.json"
-        }
-      }
-    },
     "src/test/ManagerProxy.t.sol": {
-      "lastModificationDate": 1664780823576,
-      "contentHash": "be679816f626e45d99c32f59442160df",
+      "lastModificationDate": 1664844171837,
+      "contentHash": "85f2f51b6dcbcc595d2e460562f5e892",
       "sourceName": "src/test/ManagerProxy.t.sol",
       "solcConfig": {
         "settings": {
@@ -1775,6 +1816,48 @@
       "artifacts": {
         "ManagerProxyTest": {
           "0.8.10+commit.fc410830.Darwin.appleclang": "ManagerProxy.t.sol/ManagerProxyTest.json"
+        }
+      }
+    },
+    "src/test/WETH.sol": {
+      "lastModificationDate": 1664842937893,
+      "contentHash": "12a87a601683c6a55191fb4ae1eba059",
+      "sourceName": "src/test/WETH.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/solmate/src/tokens/ERC20.sol",
+        "lib/solmate/src/utils/SafeTransferLib.sol"
+      ],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "WETH": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "WETH.sol/WETH.json"
         }
       }
     }
