@@ -255,7 +255,7 @@ contract BountyPool is Ownable, Initializable {
     // PROJECT SET CAP
     function setPoolCap(uint256 _amount) external onlyManager {
         // check timelock if current poolCap != 0
-        if (_amount != 0) {
+        if (poolCap != 0) {
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
             require(
                 poolCapTimelock[_amount].timelock < block.timestamp &&
@@ -570,15 +570,18 @@ contract BountyPool is Ownable, Initializable {
         );
 
         uint256 arrayLength = staker[_staker].length;
+
         // uint256 position = arrayLength == 0 ? 0 : arrayLength - 1;
 
         //  if array length is  == 0 we must push first
         if (arrayLength == 0) {
             StakerInfo memory init;
+            init.stakerBalance = 0;
+            init.balanceTimeStamp = 0;
             staker[_staker].push(init);
         }
 
-        uint256 position = arrayLength - 1;
+        uint256 position = staker[_staker].length - 1;
 
         // Push to stakerList array if previous balance = 0
         if (staker[_staker][position].stakerBalance == 0) {
@@ -589,7 +592,7 @@ contract BountyPool is Ownable, Initializable {
         StakerInfo memory newInfo;
         newInfo.balanceTimeStamp = block.timestamp;
         newInfo.stakerBalance =
-            staker[_staker][arrayLength].stakerBalance +
+            staker[_staker][position].stakerBalance +
             _amount;
 
         // if staker is new update array[0] created earlier

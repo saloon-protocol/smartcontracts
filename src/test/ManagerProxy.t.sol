@@ -83,7 +83,10 @@ contract ManagerProxyTest is DSTest, Script {
 
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         manager.stake(bountyName, 20 ether);
-        manager.scheduleUnstake(bountyName, 20 ether);
+        manager.scheduleUnstake(bountyName, 5 ether);
+        uint256 timeperiod = block.timestamp + 3 weeks;
+        vm.warp(timeperiod);
+        manager.unstake(bountyName, 5 ether);
         vm.stopPrank();
     }
 
