@@ -63,6 +63,7 @@ contract ManagerProxyTest is DSTest, Script {
             payable(address(bountyProxy)),
             address(managerProxy)
         );
+
         manager.updateTokenWhitelist(address(wmatic), true);
         manager.deployNewBounty("", bountyName, address(wmatic), projectwallet);
         address bountyAddress = manager.getBountyAddressByName(bountyName);
@@ -70,8 +71,13 @@ contract ManagerProxyTest is DSTest, Script {
         vm.startPrank(projectwallet);
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+
         manager.projectDeposit(bountyName, 20 ether);
         manager.setBountyCapAndAPY(bountyName, 5000 ether, 20 ether);
+        manager.scheduleProjectDepositWithdrawal(bountyName, 5 ether);
+        vm.warp(block.timestamp + 3 weeks);
+        manager.projectDepositWithdrawal(bountyName, 5 ether);
+
         vm.stopPrank();
 
         manager.viewBountyInfo(bountyName);
@@ -84,8 +90,8 @@ contract ManagerProxyTest is DSTest, Script {
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         manager.stake(bountyName, 20 ether);
         manager.scheduleUnstake(bountyName, 5 ether);
-        uint256 timeperiod = block.timestamp + 3 weeks;
-        vm.warp(timeperiod);
+
+        vm.warp(block.timestamp + 3 weeks);
         manager.unstake(bountyName, 5 ether);
         vm.stopPrank();
     }
