@@ -15,8 +15,6 @@ contract BountyPool is Ownable, Initializable {
 
     address public manager;
 
-    bool public APYdropped;
-
     uint256 public constant VERSION = 1;
     uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
     uint256 public constant PREMIUM_COMMISSION = 2 * 1e18;
@@ -42,9 +40,10 @@ contract BountyPool is Ownable, Initializable {
     // staker address => stakerInfo array
     mapping(address => StakerInfo[]) public staker;
 
-    address[] public stakerList;
     // staker address => amount => timelock time
     mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
+    // mapping(amount => timelock info struct)
+    mapping(uint256 => poolCapTimelockInfo) public poolCapTimelock;
 
     struct StakerInfo {
         uint256 stakerBalance;
@@ -56,7 +55,16 @@ contract BountyPool is Ownable, Initializable {
         uint256 periodAPY;
     }
 
+    struct poolCapTimelockInfo {
+        uint256 timelock;
+        bool executed;
+    }
+
+    address[] public stakerList;
+
     APYperiods[] public APYrecords;
+
+    bool public APYdropped;
 
     //#################### State Variables End *****************\\
 
@@ -238,9 +246,25 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
+    function setPoolCapTimelock(uint256 _newPoolCap) external onlyManager {
+        poolCapTimelock[_newPoolCap].timelock = block.timestamp + poolPeriod;
+        poolCapTimelock[_newPoolCap].executed = false;
+    }
+
     // PROJECT SET CAP
     function setPoolCap(uint256 _amount) external onlyManager {
         // note two weeks time lock??
+        // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
+        require(
+            poolCapTimelock[_amount].timelock < block.timestamp &&
+                poolCapTimelock[_amount].executed == false &&
+                poolCapTimelock[_amount].timelock != 0,
+            "Timelock not set or not completed"
+        );
+
+        // set executed to true
+        poolCapTimelock[_amount].executed = true;
+
         poolCap = _amount;
     }
 
@@ -256,6 +280,10 @@ contract BountyPool is Ownable, Initializable {
         uint256 _desiredAPY
     ) external onlyManager returns (bool) {
         // note timelock on this???
+        // If its queued check and the time has passed.
+        // if time has passed check if it hasnt been executed already
+        // if it hasnt been executed then execute and set the change
+
         // make sure APY has right amount of decimals (1e18)
 
         // ensure there is enough premium balance to pay stakers new APY for a month
