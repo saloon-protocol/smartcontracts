@@ -33,17 +33,18 @@ contract BountyPool is Ownable, Initializable {
     uint256 public lastTimePaid;
     uint256 public requiredPremiumBalancePerPeriod;
     uint256 public poolPeriod = 2 weeks;
-    // amount => timelock
-    mapping(uint256 => uint256) public projectWithdrawalTimeLock;
+
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
     // staker address => stakerInfo array
     mapping(address => StakerInfo[]) public staker;
 
     // staker address => amount => timelock time
-    mapping(address => mapping(uint256 => uint256)) public stakerTimelock;
-    // mapping(amount => timelock info struct)
-    mapping(uint256 => poolCapTimelockInfo) public poolCapTimelock;
+    mapping(address => mapping(uint256 => TimelockInfo)) public stakerTimelock;
+
+    mapping(uint256 => TimelockInfo) public poolCapTimelock;
+    mapping(uint256 => TimelockInfo) public APYTimelock;
+    mapping(uint256 => TimelockInfo) public withdrawalTimelock;
 
     struct StakerInfo {
         uint256 stakerBalance;
@@ -55,7 +56,7 @@ contract BountyPool is Ownable, Initializable {
         uint256 periodAPY;
     }
 
-    struct poolCapTimelockInfo {
+    struct TimelockInfo {
         uint256 timelock;
         bool executed;
     }
@@ -246,26 +247,32 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    function setPoolCapTimelock(uint256 _newPoolCap) external onlyManager {
+    function schedulePoolCapChange(uint256 _newPoolCap) external onlyManager {
         poolCapTimelock[_newPoolCap].timelock = block.timestamp + poolPeriod;
         poolCapTimelock[_newPoolCap].executed = false;
     }
 
     // PROJECT SET CAP
     function setPoolCap(uint256 _amount) external onlyManager {
-        // note two weeks time lock??
-        // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
-        require(
-            poolCapTimelock[_amount].timelock < block.timestamp &&
-                poolCapTimelock[_amount].executed == false &&
-                poolCapTimelock[_amount].timelock != 0,
-            "Timelock not set or not completed"
-        );
-
-        // set executed to true
-        poolCapTimelock[_amount].executed = true;
+        // check timelock if current poolCap != 0
+        if (_amount != 0) {
+            // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
+            require(
+                poolCapTimelock[_amount].timelock < block.timestamp &&
+                    poolCapTimelock[_amount].executed == false &&
+                    poolCapTimelock[_amount].timelock != 0,
+                "Timelock not set or not completed"
+            );
+            // set executed to true
+            poolCapTimelock[_amount].executed = true;
+        }
 
         poolCap = _amount;
+    }
+
+    function scheduleAPYChange(uint256 _newAPY) external onlyManager {
+        poolCapTimelock[_newAPY].timelock = block.timestamp + poolPeriod;
+        poolCapTimelock[_newAPY].executed = false;
     }
 
     // PROJECT SET APY
@@ -279,10 +286,18 @@ contract BountyPool is Ownable, Initializable {
         address _projectWallet,
         uint256 _desiredAPY
     ) external onlyManager returns (bool) {
-        // note timelock on this???
-        // If its queued check and the time has passed.
-        // if time has passed check if it hasnt been executed already
-        // if it hasnt been executed then execute and set the change
+        // check timelock if current APY != 0
+        if (desiredAPY != 0) {
+            // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
+            require(
+                APYTimelock[_desiredAPY].timelock < block.timestamp &&
+                    APYTimelock[_desiredAPY].executed == false &&
+                    APYTimelock[_desiredAPY].timelock != 0,
+                "Timelock not set or not completed"
+            );
+            // set executed to true
+            APYTimelock[_desiredAPY].executed = true;
+        }
 
         // make sure APY has right amount of decimals (1e18)
 
@@ -510,8 +525,14 @@ contract BountyPool is Ownable, Initializable {
     // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
     // timelock on this?
 
-    function scheduleprojectDepositWithdrawal(uint256 _amount) external {
-        projectWithdrawalTimeLock[_amount] = block.timestamp + poolPeriod;
+    function scheduleprojectDepositWithdrawal(uint256 _amount)
+        external
+        onlyManager
+        returns (bool)
+    {
+        withdrawalTimelock[_amount].timelock = block.timestamp + poolPeriod;
+        withdrawalTimelock[_amount].executed = false;
+        return true;
     }
 
     // PROJECT DEPOSIT WITHDRAWAL
@@ -519,13 +540,16 @@ contract BountyPool is Ownable, Initializable {
         address _token,
         address _projectWallet,
         uint256 _amount
-    ) external returns (bool) {
-        // timelock on this.
+    ) external onlyManager returns (bool) {
+        // time lock check
+        // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
         require(
-            projectWithdrawalTimeLock[_amount] < block.timestamp &&
-                projectWithdrawalTimeLock[_amount] != 0,
-            "Timelock not finished or started"
+            withdrawalTimelock[_amount].timelock < block.timestamp &&
+                withdrawalTimelock[_amount].executed == false &&
+                withdrawalTimelock[_amount].timelock != 0,
+            "Timelock not set or not completed"
         );
+        withdrawalTimelock[_amount].executed = true;
 
         projectDeposit -= _amount;
         IERC20(_token).safeTransfer(_projectWallet, _amount);
@@ -586,7 +610,7 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    function askForUnstake(address _staker, uint256 _amount)
+    function scheduleUnstake(address _staker, uint256 _amount)
         external
         onlyManager
         returns (bool)
@@ -598,7 +622,11 @@ contract BountyPool is Ownable, Initializable {
             "Insuficcient balance"
         );
 
-        stakerTimelock[_staker][_amount] = block.timestamp + poolPeriod;
+        stakerTimelock[_staker][_amount].timelock =
+            block.timestamp +
+            poolPeriod;
+        stakerTimelock[_staker][_amount].executed = false;
+
         return true;
     }
 
@@ -613,11 +641,16 @@ contract BountyPool is Ownable, Initializable {
         // allow for immediate withdrawal if APY drops from desired APY
         // going to need to create an extra variable for storing this when apy changes for worse
         if (desiredAPY != 0 || APYdropped == true) {
+            // time lock check
+            // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
             require(
-                stakerTimelock[_staker][_amount] < block.timestamp &&
-                    stakerTimelock[_staker][_amount] != 0,
-                "Timelock not finished or started"
+                stakerTimelock[_staker][_amount].timelock < block.timestamp &&
+                    stakerTimelock[_staker][_amount].executed == false &&
+                    stakerTimelock[_staker][_amount].timelock != 0,
+                "Timelock not set or not completed"
             );
+            stakerTimelock[_staker][_amount].executed = true;
+
             uint256 arraySize = staker[_staker].length - 1;
 
             // decrease staker balance

@@ -485,7 +485,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
         //note should all these function check return value like this?
-        if (bounty.proxyAddress.askForUnstake(msg.sender, _amount)) {
+        if (bounty.proxyAddress.scheduleUnstake(msg.sender, _amount)) {
             emit WithdrawalorUnstakeScheduled(_projectName, _amount);
             return true;
         }
