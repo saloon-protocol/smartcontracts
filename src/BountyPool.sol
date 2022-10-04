@@ -526,8 +526,10 @@ contract BountyPool is Ownable, Initializable {
             staker[_staker].push(init);
         }
 
+        uint256 position = arrayLength - 1;
+
         // Push to stakerList array if previous balance = 0
-        if (staker[_staker][arrayLength].stakerBalance == 0) {
+        if (staker[_staker][position].stakerBalance == 0) {
             stakerList.push(_staker);
         }
 
@@ -540,7 +542,7 @@ contract BountyPool is Ownable, Initializable {
 
         // if staker is new update array[0] created earlier
         if (arrayLength == 0) {
-            staker[_staker][arrayLength] = newInfo;
+            staker[_staker][position] = newInfo;
         } else {
             // if staker is not new:
             // save info to storage
