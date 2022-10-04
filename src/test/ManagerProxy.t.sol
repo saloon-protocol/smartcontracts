@@ -94,6 +94,11 @@ contract ManagerProxyTest is DSTest, Script {
         vm.warp(block.timestamp + 3 weeks);
         manager.unstake(bountyName, 5 ether);
         vm.stopPrank();
+
+        // test payBounty
+        // asserSaloonWallet balance after payout
+        // assert bountyAddress balance after payout
+        // assert hacker balance after payout
     }
 
     function testDeployandUpdateBBounty() public {
