@@ -65,13 +65,12 @@ contract ManagerProxyTest is DSTest, Script {
             address(managerProxy)
         );
         manager.updateSaloonWallet(address(saloonwallet));
-    }
-
-    function testInitContracts() public {
         manager.updateTokenWhitelist(address(wmatic), true);
         manager.deployNewBounty("", bountyName, address(wmatic), projectwallet);
         bountyAddress = manager.getBountyAddressByName(bountyName);
+    }
 
+    function testManager() public {
         vm.startPrank(projectwallet);
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
@@ -79,6 +78,8 @@ contract ManagerProxyTest is DSTest, Script {
         manager.projectDeposit(bountyName, 20 ether);
         manager.setBountyCapAndAPY(bountyName, 5000 ether, 20 ether);
         manager.scheduleProjectDepositWithdrawal(bountyName, 5 ether);
+        uint256 payout = manager.viewHackerPayout(bountyName);
+        assertEq(18 ether, payout);
         vm.warp(block.timestamp + 3 weeks);
         manager.projectDepositWithdrawal(bountyName, 5 ether);
 
@@ -93,26 +94,29 @@ contract ManagerProxyTest is DSTest, Script {
 
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         manager.stake(bountyName, 20 ether);
+        uint256 payout2 = manager.viewHackerPayout(bountyName);
+        assertEq(31.5 ether, payout2);
         manager.scheduleUnstake(bountyName, 5 ether);
 
         vm.warp(block.timestamp + 3 weeks);
         manager.unstake(bountyName, 5 ether);
         vm.stopPrank();
+        uint256 payout3 = manager.viewHackerPayout(bountyName);
+        assertEq(27 ether, payout3);
 
         // bounty should have 15 ethers by this point
-        manager.payBounty(bountyName, whitehat, 2 ether);
-    }
+        manager.payBounty(bountyName, whitehat, 20 ether);
+        uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
+        // check hunters balance is correct
+        assertEq(18 ether, whitehatBalance);
+        // check saloon balance is correct
+        uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
+        assertEq(2 ether, saloonBalance);
 
-    function testPayBounty() public {
-        // address sameAddress = manager.getBountyAddressByName(bountyName);
-        // assertEq(bountyAddress, sameAddress);
-        // test payBounty
-        // bounty should have 15 ethers by this point
-        // manager.payBounty(bountyName, whitehat, 2 ether);
-        // // asserSaloonWallet balance after payout
-        // uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
-        // assertEq(whitehatBalance, 13.5 ether);
-        // assert bountyAddress balance after payout
-        // assert hacker balance after payout
+        // test bill saloon premium
+        // warp x and bill
+
+        // test collect saloon premium
+        // assert how much premium saloonwallet has
     }
 }
