@@ -275,7 +275,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _hunter,
             _amount
         );
-        // update saloonWallet variables
+
+        // update saloonWallet variables @audit this is failiing for some reason
         saloonWallet.bountyPaid(
             bountyDetails[_projectName].token,
             _hunter,

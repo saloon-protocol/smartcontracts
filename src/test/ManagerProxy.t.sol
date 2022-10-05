@@ -23,13 +23,16 @@ contract ManagerProxyTest is DSTest, Script {
     BountyProxiesManager bountyProxiesManager;
     ManagerProxy managerProxy;
     BountyProxiesManager manager;
+    SaloonWallet saloonwallet;
 
     address wmatic = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
     // address projectwallet = address(1);
     address projectwallet = 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc;
     address investor = address(1);
+    address whitehat = address(2);
     address owner = 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84;
     string bountyName = "YEEHAW";
+    address bountyAddress;
 
     function setUp() external {
         string memory mumbai = vm.envString("MUMBAI_RPC_URL");
@@ -51,10 +54,8 @@ contract ManagerProxyTest is DSTest, Script {
             data,
             msg.sender
         );
+        saloonwallet = new SaloonWallet(address(managerProxy));
         manager = BountyProxiesManager(address(managerProxy));
-    }
-
-    function testInitContracts() public {
         bountyPool.initializeImplementation(address(managerProxy));
         manager.initialize(proxyFactory, beacon, address(bountyPool));
         // // //@audit does it still work if I initialize the proxyBase??? or does it affect all else
@@ -63,10 +64,13 @@ contract ManagerProxyTest is DSTest, Script {
             payable(address(bountyProxy)),
             address(managerProxy)
         );
+        manager.updateSaloonWallet(address(saloonwallet));
+    }
 
+    function testInitContracts() public {
         manager.updateTokenWhitelist(address(wmatic), true);
         manager.deployNewBounty("", bountyName, address(wmatic), projectwallet);
-        address bountyAddress = manager.getBountyAddressByName(bountyName);
+        bountyAddress = manager.getBountyAddressByName(bountyName);
 
         vm.startPrank(projectwallet);
         ERC20(wmatic).approve(bountyAddress, 100 ether);
@@ -95,13 +99,20 @@ contract ManagerProxyTest is DSTest, Script {
         manager.unstake(bountyName, 5 ether);
         vm.stopPrank();
 
-        // test payBounty
-        // asserSaloonWallet balance after payout
-        // assert bountyAddress balance after payout
-        // assert hacker balance after payout
+        // bounty should have 15 ethers by this point
+        manager.payBounty(bountyName, whitehat, 2 ether);
     }
 
-    function testDeployandUpdateBBounty() public {
-        assertTrue(true);
+    function testPayBounty() public {
+        // address sameAddress = manager.getBountyAddressByName(bountyName);
+        // assertEq(bountyAddress, sameAddress);
+        // test payBounty
+        // bounty should have 15 ethers by this point
+        // manager.payBounty(bountyName, whitehat, 2 ether);
+        // // asserSaloonWallet balance after payout
+        // uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
+        // assertEq(whitehatBalance, 13.5 ether);
+        // assert bountyAddress balance after payout
+        // assert hacker balance after payout
     }
 }
