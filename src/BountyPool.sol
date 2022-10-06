@@ -416,74 +416,58 @@ contract BountyPool is Ownable, Initializable {
         StakingInfo[] memory stakersDeposits = stakersDeposit;
         uint256 stakingLenght = stakersDeposits.length - 1;
         uint256 lastPaid = lastTimePaid;
-        uint256 paymentPeriod = poolPeriod;
         uint256 apy = desiredAPY;
 
         // check when function was called last time and pay premium according to how much time has passed since then.
-        uint256 sinceLastPaid = block.timestamp - lastPaid;
-        uint256 timeChunks = sinceLastPaid / paymentPeriod;
+        /*
+        - average variance since last paid
+            - needs to take into account how long each variance is...
+        - use that
+        */
+        // this is very granular and maybe not optimal...
+        uint256 premiumOwed = calculatePremiumOwed(
+            apy,
+            stakingLenght,
+            lastPaid,
+            stakersDeposits
+        );
 
-        if (msg.sender == address(this)) {
-            // require caller to be self -> this is called when an APY change happens in between periods
-            // for example so the last 3 days of 10% APY can be paid before moving on to 9% APY
-            // require();
-            // use sincelastPaid to multiply the premium calculation
-        } else {
-            // If chuncks of time > 0
-            if (timeChunks > 0) {
-                /*
-                - average variance since last paid
-                    - needs to take into account how long each variance is...
-                - use that
-                */
-                // this is very granular and maybe not optimal...
-                uint256 premiumOwed = calculatePremiumOwed(
-                    apy,
-                    stakingLenght,
-                    lastPaid,
-                    stakersDeposits
-                );
+        if (
+            !IERC20(_token).safeTransferFrom(
+                _projectWallet,
+                address(this),
+                premiumOwed
+            )
+        ) {
+            // if transfer fails APY is reset and premium is paid with new APY
+            // register new APYperiod
+            APYperiods memory newAPYperiod;
+            newAPYperiod.timeStamp = block.timestamp;
+            newAPYperiod.periodAPY = viewcurrentAPY();
+            APYrecords.push(newAPYperiod);
+            // set new APY
+            desiredAPY = viewcurrentAPY();
+            //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
 
-                if (
-                    !IERC20(_token).safeTransferFrom(
-                        _projectWallet,
-                        address(this),
-                        premiumOwed
-                    )
-                ) {
-                    // if transfer fails APY is reset and premium is paid with new APY
-                    // register new APYperiod
-                    APYperiods memory newAPYperiod;
-                    newAPYperiod.timeStamp = block.timestamp;
-                    newAPYperiod.periodAPY = viewcurrentAPY();
-                    APYrecords.push(newAPYperiod);
-                    // set new APY
-                    desiredAPY = viewcurrentAPY();
-                    //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
+            APYdropped = true;
 
-                    APYdropped = true;
-
-                    return false;
-                }
-                // Calculate saloon fee
-                uint256 saloonFee = (premiumOwed * PREMIUM_COMMISSION) /
-                    DENOMINATOR;
-
-                // update saloon claimable fee
-                saloonPremiumFees += saloonFee;
-
-                // update premiumBalance
-                premiumBalance += premiumOwed;
-
-                lastTimePaid = block.timestamp;
-
-                // disable instant withdrawals
-                APYdropped = false;
-
-                return true;
-            }
+            return false;
         }
-        return false;
+        // Calculate saloon fee
+        uint256 saloonFee = (premiumOwed * PREMIUM_COMMISSION) / DENOMINATOR;
+
+        // update saloon claimable fee
+        saloonPremiumFees += saloonFee;
+
+        // update premiumBalance
+        premiumBalance += premiumOwed;
+
+        lastTimePaid = block.timestamp;
+
+        // disable instant withdrawals
+        APYdropped = false;
+
+        return true;
     }
 
     // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
