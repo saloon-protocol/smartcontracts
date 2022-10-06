@@ -113,10 +113,25 @@ contract ManagerProxyTest is DSTest, Script {
         uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
         assertEq(2 ether, saloonBalance);
 
-        // test bill saloon premium
+        // test bill premium for one pool
         // warp x and bill
+        manager.billPremiumForOnePool(bountyName);
 
         // test collect saloon premium
         // assert how much premium saloonwallet has
+
+        // test claim premium as investor
+        // vm.startPrank(investor);
+        // manager.
+        // vm.stopPrank();
+
+        // test bill premium for all
+        // warp x and bill
+
+        // test Upgrade Bountypool contract
+
+        // test Upgrade factory contract
+
+        // test upgrade maanger contract
     }
 }

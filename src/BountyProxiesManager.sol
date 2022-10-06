@@ -222,7 +222,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             "Bounty is Dead"
         );
         // bill
-        bountyDetails[_projectName].proxyAddress.billFortnightlyPremium(
+        bountyDetails[_projectName].proxyAddress.billPremium(
             bountyDetails[_projectName].token,
             bountyDetails[_projectName].projectWallet
         );
@@ -245,7 +245,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             if (notDead(bountiesArray[i].dead) == true) {
                 continue; // killed bounties are supposed to be skipped.
             }
-            bountiesArray[i].proxyAddress.billFortnightlyPremium(
+            bountiesArray[i].proxyAddress.billPremium(
                 bountiesArray[i].token,
                 bountiesArray[i].projectWallet
             );
