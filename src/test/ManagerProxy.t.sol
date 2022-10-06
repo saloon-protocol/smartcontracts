@@ -40,7 +40,7 @@ contract ManagerProxyTest is DSTest, Script {
         uint256 forkId = vm.createFork(mumbai);
         vm.selectFork(forkId);
 
-        vm.deal(projectwallet, 100 ether);
+        vm.deal(projectwallet, 200 ether);
         vm.deal(investor, 100 ether);
 
         bountyProxy = new BountyProxy();
@@ -115,6 +115,7 @@ contract ManagerProxyTest is DSTest, Script {
 
         // test bill premium for one pool
         // warp x and bill
+        vm.warp(2 weeks);
         manager.billPremiumForOnePool(bountyName);
 
         // test collect saloon premium

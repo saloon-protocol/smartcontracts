@@ -357,26 +357,28 @@ contract BountyPool is Ownable, Initializable {
         desiredAPY = _desiredAPY;
 
         // loop through stakerList array and push new balance for new APY period time stamp for every staker
+
         address[] memory stakersList = stakerList;
-        uint256 length = stakersList.length - 1; // TODO this will fail before first staker. Fix like you did with position
-        for (uint256 i; i < length; ) {
-            address stakerAddress = stakersList[i];
-            uint256 arraySize = staker[stakerAddress].length - 1;
+        if (stakersList.length > 0) {
+            uint256 length = stakersList.length - 1; // TODO this will fail before first staker. Fix like you did with position
+            for (uint256 i; i < length; ) {
+                address stakerAddress = stakersList[i];
+                uint256 arraySize = staker[stakerAddress].length - 1;
 
-            StakingInfo memory newInfo;
-            // get last balance
-            newInfo.stakeBalance = staker[stakerAddress][arraySize]
-                .stakeBalance;
-            // update current time
-            newInfo.balanceTimeStamp = block.timestamp;
-            // push to array so user can claim it.
-            staker[stakerAddress].push(newInfo);
+                StakingInfo memory newInfo;
+                // get last balance
+                newInfo.stakeBalance = staker[stakerAddress][arraySize]
+                    .stakeBalance;
+                // update current time
+                newInfo.balanceTimeStamp = block.timestamp;
+                // push to array so user can claim it.
+                staker[stakerAddress].push(newInfo);
 
-            unchecked {
-                ++i;
+                unchecked {
+                    ++i;
+                }
             }
         }
-
         // disable instant withdrawals
         APYdropped = false;
 
@@ -390,11 +392,12 @@ contract BountyPool is Ownable, Initializable {
         StakingInfo[] memory _stakersDeposits
     ) internal pure returns (uint256) {
         uint256 premiumOwed;
-        for (uint256 i = _stakingLenght; i == 0; --i) {
+        for (uint256 i = _stakingLenght; i > 0; --i) {
             if (_stakersDeposits[i].balanceTimeStamp > _lastPaid) {
                 // calcualte payout for every change in staking according to time
                 uint256 duration = _stakersDeposits[i].balanceTimeStamp -
                     _lastPaid;
+                //TODO  @audit this calculation is returning the wrong value. Too high.
                 premiumOwed +=
                     ((
                         ((_stakersDeposits[i].stakeBalance * _apy) /
@@ -402,6 +405,7 @@ contract BountyPool is Ownable, Initializable {
                     ) / YEAR) *
                     duration;
             }
+            // premiumOwed += 1000;
         }
         return premiumOwed;
     }
@@ -425,12 +429,14 @@ contract BountyPool is Ownable, Initializable {
         - use that
         */
         // this is very granular and maybe not optimal...
+        // @audit why is this function call returning zero?
         uint256 premiumOwed = calculatePremiumOwed(
             apy,
             stakingLenght,
             lastPaid,
             stakersDeposits
         );
+        // uint256 premiumOwed = lastPaid;
 
         if (
             !IERC20(_token).safeTransferFrom(
@@ -522,9 +528,10 @@ contract BountyPool is Ownable, Initializable {
             init.balanceTimeStamp = 0;
             stakersDeposit.push(init);
         }
+        uint256 positioning = stakersDeposit.length - 1;
 
         require(
-            stakersDeposit[stakingLenght - 1].stakeBalance + _amount <= poolCap,
+            stakersDeposit[positioning].stakeBalance + _amount <= poolCap,
             "Staking Pool already full"
         );
 
@@ -563,12 +570,13 @@ contract BountyPool is Ownable, Initializable {
 
         StakingInfo memory depositInfo;
         depositInfo.stakeBalance =
-            stakersDeposits[position].stakeBalance +
+            stakersDeposit[positioning].stakeBalance +
             _amount;
+
         depositInfo.balanceTimeStamp = block.timestamp;
 
         if (stakingLenght == 0) {
-            stakersDeposits[stakingLenght - 1] = depositInfo;
+            stakersDeposit[positioning] = depositInfo;
         } else {
             // push to global stakersDeposit
             stakersDeposit.push(depositInfo);
