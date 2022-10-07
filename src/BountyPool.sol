@@ -390,23 +390,52 @@ contract BountyPool is Ownable, Initializable {
         uint256 _stakingLenght,
         uint256 _lastPaid,
         StakingInfo[] memory _stakersDeposits
-    ) internal pure returns (uint256) {
+    ) internal view returns (uint256) {
         uint256 premiumOwed;
+        uint256[] memory stakeChanges;
+        uint256 count = 0;
         for (uint256 i = _stakingLenght; i > 0; --i) {
+            // see how many changes since lastPaid
             if (_stakersDeposits[i].balanceTimeStamp > _lastPaid) {
-                // calcualte payout for every change in staking according to time
-                uint256 duration = _stakersDeposits[i].balanceTimeStamp -
-                    _lastPaid;
-                //TODO  @audit this calculation is returning the wrong value. Too high.
-                premiumOwed +=
-                    ((
-                        ((_stakersDeposits[i].stakeBalance * _apy) /
-                            DENOMINATOR)
-                    ) / YEAR) *
-                    duration;
+                stakeChanges[count] = i;
+                count += 1;
             }
-            // premiumOwed += 1000;
         }
+
+        // uint256 length = stakeChanges.length;
+
+        // for (uint256 i; i < length; ++i) {
+        //     // calcualte payout for every change in staking according to time
+        //     uint256 duration;
+
+        //     if (_lastPaid == 0) {
+        //         if (i == 0) {
+        //             continue;
+        //         }
+        //         duration =
+        //             _stakersDeposits[stakeChanges[i]].balanceTimeStamp -
+        //             _stakersDeposits[i - 1].balanceTimeStamp;
+        //     } else {
+        //         if (i == 0) {
+        //             duration =
+        //                 _stakersDeposits[stakeChanges[i]].balanceTimeStamp -
+        //                 _lastPaid;
+        //         } else if (i == length - 1) {
+        //             duration =
+        //                 block.timestamp -
+        //                 _stakersDeposits[i].balanceTimeStamp;
+        //         } else {
+        //             duration =
+        //                 _stakersDeposits[i].balanceTimeStamp -
+        //                 _stakersDeposits[i - 1].balanceTimeStamp;
+        //         }
+        //     }
+
+        //     premiumOwed +=
+        //         ((((_stakersDeposits[i].stakeBalance * _apy) / DENOMINATOR)) /
+        //             YEAR) *
+        //         duration;
+        // }
         return premiumOwed;
     }
 

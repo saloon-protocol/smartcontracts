@@ -617,14 +617,14 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // Function to view individual Staker Balance in Pool by Project Name // done
-    function viewUserStakingBalance(string memory _projectName)
+    function viewUserStakingBalance(string memory _projectName, address _staker)
         external
         view
         returns (uint256)
     {
         Bounties memory bounty = bountyDetails[_projectName];
         (uint256 stakingBalance, ) = bounty.proxyAddress.viewUserStakingBalance(
-            msg.sender
+            _staker
         );
         return stakingBalance;
     }

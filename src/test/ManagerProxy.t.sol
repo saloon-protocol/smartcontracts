@@ -76,7 +76,7 @@ contract ManagerProxyTest is DSTest, Script {
         wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
 
         manager.projectDeposit(bountyName, 20 ether);
-        manager.setBountyCapAndAPY(bountyName, 5000 ether, 20 ether);
+        manager.setBountyCapAndAPY(bountyName, 5000 ether, 10 ether);
         manager.scheduleProjectDepositWithdrawal(bountyName, 5 ether);
         uint256 payout = manager.viewHackerPayout(bountyName);
         assertEq(18 ether, payout);
