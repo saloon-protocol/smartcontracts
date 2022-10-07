@@ -65,6 +65,7 @@ contract BountyPool is Ownable, Initializable {
     APYperiods[] public APYrecords;
 
     StakingInfo[] public stakersDeposit;
+    uint256[] private stakeChanges;
 
     bool public APYdropped;
 
@@ -390,52 +391,52 @@ contract BountyPool is Ownable, Initializable {
         uint256 _stakingLenght,
         uint256 _lastPaid,
         StakingInfo[] memory _stakersDeposits
-    ) internal view returns (uint256) {
+    ) internal returns (uint256) {
         uint256 premiumOwed;
-        uint256[] memory stakeChanges;
-        uint256 count = 0;
         for (uint256 i = _stakingLenght; i > 0; --i) {
             // see how many changes since lastPaid
             if (_stakersDeposits[i].balanceTimeStamp > _lastPaid) {
-                stakeChanges[count] = i;
-                count += 1;
+                stakeChanges.push(i);
             }
         }
 
-        // uint256 length = stakeChanges.length;
+        uint256[] memory stakingChanges = stakeChanges;
+        uint256 length = stakingChanges.length;
 
-        // for (uint256 i; i < length; ++i) {
-        //     // calcualte payout for every change in staking according to time
-        //     uint256 duration;
+        for (uint256 i; i < length; ++i) {
+            // calcualte payout for every change in staking according to time
+            uint256 duration;
 
-        //     if (_lastPaid == 0) {
-        //         if (i == 0) {
-        //             continue;
-        //         }
-        //         duration =
-        //             _stakersDeposits[stakeChanges[i]].balanceTimeStamp -
-        //             _stakersDeposits[i - 1].balanceTimeStamp;
-        //     } else {
-        //         if (i == 0) {
-        //             duration =
-        //                 _stakersDeposits[stakeChanges[i]].balanceTimeStamp -
-        //                 _lastPaid;
-        //         } else if (i == length - 1) {
-        //             duration =
-        //                 block.timestamp -
-        //                 _stakersDeposits[i].balanceTimeStamp;
-        //         } else {
-        //             duration =
-        //                 _stakersDeposits[i].balanceTimeStamp -
-        //                 _stakersDeposits[i - 1].balanceTimeStamp;
-        //         }
-        //     }
+            if (_lastPaid == 0) {
+                if (i == 0) {
+                    continue;
+                }
+                duration =
+                    _stakersDeposits[stakingChanges[i]].balanceTimeStamp -
+                    _stakersDeposits[i - 1].balanceTimeStamp;
+            } else {
+                if (i == 0) {
+                    duration =
+                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp -
+                        _lastPaid;
+                } else if (i == length - 1) {
+                    duration =
+                        block.timestamp -
+                        _stakersDeposits[i].balanceTimeStamp;
+                } else {
+                    duration =
+                        _stakersDeposits[i].balanceTimeStamp -
+                        _stakersDeposits[i - 1].balanceTimeStamp;
+                }
+            }
 
-        //     premiumOwed +=
-        //         ((((_stakersDeposits[i].stakeBalance * _apy) / DENOMINATOR)) /
-        //             YEAR) *
-        //         duration;
-        // }
+            premiumOwed +=
+                ((((_stakersDeposits[i].stakeBalance * _apy) / DENOMINATOR)) /
+                    YEAR) *
+                duration;
+        }
+
+        delete stakeChanges;
         return premiumOwed;
     }
 
