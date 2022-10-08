@@ -943,7 +943,6 @@ contract BountyPool is Ownable, Initializable {
     ) internal returns (uint256) {
         // cache APY records
         APYperiods[] memory APYregistries = APYrecords;
-        uint256 length = APYregistries.length;
         // loop through APY periods (reversely) until last missed period is found
         uint256 claim;
         claim = calculateBalancePerPeriod(
@@ -952,19 +951,6 @@ contract BountyPool is Ownable, Initializable {
             _stakerLength,
             APYregistries
         );
-        // // if this is the first claim we go through all APY records
-        // if (_lastTimeClaimed == 0) {
-        //     // use all APYRecords
-        //     claim = calculateBalancePerPeriod(
-        //         _stakerInfo,
-        //         _stakerLength,
-        //         APYregistries
-        //     );
-        // } else {
-        //     for(i)
-        //     //  note: If not first claim we go through any apy changes made after
-        //     // note: filter new APY range and pass it to function
-        // }
 
         return claim;
     }
