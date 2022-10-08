@@ -65,7 +65,9 @@ contract BountyPool is Ownable, Initializable {
     APYperiods[] public APYrecords;
 
     StakingInfo[] public stakersDeposit;
+    uint256[] private APYChanges;
     uint256[] private stakeChanges;
+    uint256[] private stakerChange;
 
     bool public APYdropped;
 
@@ -132,15 +134,15 @@ contract BountyPool is Ownable, Initializable {
 
                     address stakerAddress = stakersList[i];
                     staker[stakerAddress].push(newInfo);
-
-                    // deduct saloon commission and transfer
-                    calculateCommissioAndTransferPayout(
-                        _token,
-                        _hunter,
-                        _saloonWallet,
-                        _amount
-                    );
                 }
+
+                // deduct saloon commission and transfer
+                calculateCommissioAndTransferPayout(
+                    _token,
+                    _hunter,
+                    _saloonWallet,
+                    _amount
+                );
 
                 // update stakersDeposit
                 stakersDeposit.push(stakingInfo);
@@ -240,9 +242,10 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (uint256)
     {
-        // send current fees to saloon address
-        IERC20(_token).safeTransfer(_saloonWallet, saloonPremiumFees);
         uint256 totalCollected = saloonPremiumFees;
+        // send current fees to saloon address
+        IERC20(_token).safeTransfer(_saloonWallet, totalCollected);
+
         // reset claimable fees
         saloonPremiumFees = 0;
 
@@ -393,46 +396,64 @@ contract BountyPool is Ownable, Initializable {
         StakingInfo[] memory _stakersDeposits
     ) internal returns (uint256) {
         uint256 premiumOwed;
-        for (uint256 i = _stakingLenght; i > 0; --i) {
+        for (uint256 i; i < _stakingLenght; ++i) {
             // see how many changes since lastPaid
             if (_stakersDeposits[i].balanceTimeStamp > _lastPaid) {
                 stakeChanges.push(i);
+                // premiumOwed = _stakersDeposits[1].balanceTimeStamp;
             }
         }
 
         uint256[] memory stakingChanges = stakeChanges;
         uint256 length = stakingChanges.length;
+        //////////////////////////
+        // NOTE TESTING
+        // premiumOwed = _stakersDeposits[0].balanceTimeStamp;
+        // premiumOwed = _stakersDeposits[2].stakeBalance;
+        //////////////////////////
 
         for (uint256 i; i < length; ++i) {
             // calcualte payout for every change in staking according to time
             uint256 duration;
-
+            // @audit this last paid is the culprit!!?
             if (_lastPaid == 0) {
-                if (i == 0) {
-                    continue;
+                if (i == length - 1) {
+                    duration =
+                        block.timestamp -
+                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
+                } else {
+                    duration =
+                        _stakersDeposits[stakingChanges[i + 1]]
+                            .balanceTimeStamp -
+                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
                 }
-                duration =
-                    _stakersDeposits[stakingChanges[i]].balanceTimeStamp -
-                    _stakersDeposits[i - 1].balanceTimeStamp;
             } else {
                 if (i == 0) {
                     duration =
-                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp -
-                        _lastPaid;
+                        (_lastPaid -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp) +
+                        (_stakersDeposits[stakingChanges[i + 1]]
+                            .balanceTimeStamp -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp);
                 } else if (i == length - 1) {
                     duration =
                         block.timestamp -
-                        _stakersDeposits[i].balanceTimeStamp;
+                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
                 } else {
                     duration =
-                        _stakersDeposits[i].balanceTimeStamp -
-                        _stakersDeposits[i - 1].balanceTimeStamp;
+                        _stakersDeposits[stakingChanges[i + 1]]
+                            .balanceTimeStamp -
+                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
                 }
             }
 
             premiumOwed +=
-                ((((_stakersDeposits[i].stakeBalance * _apy) / DENOMINATOR)) /
-                    YEAR) *
+                ((
+                    ((_stakersDeposits[stakingChanges[i]].stakeBalance * _apy) /
+                        DENOMINATOR)
+                ) / YEAR) *
                 duration;
         }
 
@@ -448,7 +469,7 @@ contract BountyPool is Ownable, Initializable {
         returns (bool)
     {
         StakingInfo[] memory stakersDeposits = stakersDeposit;
-        uint256 stakingLenght = stakersDeposits.length - 1;
+        uint256 stakingLenght = stakersDeposits.length;
         uint256 lastPaid = lastTimePaid;
         uint256 apy = desiredAPY;
 
@@ -459,15 +480,15 @@ contract BountyPool is Ownable, Initializable {
         - use that
         */
         // this is very granular and maybe not optimal...
-        // @audit why is this function call returning zero?
         uint256 premiumOwed = calculatePremiumOwed(
             apy,
             stakingLenght,
             lastPaid,
             stakersDeposits
         );
-        // uint256 premiumOwed = lastPaid;
 
+        // uint256 premiumOwed = lastPaid;
+        // TODO change if to Try Catch block
         if (
             !IERC20(_token).safeTransferFrom(
                 _projectWallet,
@@ -670,6 +691,7 @@ contract BountyPool is Ownable, Initializable {
                 _amount;
 
             address[] memory stakersList = stakerList;
+            // delete from staker list
             if (newInfo.stakeBalance == 0) {
                 // loop through stakerlist
                 uint256 length = stakersList.length;
@@ -725,16 +747,19 @@ contract BountyPool is Ownable, Initializable {
     ) external onlyManager returns (uint256, bool) {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         uint256 lastTimeClaimed = lastClaimed[_staker];
+        // uint lastTimeClaimed = 0;
         uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
         uint256 paymentPeriod = poolPeriod;
-        StakingInfo[] memory stakingInfo = staker[_staker];
-        uint256 stakerLength = stakingInfo.length;
+        StakingInfo[] memory stakerInfo = staker[_staker];
+        uint256 stakerLength = stakerInfo.length;
+        uint256 currentPremiumBalance = premiumBalance;
+        // @audit maybe do it simpler just like billPremium()
         // if last time premium was called > 1 period
 
         if (sinceLastClaimed > paymentPeriod) {
             uint256 totalPremiumToClaim = calculatePremiumToClaim(
                 lastTimeClaimed,
-                stakingInfo,
+                stakerInfo,
                 stakerLength
             );
             // Calculate saloon fee
@@ -744,14 +769,13 @@ contract BountyPool is Ownable, Initializable {
             totalPremiumToClaim -= saloonFee;
             uint256 owedPremium = totalPremiumToClaim;
 
-            if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
+            // if premium belance < owedPremium
+            //  call billpremium
+            // transfer
+            if (currentPremiumBalance < owedPremium) {
                 billPremium(_token, _projectWallet);
-                /* NOTE: if function above changes APY than accounting is going to get messed up,
-                because the APY used for for new transfer will be different than APY 
-                used to calculate totalPremiumToClaim.
-                If function above fails then it fails... 
-                */
             }
+            IERC20(_token).transfer(_staker, owedPremium);
 
             // update premiumBalance
             premiumBalance -= totalPremiumToClaim;
@@ -760,83 +784,189 @@ contract BountyPool is Ownable, Initializable {
             lastClaimed[_staker] = block.timestamp;
             return (owedPremium, true);
         } else {
+            //TODO/NOTE maybe erase this last bit and use above system for all scenarios
             // calculate currently owed for the week
-            uint256 owedPremium = (((stakingInfo[stakerLength - 1]
-                .stakeBalance * desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
+            uint256 owedPremium = (((stakerInfo[stakerLength - 1].stakeBalance *
+                desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
             // pay current period owed
-
             // Calculate saloon fee
             uint256 saloonFee = (owedPremium * PREMIUM_COMMISSION) /
                 DENOMINATOR;
             // subtract saloon fee
             owedPremium -= saloonFee;
-
             if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
                 billPremium(_token, _projectWallet);
                 /* NOTE: if function above changes APY than accounting is going to get messed up,
-                because the APY used for for new transfer will be different than APY 
+                because the APY used for for new transfer will be different than APY
                 used to calculate totalPremiumToClaim.
-                If function above fails then it fails... 
+                If function above fails then it fails...
                 */
             }
-
             // update premium
             premiumBalance -= owedPremium;
-
             // update last time claimed
             lastClaimed[_staker] = block.timestamp;
             return (owedPremium, true);
         }
     }
 
-    function calculatePremiumToClaim(
+    function calculateBalancePerPeriod(
         uint256 _lastTimeClaimed,
-        StakingInfo[] memory _stakingInfo,
-        uint256 _stakerLength
-    ) internal view returns (uint256) {
-        uint256 length = APYrecords.length;
-        // loop through APY periods (reversely) until last missed period is found
-        uint256 lastMissed;
-        uint256 totalPremiumToClaim;
-        for (uint256 i = length - 1; i == 0; --i) {
-            if (APYrecords[i].timeStamp < _lastTimeClaimed) {
-                lastMissed = i + 1;
-            }
-        }
-        // loop through all missed periods
-        for (uint256 i = lastMissed; i < length; ++i) {
-            uint256 periodStart = APYrecords[i].timeStamp;
-            // period end end is equal NOW for last APY that has been set
-            uint256 periodEnd = APYrecords[i + 1].timeStamp != 0
-                ? APYrecords[i + 1].timeStamp
-                : block.timestamp;
-            uint256 periodLength = periodEnd - periodStart;
-            // loop through stakers balance fluctiation during this period
+        StakingInfo[] memory _stakerInfo,
+        uint256 _stakerLength,
+        APYperiods[] memory APYrecord
+    ) internal returns (uint256) {
+        uint256 length = APYrecord.length;
+        uint256 totalPeriodClaim;
+        uint256 periodStart;
+        uint256 periodEnd;
+        // TODO introduce if statement. If lastClaimed = 0 iterate through all APYrecords. Else iterate only for APY periods after
+        if (_lastTimeClaimed == 0) {
+            for (uint256 i; i < length; ++i) {
+                periodStart = APYrecord[i].timeStamp;
 
-            uint256 periodTotalBalance;
-            for (uint256 j; j < _stakerLength; ++j) {
-                // check staker balance at that moment
-                if (
-                    _stakingInfo[j].balanceTimeStamp > periodStart &&
-                    _stakingInfo[j].balanceTimeStamp < periodEnd
-                ) {
-                    // add it to that period total
-                    periodTotalBalance += _stakingInfo[j].stakeBalance;
-                    /* note: StakingInfo is updated for every user everytime 
-                    APY changes. 
-                    
-                    */
+                // period end is equal NOW for last APY that has been set
+                if (i == length - 1) {
+                    periodEnd = block.timestamp;
+                } else {
+                    periodEnd = APYrecord[i + 1].timeStamp;
+                }
+                uint256 apy = APYrecord[i].periodAPY;
+                // loop through stakers balance fluctiation during this period
+                totalPeriodClaim = calculateBalance(
+                    apy,
+                    periodStart,
+                    periodEnd,
+                    _stakerInfo,
+                    _stakerLength
+                );
+            }
+        } else {
+            for (uint256 i; i < length; ++i) {
+                if (APYrecord[i].timeStamp > _lastTimeClaimed) {
+                    APYChanges.push(i - 1);
+                    // push last period too
+                    if (i == length - 1) {
+                        APYChanges.push(i);
+                    }
                 }
             }
+            uint256[] memory APYChange = APYChanges;
+            uint256 len = APYChange.length;
 
-            //calcualte owed APY for that period: (APY * amount / Seconds in a year) * number of seconds in X period
-            totalPremiumToClaim +=
-                (((periodTotalBalance * APYrecords[i + 1].periodAPY) /
-                    DENOMINATOR) / YEAR) *
-                periodLength;
+            for (uint256 i; i < len; ++i) {
+                /* 
+                - Iterate backwards through APYrecords.TimeStamp
+                - See what's the last one to be < lastTimeClaimed
+                - calculate distance between last time claimed and 
+                APYrecords.TimeStamp[i+1] period start 
+                - judge distance in comparison with i+1 until last i that compares distance to block.timestamp
+                */
+
+                if (i == 0) {
+                    periodStart = _lastTimeClaimed;
+                } else {
+                    periodStart = APYrecord[APYChange[i]].timeStamp;
+                }
+
+                // period end is equal NOW for last APY that has been set
+                if (i == length - 1) {
+                    periodEnd = block.timestamp;
+                } else {
+                    periodEnd = APYrecord[APYChange[i + 1]].timeStamp;
+                }
+                uint256 apy = APYrecord[APYChange[i]].periodAPY;
+                // loop through stakers balance fluctiation during this period
+                totalPeriodClaim = calculateBalance(
+                    apy,
+                    periodStart,
+                    periodEnd,
+                    _stakerInfo,
+                    _stakerLength
+                );
+            }
         }
+        return totalPeriodClaim;
+    }
 
-        return totalPremiumToClaim;
+    function calculateBalance(
+        uint256 apy,
+        uint256 _periodStart,
+        uint256 _periodEnd,
+        StakingInfo[] memory _stakerInfo,
+        uint256 _stakerLength
+    ) internal returns (uint256) {
+        uint256 balanceClaim;
+        uint256 duration;
+        {
+            for (uint256 i; i < _stakerLength; ++i) {
+                // check staker balance at that moment
+                if (
+                    _stakerInfo[i].balanceTimeStamp > _periodStart &&
+                    _stakerInfo[i].balanceTimeStamp < _periodEnd
+                ) {
+                    stakerChange.push(i);
+                }
+            }
+        }
+        {
+            uint256[] memory stakrChange = stakerChange;
+            uint256 len = stakrChange.length;
+            for (uint256 i; i < len; ++i) {
+                // check distance difference to period start
+
+                if (i == len - 1) {
+                    duration =
+                        block.timestamp -
+                        _stakerInfo[stakrChange[i]].balanceTimeStamp;
+                } else {
+                    duration =
+                        _stakerInfo[stakrChange[i + 1]].balanceTimeStamp -
+                        _stakerInfo[stakrChange[i]].balanceTimeStamp;
+                }
+
+                // calculate timestampClaim
+                uint256 periodClaim = (((_stakerInfo[stakrChange[i]]
+                    .stakeBalance * apy) / DENOMINATOR) / YEAR) * duration;
+
+                balanceClaim += periodClaim;
+            }
+        }
+        delete stakerChange;
+        return balanceClaim;
+    }
+
+    function calculatePremiumToClaim(
+        uint256 _lastTimeClaimed,
+        StakingInfo[] memory _stakerInfo,
+        uint256 _stakerLength
+    ) internal returns (uint256) {
+        // cache APY records
+        APYperiods[] memory APYregistries = APYrecords;
+        uint256 length = APYregistries.length;
+        // loop through APY periods (reversely) until last missed period is found
+        uint256 claim;
+        claim = calculateBalancePerPeriod(
+            _lastTimeClaimed,
+            _stakerInfo,
+            _stakerLength,
+            APYregistries
+        );
+        // // if this is the first claim we go through all APY records
+        // if (_lastTimeClaimed == 0) {
+        //     // use all APYRecords
+        //     claim = calculateBalancePerPeriod(
+        //         _stakerInfo,
+        //         _stakerLength,
+        //         APYregistries
+        //     );
+        // } else {
+        //     for(i)
+        //     //  note: If not first claim we go through any apy changes made after
+        //     // note: filter new APY range and pass it to function
+        // }
+
+        return claim;
     }
 
     ///// VIEW FUNCTIONS /////

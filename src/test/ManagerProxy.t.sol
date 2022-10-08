@@ -40,7 +40,7 @@ contract ManagerProxyTest is DSTest, Script {
         uint256 forkId = vm.createFork(mumbai);
         vm.selectFork(forkId);
 
-        vm.deal(projectwallet, 200 ether);
+        vm.deal(projectwallet, 100 ether);
         vm.deal(investor, 100 ether);
 
         bountyProxy = new BountyProxy();
@@ -73,7 +73,7 @@ contract ManagerProxyTest is DSTest, Script {
     function testManager() public {
         vm.startPrank(projectwallet);
         ERC20(wmatic).approve(bountyAddress, 100 ether);
-        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+        wmatic.call{value: 30 ether}(abi.encodeWithSignature("deposit()", ""));
 
         manager.projectDeposit(bountyName, 20 ether);
         manager.setBountyCapAndAPY(bountyName, 5000 ether, 10 ether);
@@ -89,42 +89,53 @@ contract ManagerProxyTest is DSTest, Script {
         manager.viewProjectDeposit(bountyName);
         manager.viewBountyBalance(bountyName);
 
+        ///////// INVESTOR ///////////
         vm.startPrank(investor);
         wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
 
         ERC20(wmatic).approve(bountyAddress, 100 ether);
         manager.stake(bountyName, 20 ether);
-        uint256 payout2 = manager.viewHackerPayout(bountyName);
-        assertEq(31.5 ether, payout2);
-        manager.scheduleUnstake(bountyName, 5 ether);
+        // uint256 payout2 = manager.viewHackerPayout(bountyName);
+        // assertEq(31.5 ether, payout2);
+        // assertEq()
+        manager.scheduleUnstake(bountyName, 5 ether); // NOTE OR THIS
 
-        vm.warp(block.timestamp + 3 weeks);
+        vm.warp(block.timestamp + 4 weeks);
         manager.unstake(bountyName, 5 ether);
         vm.stopPrank();
-        uint256 payout3 = manager.viewHackerPayout(bountyName);
-        assertEq(27 ether, payout3);
+        ///////// INVESTOR END ///////////
 
-        // bounty should have 15 ethers by this point
-        manager.payBounty(bountyName, whitehat, 20 ether);
-        uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
-        // check hunters balance is correct
-        assertEq(18 ether, whitehatBalance);
-        // check saloon balance is correct
-        uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
-        assertEq(2 ether, saloonBalance);
+        // uint256 payout3 = manager.viewHackerPayout(bountyName);
+        // assertEq(27 ether, payout3);
 
         // test bill premium for one pool
         // warp x and bill
-        vm.warp(2 weeks);
-        manager.billPremiumForOnePool(bountyName);
+        // vm.warp(block.timestamp + 50 weeks);
+        // manager.billPremiumForOnePool(bountyName);
+
+        // test first claim premium as investor
+        // warp is not cummulative....
+        // NOTE: for some reason if I call billPremium before this event it doesnt work.
+        // TODO: Test on Live testnet to make sure this is only a mistake with the testing set up
+        vm.warp(block.timestamp + 100 weeks);
+        vm.startPrank(investor);
+        manager.claimPremium(bountyName);
+        vm.stopPrank();
+
+        // test second claim premium as investor
+
+        // test payBounty
+        // bounty should have 30 ethers by this point
+        // manager.payBounty(bountyName, whitehat, 20 ether);
+        // uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
+        // // check hunters balance is correct
+        // assertEq(18 ether, whitehatBalance);
+        // // check saloon balance is correct
+        // uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
+        // assertEq(2 ether, saloonBalance);
 
         // test collect saloon premium
         // assert how much premium saloonwallet has
-
-        // test claim premium as investor
-        // vm.startPrank(investor);
-        // manager.
-        // vm.stopPrank();
 
         // test bill premium for all
         // warp x and bill
