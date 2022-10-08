@@ -364,7 +364,7 @@ contract BountyPool is Ownable, Initializable {
 
         address[] memory stakersList = stakerList;
         if (stakersList.length > 0) {
-            uint256 length = stakersList.length - 1; // TODO this will fail before first staker. Fix like you did with position
+            uint256 length = stakersList.length - 1;
             for (uint256 i; i < length; ) {
                 address stakerAddress = stakersList[i];
                 uint256 arraySize = staker[stakerAddress].length - 1;
