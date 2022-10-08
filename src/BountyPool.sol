@@ -410,7 +410,6 @@ contract BountyPool is Ownable, Initializable {
         for (uint256 i; i < length; ++i) {
             // calcualte payout for every change in staking according to time
             uint256 duration;
-            // @audit this last paid is the culprit!!?
             if (_lastPaid == 0) {
                 if (i == length - 1) {
                     duration =
