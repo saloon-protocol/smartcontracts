@@ -820,7 +820,6 @@ contract BountyPool is Ownable, Initializable {
         uint256 totalPeriodClaim;
         uint256 periodStart;
         uint256 periodEnd;
-        // TODO introduce if statement. If lastClaimed = 0 iterate through all APYrecords. Else iterate only for APY periods after
         if (_lastTimeClaimed == 0) {
             for (uint256 i; i < length; ++i) {
                 periodStart = APYrecord[i].timeStamp;
