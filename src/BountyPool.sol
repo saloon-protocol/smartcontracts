@@ -406,11 +406,6 @@ contract BountyPool is Ownable, Initializable {
 
         uint256[] memory stakingChanges = stakeChanges;
         uint256 length = stakingChanges.length;
-        //////////////////////////
-        // NOTE TESTING
-        // premiumOwed = _stakersDeposits[0].balanceTimeStamp;
-        // premiumOwed = _stakersDeposits[2].stakeBalance;
-        //////////////////////////
 
         for (uint256 i; i < length; ++i) {
             // calcualte payout for every change in staking according to time
