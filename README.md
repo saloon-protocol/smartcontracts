@@ -13,7 +13,7 @@ graph TD;
     User-->Manager
     Manager---->BountyProxy
     Manager-..-Factory
-    Factory-...->Bounty
+    Factory -..-> Bounty
 
 
     subgraph Bounty
