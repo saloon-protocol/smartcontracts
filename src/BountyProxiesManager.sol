@@ -128,7 +128,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         __Ownable_init();
     }
 
-    function _authorizeUpgrade(address newImplementation)
+    function _authorizeUpgrade(address _newImplementation)
         internal
         virtual
         override

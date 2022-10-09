@@ -743,13 +743,10 @@ contract BountyPool is Ownable, Initializable {
         // how many chunks of time (currently = 2 weeks) since lastclaimed?
         uint256 lastTimeClaimed = lastClaimed[_staker];
         // uint lastTimeClaimed = 0;
-        uint256 sinceLastClaimed = block.timestamp - lastTimeClaimed;
-        uint256 paymentPeriod = poolPeriod;
+
         StakingInfo[] memory stakerInfo = staker[_staker];
         uint256 stakerLength = stakerInfo.length;
         uint256 currentPremiumBalance = premiumBalance;
-        // @audit maybe do it simpler just like billPremium()
-        // if last time premium was called > 1 period
 
         uint256 totalPremiumToClaim = calculatePremiumToClaim(
             lastTimeClaimed,

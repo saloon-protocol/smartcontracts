@@ -85,6 +85,11 @@ contract ManagerProxyTest is DSTest, Script {
 
         vm.stopPrank();
 
+        //// TEST UPGRADE MANAGER ////
+        BountyProxiesManager newImplementation = new BountyProxiesManager();
+        manager.upgradeTo(address(newImplementation));
+        /////////
+
         manager.viewBountyInfo(bountyName);
         manager.viewProjectDeposit(bountyName);
         manager.viewBountyBalance(bountyName);
