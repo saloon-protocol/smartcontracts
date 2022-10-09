@@ -12,11 +12,13 @@ graph TD;
     Admin-. deployBounty .-> Manager
     User-->Manager
     Manager---->BountyProxy
+    Manager-...- Factory
+    Factory-...-> Bounty
 
 
     subgraph Bounty
-    BountyProxy-- delegatecall -->Implementation
-    BountyProxy-- getAddress -->Beacon
+    BountyProxy-- delegatecall --->Implementation
+    BountyProxy-.. getAddress ..-Beacon
     Beacon-. Implementation Address .-> BountyProxy
     end
 
