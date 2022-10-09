@@ -14,7 +14,7 @@ graph TD;
     Manager-->BountyProxy
 
 
-    subgraph ide1 []
+    subgraph Bounty
     BountyProxy-- getAddress -->Beacon
     Beacon-. Implementation Address .-> BountyProxy
     BountyProxy-- delegatecall -->Implementation
