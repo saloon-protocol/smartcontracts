@@ -5,3 +5,11 @@ The only entry point to interact with the Saloon smart contracts is through the 
 - Projects can make and withdraw their bounty deposits.
 - Investors can stake and unstake
 - Admins can deploy and manage bounties.
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
