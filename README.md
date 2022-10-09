@@ -12,7 +12,7 @@ graph TD;
     Admin-. deployBounty .->Manager
     User-->Manager
     Manager---->BountyProxy
-    Manager-.-Factory
+    Manager-...-Factory
 
 
     subgraph Bounty
