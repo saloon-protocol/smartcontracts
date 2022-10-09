@@ -481,15 +481,16 @@ contract BountyPool is Ownable, Initializable {
             stakersDeposits
         );
 
-        // uint256 premiumOwed = lastPaid;
-        // TODO change if to Try Catch block
-        if (
-            !IERC20(_token).safeTransferFrom(
+        // TODO test Try Catch block
+        try
+            IERC20(_token).transferFrom(
                 _projectWallet,
                 address(this),
                 premiumOwed
             )
-        ) {
+        {
+            // nothing
+        } catch {
             // if transfer fails APY is reset and premium is paid with new APY
             // register new APYperiod
             APYperiods memory newAPYperiod;
@@ -750,58 +751,32 @@ contract BountyPool is Ownable, Initializable {
         // @audit maybe do it simpler just like billPremium()
         // if last time premium was called > 1 period
 
-        if (sinceLastClaimed > paymentPeriod) {
-            uint256 totalPremiumToClaim = calculatePremiumToClaim(
-                lastTimeClaimed,
-                stakerInfo,
-                stakerLength
-            );
-            // Calculate saloon fee
-            uint256 saloonFee = (totalPremiumToClaim * PREMIUM_COMMISSION) /
-                DENOMINATOR;
-            // subtract saloon fee
-            totalPremiumToClaim -= saloonFee;
-            uint256 owedPremium = totalPremiumToClaim;
+        uint256 totalPremiumToClaim = calculatePremiumToClaim(
+            lastTimeClaimed,
+            stakerInfo,
+            stakerLength
+        );
+        // Calculate saloon fee
+        uint256 saloonFee = (totalPremiumToClaim * PREMIUM_COMMISSION) /
+            DENOMINATOR;
+        // subtract saloon fee
+        totalPremiumToClaim -= saloonFee;
+        uint256 owedPremium = totalPremiumToClaim;
 
-            // if premium belance < owedPremium
-            //  call billpremium
-            // transfer
-            if (currentPremiumBalance < owedPremium) {
-                billPremium(_token, _projectWallet);
-            }
-            IERC20(_token).transfer(_staker, owedPremium);
-
-            // update premiumBalance
-            premiumBalance -= totalPremiumToClaim;
-
-            // update last time claimed
-            lastClaimed[_staker] = block.timestamp;
-            return (owedPremium, true);
-        } else {
-            //TODO/NOTE maybe erase this last bit and use above system for all scenarios
-            // calculate currently owed for the week
-            uint256 owedPremium = (((stakerInfo[stakerLength - 1].stakeBalance *
-                desiredAPY) / DENOMINATOR) / YEAR) * poolPeriod;
-            // pay current period owed
-            // Calculate saloon fee
-            uint256 saloonFee = (owedPremium * PREMIUM_COMMISSION) /
-                DENOMINATOR;
-            // subtract saloon fee
-            owedPremium -= saloonFee;
-            if (!IERC20(_token).safeTransfer(_staker, owedPremium)) {
-                billPremium(_token, _projectWallet);
-                /* NOTE: if function above changes APY than accounting is going to get messed up,
-                because the APY used for for new transfer will be different than APY
-                used to calculate totalPremiumToClaim.
-                If function above fails then it fails...
-                */
-            }
-            // update premium
-            premiumBalance -= owedPremium;
-            // update last time claimed
-            lastClaimed[_staker] = block.timestamp;
-            return (owedPremium, true);
+        // if premium belance < owedPremium
+        //  call billpremium
+        // transfer
+        if (currentPremiumBalance < owedPremium) {
+            billPremium(_token, _projectWallet);
         }
+        IERC20(_token).transfer(_staker, owedPremium);
+
+        // update premiumBalance
+        premiumBalance -= totalPremiumToClaim;
+
+        // update last time claimed
+        lastClaimed[_staker] = block.timestamp;
+        return (owedPremium, true);
     }
 
     function calculateBalancePerPeriod(
