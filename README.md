@@ -18,4 +18,5 @@ graph TD;
     BountyProxy-- getAddress -->Beacon
     Beacon-. Implementation Address .-> BountyProxy
     BountyProxy-- delegatecall -->Implementation
+    end
 ```
