@@ -11,8 +11,8 @@ graph TD;
     Admin-- Interact with Bounty ---Manager
     Admin-. deployBounty .-Manager
     User-- Interact with Bounty ---Manager
-    Manager---->BountyProxy
-    Manager-..-Factory
+    Manager--->BountyProxy
+    Manager-.-Factory
     Factory -.-> BountyProxy
 
 
