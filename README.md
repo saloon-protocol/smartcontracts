@@ -8,7 +8,7 @@ The only entry point to interact with the Saloon smart contracts is through the 
 
 ```mermaid
 graph TD;
-    A-->B;
+    Admin-->B;
     A-->C;
     B-->D;
     C-->D;
