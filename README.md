@@ -9,11 +9,11 @@ The only entry point to interact with the Saloon smart contracts is through the 
 ```mermaid
 graph TD;
     Admin-->Manager
-    Admin-. deployBounty .->Manager
+    Admin-. deployBounty .-Manager
     User-->Manager
     Manager---->BountyProxy
     Manager-..-Factory
-    Factory -..-> BountyProxy
+    Factory -.-> BountyProxy
 
 
     subgraph Bounty
