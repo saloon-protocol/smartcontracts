@@ -11,12 +11,13 @@ graph TD;
     Admin-->Manager
     Admin-. deployBounty .-> Manager
     User-->Manager
-    Manager----->BountyProxy
+    Manager---->BountyProxy
 
 
     subgraph Bounty
+    BountyProxy-- delegatecall -->Implementation
     BountyProxy-- getAddress -->Beacon
     Beacon-. Implementation Address .-> BountyProxy
-    BountyProxy-- delegatecall -->Implementation
     end
+
 ```
