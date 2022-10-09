@@ -8,8 +8,14 @@ The only entry point to interact with the Saloon smart contracts is through the 
 
 ```mermaid
 graph TD;
-    Admin-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+    Admin-->Manager
+    Admin-. deployBounty() .-> Manager
+    User-->Manager
+    Manager-->BountyProxy
+
+
+    subgraph ide1 []
+    BountyProxy-- getAddress() -->Beacon
+    Beacon-. Implementation Address .-> BountyProxy
+    BountyProxy--delegatecall()-->Implementation
 ```
