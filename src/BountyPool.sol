@@ -811,6 +811,12 @@ contract BountyPool is Ownable, Initializable {
             }
         } else {
             for (uint256 i; i < length; ++i) {
+                /* 
+                - See what's the last one to be < lastTimeClaimed
+                - calculate distance between last time claimed and 
+                APYrecords.TimeStamp[i+1] period start 
+                - judge distance in comparison with i+1 until last i that compares distance to block.timestamp
+                */
                 if (APYrecord[i].timeStamp > _lastTimeClaimed) {
                     APYChanges.push(i - 1);
                     // push last period too
@@ -823,14 +829,6 @@ contract BountyPool is Ownable, Initializable {
             uint256 len = APYChange.length;
 
             for (uint256 i; i < len; ++i) {
-                /* 
-                - Iterate backwards through APYrecords.TimeStamp
-                - See what's the last one to be < lastTimeClaimed
-                - calculate distance between last time claimed and 
-                APYrecords.TimeStamp[i+1] period start 
-                - judge distance in comparison with i+1 until last i that compares distance to block.timestamp
-                */
-
                 if (i == 0) {
                     periodStart = _lastTimeClaimed;
                 } else {
