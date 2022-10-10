@@ -30,7 +30,7 @@ graph TD;
 ```
 
 <style>
-    #L-Manager-BountyProxy .arrowheadPath {
+    #L-Manager-BountyProxy.arrowheadPath {
          fill:red !important;
     }
 </style>
