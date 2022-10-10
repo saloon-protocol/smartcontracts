@@ -41,6 +41,7 @@ graph TD;
 ```
 
 ```mermaid
+%%{init: { "theme": "neutral" } }%%
 graph TD;
     subgraph Upgrading Implementation Contracts
         Admin((Admin))-- Upgrade Bounty Implementation ----ManagerProxy[\ManagerProxy/]
