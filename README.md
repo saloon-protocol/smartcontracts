@@ -19,9 +19,10 @@ graph TD;
 
         subgraph Manager
         ManagerProxy-- delegatecall -->ImplementationMan
+
+        end
         ManagerProxy--->BountyProxy
         ManagerProxy-.-Factory
-        end
 
         subgraph Bounty
         BountyProxy-- delegatecall --->Implementation
