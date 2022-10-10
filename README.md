@@ -39,9 +39,9 @@ graph TD;
 
     end
 
-    linkStyle 0,1 fill:none,stroke-width:2px,stroke:blue
-    linkStyle 2,3,4,5 fill:none,stroke-width:2px,stroke:green
-    linkStyle 8,10 fill:none,stroke-width:2px,stroke:brown
+    linkStyle 1,2,7 fill:none,stroke-width:2px,stroke:blue
+    linkStyle 0,2,3,4,5 fill:none,stroke-width:2px,stroke:green
+    linkStyle 6,8,10 fill:none,stroke-width:2px,stroke:brown
     linkStyle 9,11 fill:none,stroke-width:2px,stroke:orange
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
