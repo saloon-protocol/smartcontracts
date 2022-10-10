@@ -29,15 +29,15 @@ graph TD;
         subgraph Bounty
         BountyProxy
         end
-    BountyProxy-- delegatecall --->Pool[Bounty Implementation]
-    BountyProxy -. get Implementation address .-> Beacon
-
 
         subgraph Bounty2
         BountyProxy2[BountyProxy]
         end
-    BountyProxy2[BountyProxy]-- delegatecall --->Pool[Bounty Implementation]
+
+    BountyProxy -. get Implementation address .-> Beacon
     BountyProxy2 -. get Implementation address .-> Beacon
+    BountyProxy-- delegatecall --->Pool[Bounty Implementation]
+    BountyProxy2[BountyProxy]-- delegatecall --->Pool[Bounty Implementation]
 
     end
 
