@@ -15,6 +15,7 @@ graph TD;
         Admin-. deployBounty ..-ManagerProxy
 
         Factory -.-> BountyProxy
+        Factory -.-> BountyProxy2
 
         subgraph Manager
         ManagerProxy<-- delegatecall -->Implementation[Manager Implementaion]
@@ -31,7 +32,7 @@ graph TD;
         subgraph Bounty2
         BountyProxy2[BountyProxy]-- delegatecall --->Pool2[Bounty Implementation]
         end
-    BountyProxy1 -. get Implementation address .-> Beacon
+    BountyProxy2 -. get Implementation address .-> Beacon
 
     end
 
