@@ -44,8 +44,8 @@ graph TD;
 %%{init: { "theme": "neutral" } }%%
 graph TD;
     subgraph Upgrading Implementation Contracts
-        Admin((Admin))-- Upgrade Bounty Implementation ----ManagerProxy[\ManagerProxy/]
-        Admin-- Upgrade Manager Implementation ----ManagerProxy
+        Admin((Admin))-- Upgrade Manager Implementation ----ManagerProxy[\ManagerProxy/]
+        Admin-- Upgrade Bounty Implementation ----ManagerProxy
 
         subgraph Manager
         ManagerProxy-- delegatecall -->Implementation[Manager Implementaion]
