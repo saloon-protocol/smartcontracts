@@ -38,7 +38,11 @@ graph TD;
     style Manager fill:#000,color:#fff,arrow-head:#fff
     style Bounty fill:#000,color:#fff,arrow-head:#fff
 
-    UpdateRelStyle(Test, Testing, $textColor="blue", $lineColor="blue", $offsetX="5")
+    <style>
+        #L-C-D .arrowheadPath {
+            fill:red !important;
+        }
+    </style>
 
 
 ```
