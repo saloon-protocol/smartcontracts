@@ -18,7 +18,7 @@ graph TD;
         Factory -.-> BountyProxy
 
         subgraph Manager
-        ManagerProxy<- delegatecall ->Implementation[Manager Implementaion]
+        ManagerProxy<-- delegatecall -->Implementation[Manager Implementaion]
         end
 
         ManagerProxy--->BountyProxy
@@ -32,7 +32,7 @@ graph TD;
     linkStyle 0,1,3,6 fill:none,stroke-width:2px,stroke:blue
     linkStyle 2,4,5 fill:none,stroke-width:2px,stroke:green
     linkStyle 7 fill:none,stroke-width:2px,stroke:brown
-
+    arrowStyle 7 fill:none,stroke-width:2px,stroke:brown
 ```
 
 <style>
