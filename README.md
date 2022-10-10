@@ -10,7 +10,7 @@ The only entry point to interact with the Saloon smart contracts is through the 
 graph TD;
     subgraph Overview
         Admin((Admin))-- Interact with Bounty ----Manager[\Manager/]
-        style Admin fill:#f9f, lineColor:#bbf
+        style Admin fill:#f9f, defaultLinkColor:#bbf
         User((User))-- Interact with Bounty ----Manager
         Admin-. deployBounty ..-Manager
         Manager--->BountyProxy
