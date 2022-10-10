@@ -27,9 +27,8 @@ graph TD;
         BountyProxy-- delegatecall --->Pool[Bounty Implementation]
         BountyProxy -. get Implementation address .-> Beacon
         end
-    Test-->Testing
-    end
 
+    end
 
     linkStyle 0,1,5 fill:none,stroke-width:2px,stroke:blue
     linkStyle 2,3,6 fill:none,stroke-width:2px,stroke:green
@@ -37,12 +36,6 @@ graph TD;
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
     style Bounty fill:#000,color:#fff,arrow-head:#fff
-
-    <style>
-        #L-C-D .arrowheadPath {
-            fill:red !important;
-        }
-    </style>
 
 
 ```
