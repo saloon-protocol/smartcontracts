@@ -7,7 +7,7 @@ The only entry point to interact with the Saloon smart contracts is through the 
 - Admins can deploy and manage bounties.
 
 ```mermaid
-%%{init: { "theme": "forest" } }%%
+%%{init: { "theme": "neutral" } }%%
 graph TD;
     subgraph Overview
         Admin((Admin))-- Interact with Bounty ----Manager[\Manager/]
