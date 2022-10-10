@@ -14,7 +14,7 @@ graph TD;
         User((User))-- Interact with Bounty ----ManagerProxy
         Admin-. deployBounty ..-ManagerProxy
 
-        ManagerProxy-.-Factory
+        ManagerProxy-...-Factory
         Factory -.-> BountyProxy
         Factory -.-> BountyProxy2
 
