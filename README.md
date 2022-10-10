@@ -12,6 +12,7 @@ graph TD;
     subgraph Overview
         Admin((Admin))-- Interact with Bounty ----Manager[\Manager/]
         style Manager fill:#000,color:#fff,arrow-head:#fff
+        linkStyle default fill:none,stroke-width:3px,stroke:red
         User((User))-- Interact with Bounty ----Manager
         Admin-. deployBounty ..-Manager
         Manager--->BountyProxy
