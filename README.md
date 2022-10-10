@@ -33,5 +33,6 @@ graph TD;
     linkStyle 4,7 fill:none,stroke-width:2px,stroke:brown
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
+    style Bounty fill:#000,color:#fff,arrow-head:#fff
 
 ```
