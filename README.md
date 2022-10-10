@@ -18,7 +18,7 @@ graph TD;
         Factory -.-> BountyProxy
 
         subgraph Manager
-        ManagerProxy<-- delegatecall -->Implementation[Manager Implementaion]
+        ManagerProxy<- delegatecall ->Implementation[Manager Implementaion]
         end
 
         ManagerProxy--->BountyProxy
