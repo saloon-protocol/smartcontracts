@@ -46,6 +46,8 @@ graph TD;
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
     style Bounty fill:#000,color:#fff,arrow-head:#fff
+    style Bounty2 fill:#000,color:#fff,arrow-head:#fff
+
 
 
 ```
