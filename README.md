@@ -22,11 +22,16 @@ graph TD;
 
         ManagerProxy--->BountyProxy
         ManagerProxy-.-Factory
-
         subgraph Bounty
         BountyProxy-- delegatecall --->Pool[Bounty Implementation]
         end
     BountyProxy -. get Implementation address .-> Beacon
+
+
+        subgraph Bounty2
+        BountyProxy2[BountyProxy]-- delegatecall --->Pool2[Bounty Implementation]
+        end
+    BountyProxy1 -. get Implementation address .-> Beacon
 
     end
 
