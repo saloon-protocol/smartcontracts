@@ -24,9 +24,9 @@ graph TD;
         BountyProxy -. get Implementation address .-> Beacon
         end
     end
-    linkStyle 0,1,3,6 fill:none,stroke-width:1px,stroke:blue
-    linkStyle 2,4,5 fill:none,stroke-width:1px,stroke:green
-    linkStyle 7 fill:none,stroke-width:1px,stroke:brown
+    linkStyle 0,1,3,6 fill:none,stroke-width:2px,stroke:blue
+    linkStyle 2,4,5 fill:none,stroke-width:2px,stroke:green
+    linkStyle 7 fill:none,stroke-width:2px,stroke:brown
 
 ```
 
