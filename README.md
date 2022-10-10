@@ -12,7 +12,6 @@ graph TD;
     subgraph Overview
         Admin((Admin))-- Interact with Bounty ----Manager[\Manager/]
         style Manager fill:#000,color:#fff,arrow-head:#fff
-
         User((User))-- Interact with Bounty ----Manager
         Admin-. deployBounty ..-Manager
         Manager--->BountyProxy
@@ -25,6 +24,6 @@ graph TD;
         BountyProxy -. get Implementation address .-> Beacon
         end
     end
-    linkStyle 0 fill:none,stroke-width:1px,stroke:red
+    linkStyle 0,2 fill:none,stroke-width:1px,stroke:red
 
 ```
