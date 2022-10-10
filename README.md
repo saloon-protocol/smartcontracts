@@ -37,8 +37,8 @@ graph TD;
 
     end
 
-    linkStyle 0,1,5 fill:none,stroke-width:2px,stroke:blue
-    linkStyle 2,3,4,7 fill:none,stroke-width:2px,stroke:green
+    linkStyle 0,1 fill:none,stroke-width:2px,stroke:blue
+    linkStyle 2,3,4,5 fill:none,stroke-width:2px,stroke:green
     linkStyle 8,10 fill:none,stroke-width:2px,stroke:brown
     linkStyle 9,11 fill:none,stroke-width:2px,stroke:orange
 
