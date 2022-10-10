@@ -49,13 +49,14 @@ graph TD;
 
         subgraph Manager
         ManagerProxy-- delegatecall -->Implementation[Manager Implementaion]
-        Implementation-->Implementation
+        Implementation-- upgradeTo -->Implementation
         end
 
         ManagerProxy --> Beacon
     end
 
-    linkStyle 0,1 fill:none,stroke-width:2px,stroke:blue
+    linkStyle 0,1,2,3 fill:none,stroke-width:2px,stroke:orange
+    linkStyle 1,4 fill:none,stroke-width:2px,stroke:brown
 
 
     style Manager fill:#000,color:#fff,arrowheadPath:#fff
