@@ -30,7 +30,7 @@ graph TD;
         end
     end
     linkStyle 0,1 fill:none,stroke-width:2px,stroke:blue
-    linkStyle 2,3,5 fill:none,stroke-width:2px,stroke:green
-    linkStyle 4,6 fill:none,stroke-width:2px,stroke:brown
+    linkStyle 2,3,6 fill:none,stroke-width:2px,stroke:green
+    linkStyle 4 fill:none,stroke-width:2px,stroke:brown
 
 ```
