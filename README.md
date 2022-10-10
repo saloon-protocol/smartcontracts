@@ -39,3 +39,21 @@ graph TD;
 
 
 ```
+
+```mermaid
+graph TD;
+    subgraph Upgrading Implementation Contracts
+        Admin((Admin))-- Upgrade Bounty Implementation ----ManagerProxy[\ManagerProxy/]
+        Admin-- Upgrade Manager Implementation --ManagerProxy
+
+        subgraph Manager
+        ManagerProxy<-- delegatecall -->Implementation[Manager Implementaion]
+        end
+
+        ManagerProxy --> Beacon
+
+
+
+
+    end
+```
