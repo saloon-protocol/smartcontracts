@@ -14,6 +14,7 @@ graph TD;
         User((User))-- Interact with Bounty ----ManagerProxy
         Admin-. deployBounty ..-ManagerProxy
 
+        ManagerProxy-.-Factory
         Factory -.-> BountyProxy
         Factory -.-> BountyProxy2
 
@@ -22,7 +23,7 @@ graph TD;
         end
 
         ManagerProxy--->BountyProxy
-        ManagerProxy-.-Factory
+
         subgraph Bounty
         BountyProxy-- delegatecall --->Pool[Bounty Implementation]
         end
