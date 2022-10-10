@@ -59,4 +59,5 @@ graph TD;
 
 
     style Manager fill:#000,color:#fff,arrowheadPath:#fff
+    style ManagerProxy arrowheadPath:#fff
 ```
