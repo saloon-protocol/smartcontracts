@@ -59,5 +59,5 @@ graph TD;
 
 
     style Manager fill:#000,color:#fff,arrowheadPath:#fff
-    style L-ManagerProxy-Beacon arrowheadPath:#fff
+    style L-ManagerProxy-Beacon.arrowheadPath:#fff
 ```
