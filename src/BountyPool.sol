@@ -507,7 +507,11 @@ contract BountyPool is Ownable, Initializable {
             desiredAPY = viewcurrentAPY();
             //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
 
-            APYdropped = true;
+            /* 
+            NOTE: Should we allow for instant unstaking if project doesn pay up?
+                    - Might be unfair to hunters who submitted valid finding
+            */
+            // APYdropped = true;
 
             return false;
         }
