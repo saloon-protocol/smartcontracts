@@ -1018,10 +1018,14 @@ contract BountyPool is Ownable, Initializable {
         returns (uint256, uint256)
     {
         uint256 length = staker[_staker].length;
-        return (
-            staker[_staker][length - 1].stakeBalance,
-            staker[_staker][length - 1].balanceTimeStamp
-        );
+        if (length == 0) {
+            return (0, 0);
+        } else {
+            return (
+                staker[_staker][length - 1].stakeBalance,
+                staker[_staker][length - 1].balanceTimeStamp
+            );
+        }
     }
 
     //note view user current claimable premium ???
