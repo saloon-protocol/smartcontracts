@@ -24,11 +24,11 @@ graph TD;
 
         ManagerProxy--->BountyProxy2
 
-        subgraph Bounty
+        subgraph Bounty [Bounty#2]
         BountyProxy
         end
 
-        subgraph Bounty2 [Bounty#2]
+        subgraph Bounty2 [Bounty]
         BountyProxy2[BountyProxy]
         end
     BountyProxy2 -. get Implementation address .-> Beacon
@@ -43,7 +43,7 @@ graph TD;
 
     linkStyle 1,2,7 fill:none,stroke-width:2px,stroke:blue
     linkStyle 0,3,4,5 fill:none,stroke-width:2px,stroke:green
-    linkStyle 6,8,10 fill:none,stroke-width:2px,stroke:brown
+    linkStyle 6,9,11 fill:none,stroke-width:2px,stroke:brown
 
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
