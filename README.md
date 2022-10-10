@@ -12,14 +12,15 @@ graph TD;
     subgraph Overview
         Admin((Admin))-- Interact with Bounty ----ManagerProxy[\Manager/]
         style Manager fill:#000,color:#fff,arrow-head:#fff
-        User((User))-- Interact with Bounty ----Manager
+        User((User))-- Interact with Bounty ----ManagerProxy
         Admin-. deployBounty ..-Manager
-        Manager--->BountyProxy
-        Manager-.-Factory
+
         Factory -.-> BountyProxy
 
         subgraph Manager
         ManagerProxy-- delegatecall -->Implementation
+        ManagerProxy--->BountyProxy
+        ManagerProxy-.-Factory
         end
 
         subgraph Bounty
