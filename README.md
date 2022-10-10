@@ -39,7 +39,7 @@ graph TD;
 
     linkStyle 0,1,5 fill:none,stroke-width:2px,stroke:blue
     linkStyle 2,3,6,7 fill:none,stroke-width:2px,stroke:green
-    linkStyle 4, fill:none,stroke-width:2px,stroke:brown
+    linkStyle 4 fill:none,stroke-width:2px,stroke:brown
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
     style Bounty fill:#000,color:#fff,arrow-head:#fff
