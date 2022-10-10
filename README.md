@@ -44,10 +44,10 @@ graph TD;
 graph TD;
     subgraph Upgrading Implementation Contracts
         Admin((Admin))-- Upgrade Bounty Implementation ----ManagerProxy[\ManagerProxy/]
-        Admin-- Upgrade Manager Implementation --ManagerProxy
+        Admin-- Upgrade Manager Implementation ----ManagerProxy
 
         subgraph Manager
-        ManagerProxy<-- delegatecall -->Implementation[Manager Implementaion]
+        ManagerProxy-- delegatecall -->Implementation[Manager Implementaion]
         end
 
         ManagerProxy --> Beacon
