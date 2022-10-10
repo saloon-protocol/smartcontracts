@@ -56,8 +56,7 @@ graph TD;
     end
 
     linkStyle 0,1 fill:none,stroke-width:2px,stroke:blue
-    linkStyle 2,3 fill:none,stroke-width:2px,stroke:green
-    linkStyle 5 fill:none,stroke-width:2px,stroke:brown
+
 
     style Manager fill:#000,color:#fff,arrow-head:#fff
 ```
