@@ -26,7 +26,7 @@ graph TD;
     end
     linkStyle 0,1,3,6 fill:none,stroke-width:1px,stroke:blue
     linkStyle 2,4,5 fill:none,stroke-width:1px,stroke:green
-    linkStyle 2,4,5 fill:none,stroke-width:1px,stroke:yellow
+    linkStyle 7 fill:none,stroke-width:1px,stroke:brown
 
 ```
 
