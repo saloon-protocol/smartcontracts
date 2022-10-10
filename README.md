@@ -28,7 +28,7 @@ graph TD;
         BountyProxy
         end
 
-        subgraph Bounty2
+        subgraph Bounty2 [Bounty#2]
         BountyProxy2[BountyProxy]
         end
     BountyProxy2 -. get Implementation address .-> Beacon
