@@ -17,21 +17,20 @@ contract BountyPool is Ownable, Initializable {
 
     uint256 public constant VERSION = 1;
     uint256 public constant BOUNTY_COMMISSION = 10 * 1e18;
-    uint256 public constant PREMIUM_COMMISSION = 2 * 1e18;
+    uint256 public constant PREMIUM_COMMISSION = 10 * 1e18;
     uint256 public constant DENOMINATOR = 100 * 1e18;
     uint256 public constant YEAR = 365 days;
-
-    uint256 public projectDeposit;
+    uint256 public poolPeriod = 2 weeks;
 
     uint256 public saloonBountyCommission;
-
     uint256 public saloonPremiumFees;
     uint256 public premiumBalance;
+
     uint256 public desiredAPY;
     uint256 public poolCap;
     uint256 public lastTimePaid;
+    uint256 public projectDeposit;
     uint256 public requiredPremiumBalancePerPeriod;
-    uint256 public poolPeriod = 2 weeks;
 
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
@@ -39,11 +38,11 @@ contract BountyPool is Ownable, Initializable {
     mapping(address => StakingInfo[]) public staker;
 
     // staker address => amount => timelock time
-    mapping(address => mapping(uint256 => TimelockInfo)) public stakerTimelock;
+    mapping(address => TimelockInfo) public stakerTimelock;
 
-    mapping(uint256 => TimelockInfo) public poolCapTimelock;
-    mapping(uint256 => TimelockInfo) public APYTimelock;
-    mapping(uint256 => TimelockInfo) public withdrawalTimelock;
+    TimelockInfo public poolCapTimelock;
+    TimelockInfo public APYTimelock;
+    TimelockInfo public withdrawalTimelock;
 
     struct StakingInfo {
         uint256 stakeBalance;
@@ -57,6 +56,7 @@ contract BountyPool is Ownable, Initializable {
 
     struct TimelockInfo {
         uint256 timelock;
+        uint256 amount;
         bool executed;
     }
 
@@ -269,31 +269,35 @@ contract BountyPool is Ownable, Initializable {
     }
 
     function schedulePoolCapChange(uint256 _newPoolCap) external onlyManager {
-        poolCapTimelock[_newPoolCap].timelock = block.timestamp + poolPeriod;
-        poolCapTimelock[_newPoolCap].executed = false;
+        poolCapTimelock.timelock = block.timestamp + poolPeriod;
+        poolCapTimelock.amount = _newPoolCap;
+        poolCapTimelock.executed = false;
     }
 
     // PROJECT SET CAP
     function setPoolCap(uint256 _amount) external onlyManager {
         // check timelock if current poolCap != 0
         if (poolCap != 0) {
+            TimelockInfo memory poolCapLock = poolCapTimelock;
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
             require(
-                poolCapTimelock[_amount].timelock < block.timestamp &&
-                    poolCapTimelock[_amount].executed == false &&
-                    poolCapTimelock[_amount].timelock != 0,
+                poolCapLock.timelock < block.timestamp &&
+                    poolCapLock.executed == false &&
+                    poolCapLock.amount == _amount &&
+                    poolCapLock.timelock != 0,
                 "Timelock not set or not completed"
             );
             // set executed to true
-            poolCapTimelock[_amount].executed = true;
+            poolCapTimelock.executed = true;
         }
 
         poolCap = _amount;
     }
 
     function scheduleAPYChange(uint256 _newAPY) external onlyManager {
-        poolCapTimelock[_newAPY].timelock = block.timestamp + poolPeriod;
-        poolCapTimelock[_newAPY].executed = false;
+        APYTimelock.timelock = block.timestamp + poolPeriod;
+        APYTimelock.amount = _newAPY;
+        APYTimelock.executed = false;
     }
 
     // PROJECT SET APY
@@ -309,15 +313,17 @@ contract BountyPool is Ownable, Initializable {
     ) external onlyManager returns (bool) {
         // check timelock if current APY != 0
         if (desiredAPY != 0) {
+            TimelockInfo memory APYLock = APYTimelock;
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
             require(
-                APYTimelock[_desiredAPY].timelock < block.timestamp &&
-                    APYTimelock[_desiredAPY].executed == false &&
-                    APYTimelock[_desiredAPY].timelock != 0,
+                APYLock.timelock < block.timestamp &&
+                    APYLock.executed == false &&
+                    APYLock.amount == _desiredAPY &&
+                    APYLock.timelock != 0,
                 "Timelock not set or not completed"
             );
             // set executed to true
-            APYTimelock[_desiredAPY].executed = true;
+            APYTimelock.executed = true;
         }
         uint256 currentPremiumBalance = premiumBalance;
         uint256 newRequiredPremiumBalancePerPeriod;
@@ -530,8 +536,9 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (bool)
     {
-        withdrawalTimelock[_amount].timelock = block.timestamp + poolPeriod;
-        withdrawalTimelock[_amount].executed = false;
+        withdrawalTimelock.timelock = block.timestamp + poolPeriod;
+        withdrawalTimelock.amount = _amount;
+        withdrawalTimelock.executed = false;
         return true;
     }
 
@@ -541,15 +548,17 @@ contract BountyPool is Ownable, Initializable {
         address _projectWallet,
         uint256 _amount
     ) external onlyManager returns (bool) {
+        TimelockInfo memory withdrawalLock = withdrawalTimelock;
         // time lock check
         // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
         require(
-            withdrawalTimelock[_amount].timelock < block.timestamp &&
-                withdrawalTimelock[_amount].executed == false &&
-                withdrawalTimelock[_amount].timelock != 0,
+            withdrawalLock.timelock < block.timestamp &&
+                withdrawalLock.executed == false &&
+                withdrawalLock.amount >= _amount &&
+                withdrawalLock.timelock != 0,
             "Timelock not set or not completed"
         );
-        withdrawalTimelock[_amount].executed = true;
+        withdrawalTimelock.executed = true;
 
         projectDeposit -= _amount;
         IERC20(_token).safeTransfer(_projectWallet, _amount);
@@ -639,17 +648,17 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (bool)
     {
-        // this cant be un-initiliazed because its already been when staking
-        uint256 arraySize = staker[_staker].length - 1;
+        StakingInfo[] memory stakr = staker[_staker];
+        uint256 arraySize = stakr.length - 1;
+
         require(
-            staker[_staker][arraySize].stakeBalance >= _amount,
+            stakr[arraySize].stakeBalance >= _amount,
             "Insuficcient balance"
         );
 
-        stakerTimelock[_staker][_amount].timelock =
-            block.timestamp +
-            poolPeriod;
-        stakerTimelock[_staker][_amount].executed = false;
+        stakerTimelock[_staker].timelock = block.timestamp + poolPeriod;
+        stakerTimelock[_staker].amount = _amount;
+        stakerTimelock[_staker].executed = false;
 
         return true;
     }
@@ -662,18 +671,21 @@ contract BountyPool is Ownable, Initializable {
         address _staker,
         uint256 _amount
     ) external onlyManager returns (bool) {
+        // TODO cache staker[]
         // allow for immediate withdrawal if APY drops from desired APY
         // going to need to create an extra variable for storing this when apy changes for worse
         if (desiredAPY != 0 || APYdropped == true) {
+            TimelockInfo memory stakrTimelock = stakerTimelock[_staker];
             // time lock check
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
             require(
-                stakerTimelock[_staker][_amount].timelock < block.timestamp &&
-                    stakerTimelock[_staker][_amount].executed == false &&
-                    stakerTimelock[_staker][_amount].timelock != 0,
+                stakrTimelock.timelock < block.timestamp &&
+                    stakrTimelock.executed == false &&
+                    stakrTimelock.amount >= _amount &&
+                    stakrTimelock.timelock != 0,
                 "Timelock not set or not completed"
             );
-            stakerTimelock[_staker][_amount].executed = true;
+            stakerTimelock[_staker].executed = true;
 
             uint256 arraySize = staker[_staker].length - 1;
 
