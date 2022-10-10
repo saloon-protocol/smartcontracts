@@ -47,7 +47,7 @@ graph TD;
         Admin-- Upgrade Manager Implementation ----ManagerProxy
 
         subgraph Manager
-        ManagerProxy-->ManagerProxy
+        ManagerProxy->ManagerProxy
         ManagerProxy-- delegatecall -->Implementation[Manager Implementaion]
         end
 
