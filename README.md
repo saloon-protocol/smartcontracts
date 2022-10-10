@@ -54,7 +54,7 @@ graph TD;
         Admin-- Upgrade Bounty Implementation ----ManagerProxy
 
         subgraph Manager
-        ManagerProxy-- delegatecall --Implementation[Manager Implementaion]
+        ManagerProxy-- delegatecall --Implementation[Manager Implementation]
         Implementation-- upgradeTo -->Implementation
         end
 
