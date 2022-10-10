@@ -40,6 +40,12 @@ graph TD;
 
 ```
 
+### Upgrading Proxy Implementation Contract
+
+- Changing the ManagerProxy implementation is done by calling the current implementation which updates itself.
+
+- All bounty proxies refer to the same implementation address via the Beacon. Therefore changing the address the Beacon refers to will update the implementation address for all bounty proxies.
+
 ```mermaid
 %%{init: { "theme": "neutral" } }%%
 graph TD;
