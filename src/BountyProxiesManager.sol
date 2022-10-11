@@ -636,13 +636,16 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     function viewUserTimelock(string memory _projectName, address _staker)
         external
         view
-        returns (uint256, uint256, bool)
+        returns (
+            uint256 timelock,
+            uint256 amount,
+            bool executed
+        )
     {
         Bounties memory bounty = bountyDetails[_projectName];
-        (uint256 timelock, uint256 amount, bool executed) = bounty.proxyAddress.stakerTimelock(
+        (timelock, amount, executed) = bounty.proxyAddress.viewUserTimelock(
             _staker
         );
-        return (uint256 timelock, uint256 amount, bool executed);
     }
 
     // Function to find bounty proxy and wallet address by Name // done

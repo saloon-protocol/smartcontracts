@@ -1050,6 +1050,20 @@ contract BountyPool is Ownable, Initializable {
         }
     }
 
+    function viewUserTimelock(address _staker)
+        external
+        view
+        returns (
+            uint256 timelock,
+            uint256 amount,
+            bool executed
+        )
+    {
+        timelock = stakerTimelock[_staker].timelock;
+        amount = stakerTimelock[_staker].timelock;
+        executed = stakerTimelock[_staker].executed;
+    }
+
     //note view user current claimable premium ???
 
     //note view version function??
