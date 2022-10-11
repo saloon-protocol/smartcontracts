@@ -19,8 +19,9 @@ contract BountyPool is Ownable, Initializable {
     uint256 public constant BOUNTY_COMMISSION = 10 * 1e18;
     uint256 public constant PREMIUM_COMMISSION = 10 * 1e18;
     uint256 public constant DENOMINATOR = 100 * 1e18;
+    uint256 public constant PRECISION = 100;
     uint256 public constant YEAR = 365 days;
-    uint256 public poolPeriod = 2 weeks;
+    uint256 public constant PERIOD = 2 weeks;
 
     uint256 public saloonBountyCommission;
     uint256 public saloonPremiumFees;
@@ -151,7 +152,8 @@ contract BountyPool is Ownable, Initializable {
                 return true;
             }
             // calculate percentage of stakersDeposit
-            uint256 percentage = _amount /
+            // note should we increase precision?
+            uint256 percentage = (_amount * PRECISION) /
                 stakersDeposits[stakingLenght].stakeBalance;
             // loop through all stakers and deduct percentage from their balances
             for (uint256 i; i < length; ++i) {
@@ -269,7 +271,7 @@ contract BountyPool is Ownable, Initializable {
     }
 
     function schedulePoolCapChange(uint256 _newPoolCap) external onlyManager {
-        poolCapTimelock.timelock = block.timestamp + poolPeriod;
+        poolCapTimelock.timelock = block.timestamp + PERIOD;
         poolCapTimelock.amount = _newPoolCap;
         poolCapTimelock.executed = false;
     }
@@ -295,7 +297,7 @@ contract BountyPool is Ownable, Initializable {
     }
 
     function scheduleAPYChange(uint256 _newAPY) external onlyManager {
-        APYTimelock.timelock = block.timestamp + poolPeriod;
+        APYTimelock.timelock = block.timestamp + PERIOD;
         APYTimelock.amount = _newAPY;
         APYTimelock.executed = false;
     }
@@ -338,7 +340,7 @@ contract BountyPool is Ownable, Initializable {
             // ensure there is enough premium balance to pay stakers new APY for one period
             newRequiredPremiumBalancePerPeriod =
                 (((poolCap * _desiredAPY) / DENOMINATOR) / YEAR) *
-                poolPeriod;
+                PERIOD;
             // NOTE: this might lead to leftover premium if project decreases APY, we will see what to do about that later
             if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
                 // calculate difference to be paid
@@ -486,16 +488,28 @@ contract BountyPool is Ownable, Initializable {
             lastPaid,
             stakersDeposits
         );
-
         // TODO test Try Catch block
+        // note try/catch should handle both revert and fails from transferFrom;
         try
             IERC20(_token).transferFrom(
                 _projectWallet,
                 address(this),
                 premiumOwed
             )
-        {
-            // TODO If return valid is 0 still run same things on catch block
+        returns (bool result) {
+            // If return valid is 0 run same things on catch block
+            if (result == false) {
+                // if transfer fails APY is reset and premium is paid with new APY
+                // register new APYperiod
+                APYperiods memory newAPYperiod;
+                newAPYperiod.timeStamp = block.timestamp;
+                newAPYperiod.periodAPY = viewcurrentAPY();
+                APYrecords.push(newAPYperiod);
+                // set new APY
+                // TODO Call setDesiredAPY so all staker balances get updated
+                desiredAPY = viewcurrentAPY();
+                //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
+            }
         } catch {
             // if transfer fails APY is reset and premium is paid with new APY
             // register new APYperiod
@@ -504,6 +518,7 @@ contract BountyPool is Ownable, Initializable {
             newAPYperiod.periodAPY = viewcurrentAPY();
             APYrecords.push(newAPYperiod);
             // set new APY
+            // TODO Call setDesiredAPY so all staker balances get updated
             desiredAPY = viewcurrentAPY();
             //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
 
@@ -540,7 +555,7 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (bool)
     {
-        withdrawalTimelock.timelock = block.timestamp + poolPeriod;
+        withdrawalTimelock.timelock = block.timestamp + PERIOD;
         withdrawalTimelock.amount = _amount;
         withdrawalTimelock.executed = false;
         return true;
@@ -665,7 +680,7 @@ contract BountyPool is Ownable, Initializable {
             "Insuficcient balance"
         );
 
-        stakerTimelock[_staker].timelock = block.timestamp + poolPeriod;
+        stakerTimelock[_staker].timelock = block.timestamp + PERIOD;
         stakerTimelock[_staker].amount = _amount;
         stakerTimelock[_staker].executed = false;
 
@@ -708,17 +723,19 @@ contract BountyPool is Ownable, Initializable {
 
             address[] memory stakersList = stakerList;
             // delete from staker list
+            // note if 18 decimals are not used properly at some stage this might never be true.
             if (newInfo.stakeBalance == 0) {
                 // loop through stakerlist
                 uint256 length = stakersList.length;
                 for (uint256 i; i < length; ) {
                     // find staker
                     if (stakersList[i] == _staker) {
-                        // exchange it with last address in array
+                        // get value in the last array position
                         address lastAddress = stakersList[length - 1];
-                        stakerList[length - 1] = _staker;
+                        // replace it to the current position
                         stakerList[i] = lastAddress;
-                        // pop it
+
+                        // pop last array value
                         stakerList.pop();
                         break;
                     }
@@ -819,7 +836,7 @@ contract BountyPool is Ownable, Initializable {
                 }
                 uint256 apy = APYrecord[i].periodAPY;
                 // loop through stakers balance fluctiation during this period
-                totalPeriodClaim = calculateBalance(
+                totalPeriodClaim += calculateBalance(
                     apy,
                     periodStart,
                     periodEnd,
@@ -861,7 +878,7 @@ contract BountyPool is Ownable, Initializable {
                 }
                 uint256 apy = APYrecord[APYChange[i]].periodAPY;
                 // loop through stakers balance fluctiation during this period
-                totalPeriodClaim = calculateBalance(
+                totalPeriodClaim += calculateBalance(
                     apy,
                     periodStart,
                     periodEnd,
@@ -886,7 +903,7 @@ contract BountyPool is Ownable, Initializable {
             for (uint256 i; i < _stakerLength; ++i) {
                 // check staker balance at that moment
                 if (
-                    _stakerInfo[i].balanceTimeStamp > _periodStart &&
+                    _stakerInfo[i].balanceTimeStamp >= _periodStart &&
                     _stakerInfo[i].balanceTimeStamp < _periodEnd
                 ) {
                     stakerChange.push(i);
@@ -901,7 +918,7 @@ contract BountyPool is Ownable, Initializable {
 
                 if (i == len - 1) {
                     duration =
-                        block.timestamp -
+                        _periodEnd -
                         _stakerInfo[stakrChange[i]].balanceTimeStamp;
                 } else {
                     duration =
