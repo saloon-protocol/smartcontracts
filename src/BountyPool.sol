@@ -576,8 +576,13 @@ contract BountyPool is Ownable, Initializable {
         address _staker,
         uint256 _amount
     ) external onlyManager returns (bool) {
-        // dont allow staking if stakerDeposit >= poolCap
+        // NOTE/TODO insert require statement to prevent anyone from staking
+        // before 1 week after project deposit has been set?
+        // should we use project deposit or bounty launch time?
+        // What if the project makes no deposit and only has a crazy APY? users will never be able to stake
+        // On the other hand if project launches but takes a while to do proejct deposit people might only look once project deposit is already high?
 
+        // dont allow staking if stakerDeposit >= poolCap
         StakingInfo[] memory stakersDeposits = stakersDeposit;
         uint256 stakingLenght = stakersDeposits.length;
 

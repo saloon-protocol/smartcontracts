@@ -242,7 +242,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
             // collect the premium fees from bounty
-            if (notDead(bountiesArray[i].dead) == true) {
+            if (notDead(bountiesArray[i].dead) == false) {
                 continue; // killed bounties are supposed to be skipped.
             }
             bountiesArray[i].proxyAddress.billPremium(
@@ -300,7 +300,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         uint256 collected;
         // iterate through all bounty proxies
         for (uint256 i; i < length; ++i) {
-            if (notDead(bountiesArray[i].dead) == true) {
+            if (notDead(bountiesArray[i].dead) == false) {
                 continue; // killed bounties are supposed to be skipped.
             }
             // collect the premium fees from bounty
