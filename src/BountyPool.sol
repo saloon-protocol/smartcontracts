@@ -495,7 +495,7 @@ contract BountyPool is Ownable, Initializable {
                 premiumOwed
             )
         {
-            // nothing
+            // TODO If return valid is 0 still run same things on catch block
         } catch {
             // if transfer fails APY is reset and premium is paid with new APY
             // register new APYperiod
