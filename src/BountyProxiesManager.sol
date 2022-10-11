@@ -395,6 +395,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _amount
         );
 
+        // TODO TAKE INTO ACCOUNT SALOON FEES
         uint256 newPayout = oldPayout + _amount;
 
         emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
@@ -445,6 +446,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             bounty.projectWallet,
             _amount
         );
+        // TODO TAKE INTO ACCOUNT SALOON FEES
 
         uint256 newPayout = oldPayout - _amount;
 
@@ -469,6 +471,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
         uint256 newPayout = oldPayout + _amount;
         uint256 newStaked = previousStaked + _amount;
+        // TODO TAKE INTO ACCOUNT SALOON FEES
 
         emit StakedAmountChanged(_projectName, previousStaked, newStaked);
         emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
