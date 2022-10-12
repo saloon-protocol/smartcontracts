@@ -221,16 +221,23 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             notDead(bountyDetails[_projectName].dead) == true,
             "Bounty is Dead"
         );
-        // bill
-        bountyDetails[_projectName].proxyAddress.billPremium(
-            bountyDetails[_projectName].token,
-            bountyDetails[_projectName].projectWallet
-        );
 
-        emit PremiumBilled(
-            _projectName,
-            bountyDetails[_projectName].projectWallet
-        );
+        // bill
+        if (
+            bountyDetails[_projectName].proxyAddress.billPremium(
+                bountyDetails[_projectName].token,
+                bountyDetails[_projectName].projectWallet
+            ) == true
+        ) {
+            emit PremiumBilled(
+                _projectName,
+                bountyDetails[_projectName].projectWallet
+            );
+        } else {
+            uint256 apy = viewDesiredAPY(_projectName);
+            uint256 poolCap = viewPoolCap(_projectName);
+            emit PoolCapAndAPYChanged(_projectName, poolCap, apy);
+        }
         return true;
     }
 
@@ -245,14 +252,25 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             if (notDead(bountiesArray[i].dead) == false) {
                 continue; // killed bounties are supposed to be skipped.
             }
-            bountiesArray[i].proxyAddress.billPremium(
-                bountiesArray[i].token,
-                bountiesArray[i].projectWallet
-            );
-            emit PremiumBilled(
-                bountiesArray[i].projectName,
-                bountiesArray[i].projectWallet
-            );
+            if (
+                bountiesArray[i].proxyAddress.billPremium(
+                    bountiesArray[i].token,
+                    bountiesArray[i].projectWallet
+                ) == true
+            ) {
+                emit PremiumBilled(
+                    bountiesArray[i].projectName,
+                    bountiesArray[i].projectWallet
+                );
+            } else {
+                uint256 apy = viewDesiredAPY(bountiesArray[i].projectName);
+                uint256 poolCap = viewPoolCap(bountiesArray[i].projectName);
+                emit PoolCapAndAPYChanged(
+                    bountiesArray[i].projectName,
+                    poolCap,
+                    apy
+                );
+            }
         }
         return true;
     }

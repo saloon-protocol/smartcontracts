@@ -312,7 +312,7 @@ contract BountyPool is Ownable, Initializable {
         address _token,
         address _projectWallet,
         uint256 _desiredAPY // make sure APY has right amount of decimals (1e18)
-    ) external onlyManager returns (bool) {
+    ) public onlyManagerOrSelf returns (bool) {
         // check timelock if current APY != 0
         if (desiredAPY != 0) {
             TimelockInfo memory APYLock = APYTimelock;
@@ -506,8 +506,11 @@ contract BountyPool is Ownable, Initializable {
                 newAPYperiod.periodAPY = viewcurrentAPY();
                 APYrecords.push(newAPYperiod);
                 // set new APY
-                // TODO Call setDesiredAPY so all staker balances get updated
-                desiredAPY = viewcurrentAPY();
+                uint256 newAPY = viewcurrentAPY();
+                setDesiredAPY(_token, _projectWallet, newAPY);
+
+                return false;
+
                 //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
             }
         } catch {
@@ -518,15 +521,9 @@ contract BountyPool is Ownable, Initializable {
             newAPYperiod.periodAPY = viewcurrentAPY();
             APYrecords.push(newAPYperiod);
             // set new APY
-            // TODO Call setDesiredAPY so all staker balances get updated
-            desiredAPY = viewcurrentAPY();
+            uint256 newAPY = viewcurrentAPY();
+            setDesiredAPY(_token, _projectWallet, newAPY);
             //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
-
-            /* 
-            NOTE: Should we allow for instant unstaking if project doesn pay up?
-                    - Might be unfair to hunters who submitted valid finding
-            */
-            // APYdropped = true;
 
             return false;
         }
@@ -960,7 +957,7 @@ contract BountyPool is Ownable, Initializable {
 
     // View currentAPY
     function viewcurrentAPY() public view returns (uint256) {
-        uint256 apy = premiumBalance / poolCap;
+        uint256 apy = (premiumBalance * PRECISION) / poolCap;
         return apy;
     }
 
