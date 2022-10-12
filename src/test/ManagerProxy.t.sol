@@ -73,7 +73,7 @@ contract ManagerProxyTest is DSTest, Script {
     function testManager() public {
         vm.startPrank(projectwallet);
         ERC20(wmatic).approve(bountyAddress, 100 ether);
-        wmatic.call{value: 30 ether}(abi.encodeWithSignature("deposit()", ""));
+        wmatic.call{value: 40 ether}(abi.encodeWithSignature("deposit()", ""));
 
         manager.projectDeposit(bountyName, 20 ether);
         manager.setBountyCapAndAPY(bountyName, 5000 ether, 10 ether);
