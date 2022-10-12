@@ -32,6 +32,7 @@ contract BountyPool is Ownable, Initializable {
     uint256 public lastTimePaid;
     uint256 public projectDeposit;
     uint256 public requiredPremiumBalancePerPeriod;
+    uint256 public stakingPause;
 
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
@@ -263,6 +264,10 @@ contract BountyPool is Ownable, Initializable {
     ) external onlyManager returns (bool) {
         // transfer from project account
         IERC20(_token).safeTransferFrom(_projectWallet, address(this), _amount);
+
+        if (projectDeposit == 0) {
+            stakingPause = block.timestamp + PERIOD;
+        }
 
         // update deposit variable
         projectDeposit += _amount;
@@ -510,8 +515,6 @@ contract BountyPool is Ownable, Initializable {
                 setDesiredAPY(_token, _projectWallet, newAPY);
 
                 return false;
-
-                //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
             }
         } catch {
             // if transfer fails APY is reset and premium is paid with new APY
@@ -523,8 +526,6 @@ contract BountyPool is Ownable, Initializable {
             // set new APY
             uint256 newAPY = viewcurrentAPY();
             setDesiredAPY(_token, _projectWallet, newAPY);
-            //     // TODO EMIT EVENT??? - would have to be done in MANAGER -> check that APY before and after this call are the same
-
             return false;
         }
         // Calculate saloon fee
@@ -588,12 +589,8 @@ contract BountyPool is Ownable, Initializable {
         address _staker,
         uint256 _amount
     ) external onlyManager returns (bool) {
-        // NOTE/TODO insert require statement to prevent anyone from staking
-        // before 1 week after project deposit has been set?
-        // should we use project deposit or bounty launch time?
-        // What if the project makes no deposit and only has a crazy APY? users will never be able to stake
-        // On the other hand if project launches but takes a while to do proejct deposit people might only look once project deposit is already high?
-
+        //check if initial post staking period has passed
+        require(stakingPause < block.timestamp, "Staking not open just yet");
         // dont allow staking if stakerDeposit >= poolCap
         StakingInfo[] memory stakersDeposits = stakersDeposit;
         uint256 stakingLenght = stakersDeposits.length;
@@ -692,10 +689,9 @@ contract BountyPool is Ownable, Initializable {
         address _staker,
         uint256 _amount
     ) external onlyManager returns (bool) {
-        // TODO cache staker[]
-        // allow for immediate withdrawal if APY drops from desired APY
-        // going to need to create an extra variable for storing this when apy changes for worse
-        if (desiredAPY != 0 || APYdropped == true) {
+        // note allow for immediate withdrawal if APY drops from desired APY ??
+        // if (desiredAPY != 0 || APYdropped == true) {
+        if (desiredAPY != 0) {
             TimelockInfo memory stakrTimelock = stakerTimelock[_staker];
             // time lock check
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
@@ -707,61 +703,60 @@ contract BountyPool is Ownable, Initializable {
                 "Timelock not set or not completed"
             );
             stakerTimelock[_staker].executed = true;
+        }
+        uint256 arraySize = staker[_staker].length - 1;
 
-            uint256 arraySize = staker[_staker].length - 1;
+        // decrease staker balance
+        // update StakingInfo struct
+        StakingInfo memory newInfo;
+        newInfo.balanceTimeStamp = block.timestamp;
+        newInfo.stakeBalance =
+            staker[_staker][arraySize].stakeBalance -
+            _amount;
 
-            // decrease staker balance
-            // update StakingInfo struct
-            StakingInfo memory newInfo;
-            newInfo.balanceTimeStamp = block.timestamp;
-            newInfo.stakeBalance =
-                staker[_staker][arraySize].stakeBalance -
-                _amount;
+        address[] memory stakersList = stakerList;
+        // delete from staker list
+        // note if 18 decimals are not used properly at some stage this might never be true.
+        if (newInfo.stakeBalance == 0) {
+            // loop through stakerlist
+            uint256 length = stakersList.length;
+            for (uint256 i; i < length; ) {
+                // find staker
+                if (stakersList[i] == _staker) {
+                    // get value in the last array position
+                    address lastAddress = stakersList[length - 1];
+                    // replace it to the current position
+                    stakerList[i] = lastAddress;
 
-            address[] memory stakersList = stakerList;
-            // delete from staker list
-            // note if 18 decimals are not used properly at some stage this might never be true.
-            if (newInfo.stakeBalance == 0) {
-                // loop through stakerlist
-                uint256 length = stakersList.length;
-                for (uint256 i; i < length; ) {
-                    // find staker
-                    if (stakersList[i] == _staker) {
-                        // get value in the last array position
-                        address lastAddress = stakersList[length - 1];
-                        // replace it to the current position
-                        stakerList[i] = lastAddress;
+                    // pop last array value
+                    stakerList.pop();
+                    break;
+                }
 
-                        // pop last array value
-                        stakerList.pop();
-                        break;
-                    }
-
-                    unchecked {
-                        ++i;
-                    }
+                unchecked {
+                    ++i;
                 }
             }
-            // save info to storage
-            staker[_staker].push(newInfo);
-
-            StakingInfo[] memory stakersDeposits = stakersDeposit;
-            uint256 stakingLenght = stakersDeposits.length - 1;
-
-            StakingInfo memory depositInfo;
-            depositInfo.stakeBalance =
-                stakersDeposits[stakingLenght].stakeBalance -
-                _amount;
-            depositInfo.balanceTimeStamp = block.timestamp;
-
-            // decrease global stakersDeposit
-            stakersDeposit.push(depositInfo);
-
-            // transfer it out
-            IERC20(_token).safeTransfer(_staker, _amount);
-
-            return true;
         }
+        // save info to storage
+        staker[_staker].push(newInfo);
+
+        StakingInfo[] memory stakersDeposits = stakersDeposit;
+        uint256 stakingLenght = stakersDeposits.length - 1;
+
+        StakingInfo memory depositInfo;
+        depositInfo.stakeBalance =
+            stakersDeposits[stakingLenght].stakeBalance -
+            _amount;
+        depositInfo.balanceTimeStamp = block.timestamp;
+
+        // decrease global stakersDeposit
+        stakersDeposit.push(depositInfo);
+
+        // transfer it out
+        IERC20(_token).safeTransfer(_staker, _amount);
+
+        return true;
     }
 
     // claim premium

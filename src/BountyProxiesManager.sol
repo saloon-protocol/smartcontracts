@@ -67,7 +67,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         uint256 indexed amount
     );
 
-    event HackerPayoutChanged(
+    event BountyBalanceChanged(
         string indexed projectName,
         uint256 indexed oldAmount,
         uint256 indexed newAmount
@@ -402,7 +402,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
 
         // check if msg.sender is allowed
         require(msg.sender == bounty.projectWallet, "Not project owner");
@@ -413,10 +413,9 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             _amount
         );
 
-        // TODO TAKE INTO ACCOUNT SALOON FEES
-        uint256 newPayout = oldPayout + _amount;
+        uint256 newBalance = oldBalance + _amount;
 
-        emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
+        emit BountyBalanceChanged(_projectName, oldBalance, newBalance);
 
         return true;
     }
@@ -456,7 +455,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if caller is project
         require(msg.sender == bounty.projectWallet, "Not project owner");
 
-        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
 
         // schedule withdrawal
         bounty.proxyAddress.projectDepositWithdrawal(
@@ -464,11 +463,10 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             bounty.projectWallet,
             _amount
         );
-        // TODO TAKE INTO ACCOUNT SALOON FEES
 
-        uint256 newPayout = oldPayout - _amount;
+        uint256 newBalance = oldBalance + _amount;
 
-        emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
+        emit BountyBalanceChanged(_projectName, oldBalance, newBalance);
         return true;
     }
 
@@ -482,17 +480,16 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
         uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
 
         bounty.proxyAddress.stake(bounty.token, msg.sender, _amount);
 
-        uint256 newPayout = oldPayout + _amount;
+        uint256 newBalance = oldBalance + _amount;
         uint256 newStaked = previousStaked + _amount;
-        // TODO TAKE INTO ACCOUNT SALOON FEES
 
         emit StakedAmountChanged(_projectName, previousStaked, newStaked);
-        emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
+        emit BountyBalanceChanged(_projectName, newBalance, oldBalance);
         return true;
     }
 
@@ -523,15 +520,15 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        uint256 oldPayout = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
         uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
 
         if (bounty.proxyAddress.unstake(bounty.token, msg.sender, _amount)) {
-            uint256 newPayout = oldPayout - _amount;
+            uint256 newBalance = oldBalance + _amount;
             uint256 newStaked = previousStaked - _amount;
 
             emit StakedAmountChanged(_projectName, previousStaked, newStaked);
-            emit HackerPayoutChanged(_projectName, oldPayout, newPayout);
+            emit BountyBalanceChanged(_projectName, oldBalance, newBalance);
             return true;
         }
     }
