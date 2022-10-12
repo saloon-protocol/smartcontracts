@@ -1052,7 +1052,7 @@ contract BountyPool is Ownable, Initializable {
         )
     {
         timelock = stakerTimelock[_staker].timelock;
-        amount = stakerTimelock[_staker].timelock;
+        amount = stakerTimelock[_staker].amount;
         executed = stakerTimelock[_staker].executed;
     }
 
