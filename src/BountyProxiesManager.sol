@@ -364,8 +364,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     //////// PROJECTS FUNCTION TO CHANGE APY and CAP by NAME/////
-    // note: should this be time locked??
-    // fails if msg.sender != project owner
+    // note: timelock present in bounty implementation
     function setBountyCapAndAPY(
         string memory _projectName,
         uint256 _poolCap,
@@ -380,8 +379,17 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // require msg.sender == projectWallet
         require(msg.sender == bounty.projectWallet, "Not project owner");
 
+        // // TODO handle token decimals
+        // uint256 tokenDecimals = ERC20(bounty.token).decimals();
+        // uint256 diff = 18 - tokenDecimals;
+        // // multiply APY by decimals
+        // // TODO CHECK THIS CALCULATION
+        // _desiredAPY = _desiredAPY * (10**diff);
+        // TODO where to handle token with different decimals?
+        // _desiredAPY = _desiredAPY * (1e18);
         // set cap
         bounty.proxyAddress.setPoolCap(_poolCap);
+
         // set APY
         bounty.proxyAddress.setDesiredAPY(
             bounty.token,
@@ -402,7 +410,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewBountyBalance();
 
         // check if msg.sender is allowed
         require(msg.sender == bounty.projectWallet, "Not project owner");
@@ -455,7 +463,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if caller is project
         require(msg.sender == bounty.projectWallet, "Not project owner");
 
-        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewBountyBalance();
 
         // schedule withdrawal
         bounty.proxyAddress.projectDepositWithdrawal(
@@ -480,7 +488,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewBountyBalance();
         uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
 
         bounty.proxyAddress.stake(bounty.token, msg.sender, _amount);
@@ -520,7 +528,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // check if active
         require(notDead(bounty.dead) == true, "Bounty is Dead");
 
-        uint256 oldBalance = bounty.proxyAddress.viewHackerPayout();
+        uint256 oldBalance = bounty.proxyAddress.viewBountyBalance();
         uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
 
         if (bounty.proxyAddress.unstake(bounty.token, msg.sender, _amount)) {

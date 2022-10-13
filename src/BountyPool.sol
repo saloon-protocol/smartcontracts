@@ -16,9 +16,11 @@ contract BountyPool is Ownable, Initializable {
     address public manager;
 
     uint256 public constant VERSION = 1;
+    // NOTE this might need to be refactored and dynamically edited
     uint256 public constant BOUNTY_COMMISSION = 10 * 1e18;
     uint256 public constant PREMIUM_COMMISSION = 10 * 1e18;
     uint256 public constant DENOMINATOR = 100 * 1e18;
+    ///////// NOTE END ///////////
     uint256 public constant PRECISION = 100;
     uint256 public constant YEAR = 365 days;
     uint256 public constant PERIOD = 2 weeks;
