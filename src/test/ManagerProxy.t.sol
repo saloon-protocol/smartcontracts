@@ -56,9 +56,8 @@ contract ManagerProxyTest is DSTest, Script {
         );
         saloonwallet = new SaloonWallet(address(managerProxy));
         manager = BountyProxiesManager(address(managerProxy));
-        bountyPool.initializeImplementation(address(managerProxy), 18);
+        // bountyPool.initializeImplementation(address(managerProxy), 18);
         manager.initialize(proxyFactory, beacon, address(bountyPool));
-        // // //@audit does it still work if I initialize the proxyBase??? or does it affect all else
         // bountyProxy.initialize(address(beacon), data, address(managerProxy));
         proxyFactory.initiliaze(
             payable(address(bountyProxy)),
@@ -72,14 +71,14 @@ contract ManagerProxyTest is DSTest, Script {
 
     function testManager() public {
         vm.startPrank(projectwallet);
-        ERC20(wmatic).approve(bountyAddress, 100);
+        ERC20(wmatic).approve(bountyAddress, 100 ether);
         wmatic.call{value: 40 ether}(abi.encodeWithSignature("deposit()", ""));
 
         manager.projectDeposit(bountyName, 20);
         manager.setBountyCapAndAPY(bountyName, 5000, 10);
         manager.scheduleProjectDepositWithdrawal(bountyName, 5);
         uint256 payout = manager.viewHackerPayout(bountyName);
-        assertEq(18, payout);
+        assertEq(18 ether, payout);
         vm.warp(block.timestamp + 3 weeks);
         manager.projectDepositWithdrawal(bountyName, 5);
 
@@ -96,9 +95,9 @@ contract ManagerProxyTest is DSTest, Script {
 
         ///////// INVESTOR ///////////
         vm.startPrank(investor);
-        wmatic.call{value: 80}(abi.encodeWithSignature("deposit()", ""));
+        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
 
-        ERC20(wmatic).approve(bountyAddress, 100);
+        ERC20(wmatic).approve(bountyAddress, 100 ether);
         manager.stake(bountyName, 20);
         // uint256 payout2 = manager.viewHackerPayout(bountyName);
         // assertEq(31.5, payout2);
@@ -149,6 +148,6 @@ contract ManagerProxyTest is DSTest, Script {
 
         // test Upgrade factory contract
 
-        // test upgrade maanger contract
+        // test upgrade manager contract
     }
 }
