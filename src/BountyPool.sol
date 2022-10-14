@@ -16,14 +16,14 @@ contract BountyPool is Ownable, Initializable {
     address public manager;
 
     uint256 public constant VERSION = 1;
-    // NOTE this might need to be refactored and dynamically edited
-    uint256 public constant BOUNTY_COMMISSION = 10 * 1e18;
-    uint256 public constant PREMIUM_COMMISSION = 10 * 1e18;
-    uint256 public constant DENOMINATOR = 100 * 1e18;
-    ///////// NOTE END ///////////
     uint256 public constant PRECISION = 100;
     uint256 public constant YEAR = 365 days;
-    uint256 public constant PERIOD = 2 weeks;
+    uint256 public constant PERIOD = 1 weeks;
+
+    uint256 public decimals;
+    uint256 public bountyCommission;
+    uint256 public premiumCommission;
+    uint256 public denominator;
 
     uint256 public saloonBountyCommission;
     uint256 public saloonPremiumFees;
@@ -77,8 +77,15 @@ contract BountyPool is Ownable, Initializable {
 
     //#################### State Variables End *****************\\
 
-    function initializeImplementation(address _manager) public initializer {
+    function initializeImplementation(address _manager, uint256 _decimals)
+        public
+        initializer
+    {
         manager = _manager;
+        decimals = _decimals;
+        bountyCommission = 10 * (10**_decimals);
+        premiumCommission = 10 * (10**_decimals);
+        denominator = 100 * (10**_decimals);
     }
 
     //#################### Modifiers *****************\\
@@ -170,7 +177,7 @@ contract BountyPool is Ownable, Initializable {
                 newInfo.balanceTimeStamp = block.timestamp;
                 newInfo.stakeBalance =
                     oldStakerBalance -
-                    ((oldStakerBalance * percentage) / DENOMINATOR);
+                    ((oldStakerBalance * percentage) / denominator);
 
                 staker[stakerAddress].push(newInfo);
             }
@@ -231,7 +238,7 @@ contract BountyPool is Ownable, Initializable {
         uint256 _amount
     ) internal returns (bool) {
         // deduct saloon commission
-        uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
+        uint256 saloonCommission = (_amount * bountyCommission) / denominator;
         uint256 hunterPayout = _amount - saloonCommission;
         // transfer to hunter
         IERC20(_token).safeTransfer(_hunter, hunterPayout);
@@ -346,7 +353,7 @@ contract BountyPool is Ownable, Initializable {
         } else {
             // ensure there is enough premium balance to pay stakers new APY for one period
             newRequiredPremiumBalancePerPeriod =
-                (((poolCap * _desiredAPY) / DENOMINATOR) / YEAR) *
+                (((poolCap * _desiredAPY) / denominator) / YEAR) *
                 PERIOD;
             // NOTE: this might lead to leftover premium if project decreases APY, we will see what to do about that later
             if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
@@ -461,7 +468,7 @@ contract BountyPool is Ownable, Initializable {
             premiumOwed +=
                 ((
                     ((_stakersDeposits[stakingChanges[i]].stakeBalance * _apy) /
-                        DENOMINATOR)
+                        denominator)
                 ) / YEAR) *
                 duration;
         }
@@ -495,7 +502,6 @@ contract BountyPool is Ownable, Initializable {
             lastPaid,
             stakersDeposits
         );
-        // TODO test Try Catch block
         // note try/catch should handle both revert and fails from transferFrom;
         try
             IERC20(_token).transferFrom(
@@ -531,7 +537,7 @@ contract BountyPool is Ownable, Initializable {
             return false;
         }
         // Calculate saloon fee
-        uint256 saloonFee = (premiumOwed * PREMIUM_COMMISSION) / DENOMINATOR;
+        uint256 saloonFee = (premiumOwed * premiumCommission) / denominator;
 
         // update saloon claimable fee
         saloonPremiumFees += saloonFee;
@@ -786,8 +792,8 @@ contract BountyPool is Ownable, Initializable {
             stakerLength
         );
         // Calculate saloon fee
-        uint256 saloonFee = (totalPremiumToClaim * PREMIUM_COMMISSION) /
-            DENOMINATOR;
+        uint256 saloonFee = (totalPremiumToClaim * premiumCommission) /
+            denominator;
         // subtract saloon fee
         totalPremiumToClaim -= saloonFee;
         uint256 owedPremium = totalPremiumToClaim;
@@ -922,7 +928,7 @@ contract BountyPool is Ownable, Initializable {
 
                 // calculate timestampClaim
                 uint256 periodClaim = (((_stakerInfo[stakrChange[i]]
-                    .stakeBalance * apy) / DENOMINATOR) / YEAR) * duration;
+                    .stakeBalance * apy) / denominator) / YEAR) * duration;
 
                 balanceClaim += periodClaim;
             }
@@ -970,8 +976,8 @@ contract BountyPool is Ownable, Initializable {
                 projectDeposit +
                 stakersDeposits[stakingLenght - 1].stakeBalance;
         }
-        uint256 saloonCommission = (totalBalance * BOUNTY_COMMISSION) /
-            DENOMINATOR;
+        uint256 saloonCommission = (totalBalance * bountyCommission) /
+            denominator;
 
         return totalBalance - saloonCommission;
     }

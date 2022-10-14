@@ -56,7 +56,7 @@ contract ManagerProxyTest is DSTest, Script {
         );
         saloonwallet = new SaloonWallet(address(managerProxy));
         manager = BountyProxiesManager(address(managerProxy));
-        bountyPool.initializeImplementation(address(managerProxy));
+        bountyPool.initializeImplementation(address(managerProxy), 18);
         manager.initialize(proxyFactory, beacon, address(bountyPool));
         // // //@audit does it still work if I initialize the proxyBase??? or does it affect all else
         // bountyProxy.initialize(address(beacon), data, address(managerProxy));
