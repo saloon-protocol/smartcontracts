@@ -72,16 +72,16 @@ contract ManagerProxyTest is DSTest, Script {
 
     function testManager() public {
         vm.startPrank(projectwallet);
-        ERC20(wmatic).approve(bountyAddress, 100 ether);
+        ERC20(wmatic).approve(bountyAddress, 100);
         wmatic.call{value: 40 ether}(abi.encodeWithSignature("deposit()", ""));
 
-        manager.projectDeposit(bountyName, 20 ether);
-        manager.setBountyCapAndAPY(bountyName, 5000 ether, 10 ether);
-        manager.scheduleProjectDepositWithdrawal(bountyName, 5 ether);
+        manager.projectDeposit(bountyName, 20);
+        manager.setBountyCapAndAPY(bountyName, 5000, 10);
+        manager.scheduleProjectDepositWithdrawal(bountyName, 5);
         uint256 payout = manager.viewHackerPayout(bountyName);
-        assertEq(18 ether, payout);
+        assertEq(18, payout);
         vm.warp(block.timestamp + 3 weeks);
-        manager.projectDepositWithdrawal(bountyName, 5 ether);
+        manager.projectDepositWithdrawal(bountyName, 5);
 
         vm.stopPrank();
 
@@ -96,22 +96,22 @@ contract ManagerProxyTest is DSTest, Script {
 
         ///////// INVESTOR ///////////
         vm.startPrank(investor);
-        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+        wmatic.call{value: 80}(abi.encodeWithSignature("deposit()", ""));
 
-        ERC20(wmatic).approve(bountyAddress, 100 ether);
-        manager.stake(bountyName, 20 ether);
+        ERC20(wmatic).approve(bountyAddress, 100);
+        manager.stake(bountyName, 20);
         // uint256 payout2 = manager.viewHackerPayout(bountyName);
-        // assertEq(31.5 ether, payout2);
+        // assertEq(31.5, payout2);
         // assertEq()
-        manager.scheduleUnstake(bountyName, 5 ether); // NOTE OR THIS
+        manager.scheduleUnstake(bountyName, 5); //
 
         vm.warp(block.timestamp + 4 weeks);
-        manager.unstake(bountyName, 5 ether);
+        manager.unstake(bountyName, 5);
         vm.stopPrank();
         ///////// INVESTOR END ///////////
 
         // uint256 payout3 = manager.viewHackerPayout(bountyName);
-        // assertEq(27 ether, payout3);
+        // assertEq(27, payout3);
 
         // test bill premium for one pool
         // warp x and bill
@@ -130,14 +130,14 @@ contract ManagerProxyTest is DSTest, Script {
         // test second claim premium as investor
 
         // test payBounty
-        // bounty should have 30 ethers by this point
-        // manager.payBounty(bountyName, whitehat, 20 ether);
+        // bounty should have 30s by this point
+        // manager.payBounty(bountyName, whitehat, 20);
         // uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
         // // check hunters balance is correct
-        // assertEq(18 ether, whitehatBalance);
+        // assertEq(18, whitehatBalance);
         // // check saloon balance is correct
         // uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
-        // assertEq(2 ether, saloonBalance);
+        // assertEq(2, saloonBalance);
 
         // test collect saloon premium
         // assert how much premium saloonwallet has
