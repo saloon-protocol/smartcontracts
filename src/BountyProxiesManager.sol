@@ -320,7 +320,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
                 bountiesArray[i].decimals,
                 totalCollected
             );
-            collected = totalCollected;
+            collected += totalCollected;
         }
         emit SaloonPremiumCollected(collected);
         return true;
@@ -504,9 +504,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     {
         Bounties memory bounty = bountyDetails[_projectName];
 
-        // check if active
-        require(notDead(bounty.dead) == true, "Bounty is Dead");
-
         // handle decimals
         uint256 amount = _amount * (10**bounty.decimals);
 
@@ -524,9 +521,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         returns (bool)
     {
         Bounties memory bounty = bountyDetails[_projectName];
-
-        // check if active
-        require(notDead(bounty.dead) == true, "Bounty is Dead");
 
         uint256 oldBalance = bounty.proxyAddress.viewBountyBalance();
         uint256 previousStaked = bounty.proxyAddress.viewStakersDeposit();
