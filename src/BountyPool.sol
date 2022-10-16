@@ -692,7 +692,13 @@ contract BountyPool is Ownable, Initializable {
     ) external onlyManager returns (bool) {
         // note allow for immediate withdrawal if APY drops from desired APY ??
         // if (desiredAPY != 0 || APYdropped == true) {
-        if (desiredAPY != 0) {
+        StakingInfo[] memory stakersDeposits = stakersDeposit;
+        uint256 stakingLenght = stakersDeposits.length - 1;
+
+        if (
+            desiredAPY != 0 ||
+            poolCap > stakersDeposits[stakingLenght].stakeBalance
+        ) {
             TimelockInfo memory stakrTimelock = stakerTimelock[_staker];
             // time lock check
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
