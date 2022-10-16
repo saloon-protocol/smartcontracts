@@ -3,12 +3,6 @@ pragma solidity 0.8.10;
 
 import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
-// import "./interfaces/IMIMOProxy.sol";
-// import "./interfaces/IBountyProxyFactory.sol";
-// import "./interfaces/IMIMOProxyRegistry.sol";
-// import "../core/interfaces/IAddressProvider.sol";
-// import "../core/interfaces/IAccessController.sol";
-// import { CustomErrors } from "../libraries/CustomErrors.sol";
 import "./SaloonWallet.sol";
 import "./BountyProxyFactory.sol";
 import "./IBountyProxyFactory.sol";
@@ -17,11 +11,6 @@ import "./BountyPool.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
-
-//// THOUGHTS:
-// Planning to separate this into two contracts:
-// 1. Registry contract that holds varaibles
-// 2. Manager Contract that hold state changing functions and inherits Registry
 
 contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     /// PUBLIC STORAGE ///
@@ -37,7 +26,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     event PremiumBilled(
         string indexed projectName,
         address indexed projectWallet
-        // should maybe get amount as well?
     );
 
     event SaloonFundsWithdrawal(address indexed token, uint256 indexed amount);
@@ -81,7 +69,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
     event SaloonPremiumCollected(uint256 indexed totalCollected);
 
-    // should this be a constant?
     BountyProxyFactory public factory;
     UpgradeableBeacon public beacon;
     address public bountyImplementation;
@@ -186,7 +173,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         // Create new mapping so we can look up bounty details by their name
         bountyDetails[_projectName] = newBounty;
 
-        //  NOT NEEDED  update proxyWhitelist in implementation
         // bountyImplementation.updateProxyWhitelist(newProxyAddress, true);
         emit DeployNewBounty(msg.sender, _projectWallet, newProxyAddress);
 
