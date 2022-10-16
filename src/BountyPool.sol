@@ -246,7 +246,7 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // ADMIN HARVEST FEES public
+    // ADMIN HARVEST FEES
     function collectSaloonPremiumFees(address _token, address _saloonWallet)
         external
         onlyManager
@@ -353,7 +353,7 @@ contract BountyPool is Ownable, Initializable {
             newRequiredPremiumBalancePerPeriod =
                 (((poolCap * _desiredAPY) / denominator) / YEAR) *
                 PERIOD;
-            // NOTE: this might lead to leftover premium if project decreases APY, we will see what to do about that later
+            // note: this might lead to leftover premium if project decreases APY, we will see what to do about that later
             if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
                 // calculate difference to be paid
                 uint256 difference = newRequiredPremiumBalancePerPeriod -
@@ -428,7 +428,7 @@ contract BountyPool is Ownable, Initializable {
         uint256 length = stakingChanges.length;
 
         for (uint256 i; i < length; ++i) {
-            // calcualte payout for every change in staking according to time
+            // calculate payout for every change in staking according to time
             uint256 duration;
             if (_lastPaid == 0) {
                 if (i == length - 1) {
@@ -551,9 +551,6 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // PROJECT EXCESS PREMIUM BALANCE WITHDRAWAL -- NOT SURE IF SHOULD IMPLEMENT THIS
-    // timelock on this?
-
     function scheduleprojectDepositWithdrawal(uint256 _amount)
         external
         onlyManager
@@ -615,8 +612,6 @@ contract BountyPool is Ownable, Initializable {
         );
 
         uint256 arrayLength = staker[_staker].length;
-
-        // uint256 position = arrayLength == 0 ? 0 : arrayLength - 1;
 
         //  if array length is  == 0 we must push first
         if (arrayLength == 0) {
@@ -688,7 +683,6 @@ contract BountyPool is Ownable, Initializable {
     }
 
     // UNSTAKING
-    // allow instant withdraw if stakerDeposit >= poolCap or APY = 0%
     // otherwise have to wait for timelock period
     function unstake(
         address _token,
@@ -766,11 +760,7 @@ contract BountyPool is Ownable, Initializable {
     }
 
     // claim premium
-    /* @audit Some of this calcualtions seem to be a bit redundant:
-    Why differentiate between a claim premium within a week period or a longer period?
-    The `calculatePremiumToClaim` does use more gas but does it matter given that the user will
-    pay for it and we will be using chains that are not super has expensive?
-    */
+
     function claimPremium(
         address _token,
         address _staker,
@@ -942,7 +932,7 @@ contract BountyPool is Ownable, Initializable {
     ) internal returns (uint256) {
         // cache APY records
         APYperiods[] memory APYregistries = APYrecords;
-        // loop through APY periods (reversely) until last missed period is found
+        // loop through APY periods  until last missed period is found
         uint256 claim;
         claim = calculateBalancePerPeriod(
             _lastTimeClaimed,
@@ -1061,8 +1051,6 @@ contract BountyPool is Ownable, Initializable {
         amount = stakerTimelock[_staker].amount;
         executed = stakerTimelock[_staker].executed;
     }
-
-    //note view user current claimable premium ???
 
     //note view version function??
 
