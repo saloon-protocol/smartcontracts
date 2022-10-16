@@ -46,7 +46,7 @@ contract SaloonWallet {
         // calculate commision
         uint256 saloonCommission = (_amount * (BOUNTY_COMMISSION**decimals)) /
             (DENOMINATOR**decimals);
-        uint256 hunterPayout = _amount - saloonCommission;
+        uint256 hunterPayout = (_amount**decimals) - saloonCommission;
         // update variables and mappings
         hunterTokenBalance[_hunter][_token] += hunterPayout;
         cummulativeHackerPayouts += hunterPayout;
