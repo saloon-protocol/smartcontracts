@@ -7,8 +7,6 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
 import "./SaloonWallet.sol";
 
-//  OBS: Better suggestions for calculating the APY paid on a fortnightly basis are welcomed.
-
 contract BountyPool is Ownable, Initializable {
     using SafeERC20 for IERC20;
     //#################### State Variables *****************\\
