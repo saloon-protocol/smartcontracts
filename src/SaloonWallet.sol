@@ -41,9 +41,11 @@ contract SaloonWallet {
         address _hunter,
         uint256 _amount
     ) external onlyManager {
+        // handle decimals
+        uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
         // calculate commision
-        uint256 saloonCommission = (_amount * (BOUNTY_COMMISSION**_decimals)) /
-            (DENOMINATOR**_decimals);
+        uint256 saloonCommission = (_amount * (BOUNTY_COMMISSION**decimals)) /
+            (DENOMINATOR**decimals);
         uint256 hunterPayout = _amount - saloonCommission;
         // update variables and mappings
         hunterTokenBalance[_hunter][_token] += hunterPayout;
@@ -53,13 +55,18 @@ contract SaloonWallet {
         cummulativeCommission += saloonCommission;
     }
 
-    function premiumFeesCollected(address _token, uint256 _amount)
-        external
-        onlyManager
-    {
-        saloonTokenBalance[_token] += _amount;
-        premiumFees += _amount;
-        saloonTotalBalance += _amount;
+    function premiumFeesCollected(
+        address _token,
+        uint256 _decimals,
+        uint256 _amount
+    ) external onlyManager {
+        // handle decimals
+        uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
+        uint256 amount = _amount**decimals;
+
+        saloonTokenBalance[_token] += amount;
+        premiumFees += amount;
+        saloonTotalBalance += amount;
     }
 
     //
@@ -67,12 +74,17 @@ contract SaloonWallet {
     function withdrawSaloonFunds(
         address _token,
         address _to,
-        uint256 _amount
+        uint256 _amount,
+        uint256 _decimals
     ) external onlyManager returns (bool) {
         require(_amount <= saloonTokenBalance[_token], "not enough balance");
+
+        //  handle decimals to change local variables
+        uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
+        uint256 amount = _amount**decimals;
         // decrease saloon funds
-        saloonTokenBalance[_token] -= _amount;
-        saloonTotalBalance -= _amount;
+        saloonTokenBalance[_token] -= amount;
+        saloonTotalBalance -= amount;
 
         IERC20(_token).safeTransfer(_to, _amount);
 
