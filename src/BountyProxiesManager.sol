@@ -127,7 +127,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         require(_to != address(0), "Address Zero");
         uint256 decimals = ERC20(_token).decimals();
         uint256 amount = _amount * (10**decimals);
-        saloonWallet.withdrawSaloonFunds(_token, _to, amount);
+        saloonWallet.withdrawSaloonFunds(_token, _to, amount, decimals);
 
         emit SaloonFundsWithdrawal(_token, _amount);
         return true;
@@ -317,6 +317,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
             saloonWallet.premiumFeesCollected(
                 bountiesArray[i].token,
+                bountiesArray[i].decimals,
                 totalCollected
             );
             collected = totalCollected;
