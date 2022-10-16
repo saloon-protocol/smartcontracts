@@ -560,6 +560,7 @@ contract BountyPool is Ownable, Initializable {
         withdrawalTimelock.timelock = block.timestamp + PERIOD;
         withdrawalTimelock.amount = _amount;
         withdrawalTimelock.executed = false;
+        // note timelock should have a limit window. Currently discussing how long that window should be
         return true;
     }
 
