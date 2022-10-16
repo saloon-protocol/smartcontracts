@@ -79,10 +79,10 @@ contract SaloonWallet {
     ) external onlyManager returns (bool) {
         require(_amount <= saloonTokenBalance[_token], "not enough balance");
 
-        //  handle decimals to change local variables
+        //  handle decimals to change state variables
         uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
         uint256 amount = _amount**decimals;
-        // decrease saloon funds
+        // decrease saloon funds variable
         saloonTokenBalance[_token] -= amount;
         saloonTotalBalance -= amount;
 
