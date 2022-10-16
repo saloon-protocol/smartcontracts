@@ -26,8 +26,7 @@ contract ManagerProxyTest is DSTest, Script {
     SaloonWallet saloonwallet;
 
     address wmatic = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
-    // address projectwallet = address(1);
-    address projectwallet = 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc;
+    address projectwallet = address(1);
     address investor = address(1);
     address whitehat = address(2);
     address owner = 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84;

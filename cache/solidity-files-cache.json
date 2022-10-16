@@ -1190,155 +1190,9 @@
         }
       }
     },
-    "script/Deploy.s.sol": {
-      "lastModificationDate": 1665718029822,
-      "contentHash": "a566bb38e243fcf2d22bf8a48d6a6f38",
-      "sourceName": "script/Deploy.s.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "lib/forge-std/src/Script.sol",
-        "lib/forge-std/src/StdJson.sol",
-        "lib/forge-std/src/Vm.sol",
-        "lib/forge-std/src/console.sol",
-        "lib/forge-std/src/console2.sol",
-        "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
-        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
-        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
-        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
-        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
-        "src/BountyPool.sol",
-        "src/BountyProxiesManager.sol",
-        "src/BountyProxy.sol",
-        "src/BountyProxyFactory.sol",
-        "src/IBountyProxyFactory.sol",
-        "src/ManagerProxy.sol",
-        "src/SaloonWallet.sol"
-      ],
-      "versionRequirement": "^0.8.10",
-      "artifacts": {
-        "MyScript": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "Deploy.s.sol/MyScript.json"
-        }
-      }
-    },
-    "script/Interact.s.sol": {
-      "lastModificationDate": 1664606134011,
-      "contentHash": "0911c6abafb8cf3f95f8cbc22e5701fd",
-      "sourceName": "script/Interact.s.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "lib/forge-std/src/Script.sol",
-        "lib/forge-std/src/StdJson.sol",
-        "lib/forge-std/src/Vm.sol",
-        "lib/forge-std/src/console.sol",
-        "lib/forge-std/src/console2.sol",
-        "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
-        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
-        "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
-        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
-        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
-        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
-        "src/BountyPool.sol",
-        "src/BountyProxiesManager.sol",
-        "src/BountyProxy.sol",
-        "src/BountyProxyFactory.sol",
-        "src/IBountyProxyFactory.sol",
-        "src/ManagerProxy.sol",
-        "src/SaloonWallet.sol"
-      ],
-      "versionRequirement": "^0.8.10",
-      "artifacts": {
-        "BountyInteract": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "Interact.s.sol/BountyInteract.json"
-        }
-      }
-    },
     "src/BountyPool.sol": {
-      "lastModificationDate": 1665717345300,
-      "contentHash": "3162f3e0261eee46766d075e3b9fbd0d",
+      "lastModificationDate": 1665885840307,
+      "contentHash": "16f60e479dd9d685928cf3c8b560bd29",
       "sourceName": "src/BountyPool.sol",
       "solcConfig": {
         "settings": {
@@ -1746,8 +1600,8 @@
       }
     },
     "src/test/ManagerProxy.t.sol": {
-      "lastModificationDate": 1665719157852,
-      "contentHash": "301fcc118ea440c9fb8cf56f0d35dc7f",
+      "lastModificationDate": 1665907447494,
+      "contentHash": "38a65f8a665924ad5cc66f0146aa81e6",
       "sourceName": "src/test/ManagerProxy.t.sol",
       "solcConfig": {
         "settings": {
