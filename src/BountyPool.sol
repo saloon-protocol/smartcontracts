@@ -749,9 +749,6 @@ contract BountyPool is Ownable, Initializable {
         // save info to storage
         staker[_staker].push(newInfo);
 
-        StakingInfo[] memory stakersDeposits = stakersDeposit;
-        uint256 stakingLenght = stakersDeposits.length - 1;
-
         StakingInfo memory depositInfo;
         depositInfo.stakeBalance =
             stakersDeposits[stakingLenght].stakeBalance -
