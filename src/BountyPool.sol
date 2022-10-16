@@ -58,6 +58,7 @@ contract BountyPool is Ownable, Initializable {
 
     struct TimelockInfo {
         uint256 timelock;
+        uint256 timeLimit;
         uint256 amount;
         bool executed;
     }
@@ -558,6 +559,7 @@ contract BountyPool is Ownable, Initializable {
         returns (bool)
     {
         withdrawalTimelock.timelock = block.timestamp + PERIOD;
+        withdrawalTimelock.timeLimit = block.timestamp + PERIOD + 3 days;
         withdrawalTimelock.amount = _amount;
         withdrawalTimelock.executed = false;
         // note timelock should have a limit window. Currently discussing how long that window should be
@@ -575,6 +577,7 @@ contract BountyPool is Ownable, Initializable {
         // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
         require(
             withdrawalLock.timelock < block.timestamp &&
+                withdrawalLock.timeLimit > block.timestamp &&
                 withdrawalLock.executed == false &&
                 withdrawalLock.amount >= _amount &&
                 withdrawalLock.timelock != 0,
@@ -678,6 +681,7 @@ contract BountyPool is Ownable, Initializable {
         );
 
         stakerTimelock[_staker].timelock = block.timestamp + PERIOD;
+        stakerTimelock[_staker].timeLimit = block.timestamp + PERIOD + 3 days;
         stakerTimelock[_staker].amount = _amount;
         stakerTimelock[_staker].executed = false;
 
@@ -705,6 +709,7 @@ contract BountyPool is Ownable, Initializable {
             // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
             require(
                 stakrTimelock.timelock < block.timestamp &&
+                    stakrTimelock.timeLimit > block.timestamp &&
                     stakrTimelock.executed == false &&
                     stakrTimelock.amount >= _amount &&
                     stakrTimelock.timelock != 0,
