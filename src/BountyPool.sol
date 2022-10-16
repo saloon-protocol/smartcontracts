@@ -253,11 +253,12 @@ contract BountyPool is Ownable, Initializable {
         returns (uint256)
     {
         uint256 totalCollected = saloonPremiumFees;
-        // send current fees to saloon address
-        IERC20(_token).safeTransfer(_saloonWallet, totalCollected);
 
         // reset claimable fees
         saloonPremiumFees = 0;
+
+        // send current fees to saloon address
+        IERC20(_token).safeTransfer(_saloonWallet, totalCollected);
 
         return totalCollected;
     }
