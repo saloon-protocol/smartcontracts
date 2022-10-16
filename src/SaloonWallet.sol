@@ -6,8 +6,8 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 contract SaloonWallet {
     using SafeERC20 for IERC20;
 
-    uint256 public constant BOUNTY_COMMISSION = 12 * 1e18;
-    uint256 public constant DENOMINATOR = 100 * 1e18;
+    uint256 public constant BOUNTY_COMMISSION = 10;
+    uint256 public constant DENOMINATOR = 100;
 
     address public immutable manager;
 
@@ -37,11 +37,13 @@ contract SaloonWallet {
     // bountyPaid
     function bountyPaid(
         address _token,
+        uint256 _decimals,
         address _hunter,
         uint256 _amount
     ) external onlyManager {
         // calculate commision
-        uint256 saloonCommission = (_amount * BOUNTY_COMMISSION) / DENOMINATOR;
+        uint256 saloonCommission = (_amount * (BOUNTY_COMMISSION**_decimals)) /
+            (DENOMINATOR**_decimals);
         uint256 hunterPayout = _amount - saloonCommission;
         // update variables and mappings
         hunterTokenBalance[_hunter][_token] += hunterPayout;

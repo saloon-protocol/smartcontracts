@@ -282,6 +282,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
         saloonWallet.bountyPaid(
             bountyDetails[_projectName].token,
+            bountyDetails[_projectName].decimals,
             _hunter,
             amount
         );
