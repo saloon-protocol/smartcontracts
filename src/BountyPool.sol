@@ -571,7 +571,7 @@ contract BountyPool is Ownable, Initializable {
         /*
         - average variance since last paid
             - needs to take into account how long each variance is...
-        - use that
+        
         */
         // this is very granular and maybe not optimal...
         uint256 premiumOwed = calculatePremiumOwed(
