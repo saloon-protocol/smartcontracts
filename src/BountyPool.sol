@@ -636,6 +636,8 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (bool)
     {
+        require(projectDeposit <= _amount, "Amount bigger than deposit");
+
         withdrawalTimelock.timelock = block.timestamp + PERIOD;
         withdrawalTimelock.timeLimit = block.timestamp + PERIOD + 3 days;
         withdrawalTimelock.amount = _amount;
