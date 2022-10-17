@@ -430,49 +430,125 @@ contract BountyPool is Ownable, Initializable {
 
         uint256[] memory stakingChanges = stakeChanges;
         uint256 length = stakingChanges.length;
+        uint256 duration;
 
-        for (uint256 i; i < length; ++i) {
-            // calculate payout for every change in staking according to time
-            uint256 duration;
-            if (_lastPaid == 0) {
-                if (i == length - 1) {
-                    duration =
-                        block.timestamp -
-                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
-                } else {
-                    duration =
-                        _stakersDeposits[stakingChanges[i + 1]]
-                            .balanceTimeStamp -
-                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
-                }
-            } else {
-                if (i == 0) {
-                    duration =
-                        (_lastPaid -
-                            _stakersDeposits[stakingChanges[i]]
-                                .balanceTimeStamp) +
-                        (_stakersDeposits[stakingChanges[i + 1]]
-                            .balanceTimeStamp -
-                            _stakersDeposits[stakingChanges[i]]
-                                .balanceTimeStamp);
-                } else if (i == length - 1) {
-                    duration =
-                        block.timestamp -
-                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
-                } else {
-                    duration =
-                        _stakersDeposits[stakingChanges[i + 1]]
-                            .balanceTimeStamp -
-                        _stakersDeposits[stakingChanges[i]].balanceTimeStamp;
-                }
-            }
+        // if no staking happened since lastPaid
+        if (length == 0) {
+            duration = block.timestamp - _lastPaid;
 
-            premiumOwed +=
+            premiumOwed =
                 ((
-                    ((_stakersDeposits[stakingChanges[i]].stakeBalance * _apy) /
-                        denominator)
+                    ((_stakersDeposits[_stakingLenght - 1].stakeBalance *
+                        _apy) / denominator)
                 ) / YEAR) *
                 duration;
+
+            // if only one change was made between lastPaid and now
+        } else if (length == 1) {
+            if (_lastPaid == 0) {
+                duration =
+                    block.timestamp -
+                    _stakersDeposits[0].balanceTimeStamp;
+                premiumOwed =
+                    ((
+                        ((_stakersDeposits[0].stakeBalance * _apy) /
+                            denominator)
+                    ) / YEAR) *
+                    duration;
+            } else {
+                duration = (_stakersDeposits[stakingChanges[0]]
+                    .balanceTimeStamp - _lastPaid);
+
+                premiumOwed +=
+                    ((
+                        ((_stakersDeposits[stakingChanges[0] - 1].stakeBalance *
+                            _apy) / denominator)
+                    ) / YEAR) *
+                    duration;
+
+                uint256 duration2 = (block.timestamp -
+                    _stakersDeposits[stakingChanges[0]].balanceTimeStamp);
+
+                premiumOwed +=
+                    ((
+                        ((_stakersDeposits[stakingChanges[0]].stakeBalance *
+                            _apy) / denominator)
+                    ) / YEAR) *
+                    duration2;
+            }
+            // if there were multiple changes in stake balance between lastPaid and now
+        } else {
+            for (uint256 i; i < length; ++i) {
+                // calculate payout for every change in staking according to time
+
+                if (_lastPaid == 0) {
+                    if (i == length - 1) {
+                        duration =
+                            block.timestamp -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp;
+                    } else {
+                        duration =
+                            _stakersDeposits[stakingChanges[i + 1]]
+                                .balanceTimeStamp -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp;
+                    }
+                } else {
+                    if (i == 0) {
+                        // calculate duration from lastPaid with last value
+                        duration =
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp -
+                            _lastPaid;
+
+                        premiumOwed +=
+                            ((
+                                ((_stakersDeposits[stakingChanges[i] - 1]
+                                    .stakeBalance * _apy) / denominator)
+                            ) / YEAR) *
+                            duration;
+                        // calculate duration from current i to next i with current value
+                        uint256 duration2 = _stakersDeposits[
+                            stakingChanges[i] + 1
+                        ].balanceTimeStamp -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp;
+
+                        premiumOwed +=
+                            ((
+                                ((_stakersDeposits[stakingChanges[i]]
+                                    .stakeBalance * _apy) / denominator)
+                            ) / YEAR) *
+                            duration2;
+                    } else if (i == length - 1) {
+                        duration =
+                            block.timestamp -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp;
+                        premiumOwed +=
+                            ((
+                                ((_stakersDeposits[stakingChanges[i]]
+                                    .stakeBalance * _apy) / denominator)
+                            ) / YEAR) *
+                            duration;
+                    } else {
+                        // if i is in between first and last
+                        duration =
+                            _stakersDeposits[stakingChanges[i + 1]]
+                                .balanceTimeStamp -
+                            _stakersDeposits[stakingChanges[i]]
+                                .balanceTimeStamp;
+
+                        premiumOwed +=
+                            ((
+                                ((_stakersDeposits[stakingChanges[i]]
+                                    .stakeBalance * _apy) / denominator)
+                            ) / YEAR) *
+                            duration;
+                    }
+                }
+            }
         }
 
         delete stakeChanges;
