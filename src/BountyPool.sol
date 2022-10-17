@@ -73,6 +73,7 @@ contract BountyPool is Ownable, Initializable {
     uint256[] private stakerChange;
 
     bool public APYdropped;
+    bool public firstDeposit;
 
     //#################### State Variables End *****************\\
 
@@ -274,8 +275,9 @@ contract BountyPool is Ownable, Initializable {
         // transfer from project account
         IERC20(_token).safeTransferFrom(_projectWallet, address(this), _amount);
 
-        if (projectDeposit == 0) {
+        if (firstDeposit == false) {
             stakingPause = block.timestamp + PERIOD;
+            firstDeposit = true;
         }
 
         // update deposit variable
