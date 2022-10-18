@@ -1001,28 +1001,35 @@ contract BountyPool is Ownable, Initializable {
             uint256[] memory APYChange = APYChanges;
             uint256 len = APYChange.length;
 
-            for (uint256 i; i < len; ++i) {
-                if (i == 0) {
-                    periodStart = _lastTimeClaimed;
-                } else {
-                    periodStart = APYrecord[APYChange[i]].timeStamp;
-                }
+            // if APYChanges len = 0 use last APYrecord[]
+            if (len == 0) {
+                periodStart = _lastTimeClaimed;
+                periodEnd = block.timestamp;
+            } else {
+                // else do loop
+                for (uint256 i; i < len; ++i) {
+                    if (i == 0) {
+                        periodStart = _lastTimeClaimed;
+                    } else {
+                        periodStart = APYrecord[APYChange[i]].timeStamp;
+                    }
 
-                // period end is equal NOW for last APY that has been set
-                if (i == length - 1) {
-                    periodEnd = block.timestamp;
-                } else {
-                    periodEnd = APYrecord[APYChange[i + 1]].timeStamp;
+                    // period end is equal NOW for last APY that has been set
+                    if (i == length - 1) {
+                        periodEnd = block.timestamp;
+                    } else {
+                        periodEnd = APYrecord[APYChange[i + 1]].timeStamp;
+                    }
+                    uint256 apy = APYrecord[APYChange[i]].periodAPY;
+                    // loop through stakers balance fluctiation during this period
+                    totalPeriodClaim += calculateBalance(
+                        apy,
+                        periodStart,
+                        periodEnd,
+                        _stakerInfo,
+                        _stakerLength
+                    );
                 }
-                uint256 apy = APYrecord[APYChange[i]].periodAPY;
-                // loop through stakers balance fluctiation during this period
-                totalPeriodClaim += calculateBalance(
-                    apy,
-                    periodStart,
-                    periodEnd,
-                    _stakerInfo,
-                    _stakerLength
-                );
             }
         }
         return totalPeriodClaim;
