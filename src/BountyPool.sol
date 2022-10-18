@@ -7,6 +7,13 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
 import "./SaloonWallet.sol";
 
+/*
+BountyPool handles all logic for a bounty.
+- Projects can set different APYs and poolCaps at any time.
+- Stakers should be able to stake or unstake any time.
+- Premium calculations are made dynamically according to users balance, APY and staking period duration.
+
+*/
 contract BountyPool is Ownable, Initializable {
     using SafeERC20 for IERC20;
     //#################### State Variables *****************\\
