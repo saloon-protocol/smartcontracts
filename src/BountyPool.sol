@@ -343,7 +343,7 @@ contract BountyPool is Ownable, Initializable {
                 uint256 amount = (diff * percentage) / (10**dec);
 
                 // add amount to instant claim mapping variable that gets added and reset in claimPremium
-                stakerReimbursement[stakerAddress] = amount;
+                stakerReimbursement[stakerAddress] += amount;
                 // decrease stakerBalance by amount
                 StakingInfo memory newInfo;
                 // update balance
@@ -1014,6 +1014,8 @@ contract BountyPool is Ownable, Initializable {
                 if (_lastTimeClaimed < APYrecord[length - 1].timeStamp) {
                     periodStart = APYrecord[length - 1].timeStamp;
                 } else {
+                    //TODO if _lastTimeClaimed the stakerBalance needs to be the last one...
+                    // this could be fixed by setting a bool input if _lastTimeClaimed is periodStart
                     periodStart = _lastTimeClaimed;
                 }
 
@@ -1031,6 +1033,8 @@ contract BountyPool is Ownable, Initializable {
                 // else do loop
                 for (uint256 i; i < len; ++i) {
                     if (i == 0) {
+                        //TODO if _lastTimeClaimed the stakerBalance needs to be the last one...
+                        // this could be fixed by setting a bool input if _lastTimeClaimed is periodStart
                         periodStart = _lastTimeClaimed;
                     } else {
                         periodStart = APYrecord[APYChange[i]].timeStamp;
