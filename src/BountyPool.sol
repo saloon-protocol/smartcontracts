@@ -935,9 +935,7 @@ contract BountyPool is Ownable, Initializable {
         // subtract saloon fee
         totalPremiumToClaim -= saloonFee;
         // sum stakerReimbursement in case there is any. Not very gas efficicent at the moment.
-        uint256 owedPremium = totalPremiumToClaim +
-            stakerReimbursement[_staker];
-        stakerReimbursement[_staker] = 0;
+        uint256 owedPremium = totalPremiumToClaim;
         // sum owedPremium to reibursement amount
 
         // reset reimbursement amount
@@ -948,6 +946,11 @@ contract BountyPool is Ownable, Initializable {
         if (currentPremiumBalance < owedPremium) {
             billPremium(_token, _projectWallet);
         }
+
+        // sum owedPremium to reibursement amount
+        owedPremium += stakerReimbursement[_staker];
+        // reset reimbursement amount
+        stakerReimbursement[_staker] = 0;
 
         IERC20(_token).safeTransfer(_staker, owedPremium);
 
