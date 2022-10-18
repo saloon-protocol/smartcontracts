@@ -940,19 +940,25 @@ contract BountyPool is Ownable, Initializable {
 
         // reset reimbursement amount
 
-        // if premium belance < owedPremium
+        // if premium balance < owedPremium
         //  call billpremium
         // transfer
         if (currentPremiumBalance < owedPremium) {
-            billPremium(_token, _projectWallet);
+            if (billPremium(_token, _projectWallet) == false) {
+                IERC20(_token).safeTransfer(
+                    _staker,
+                    stakerReimbursement[_staker]
+                );
+                stakerReimbursement[_staker] = 0;
+            }
+        } else {
+            // sum owedPremium to reibursement amount
+            owedPremium += stakerReimbursement[_staker];
+            // reset reimbursement amount
+            stakerReimbursement[_staker] = 0;
+
+            IERC20(_token).safeTransfer(_staker, owedPremium);
         }
-
-        // sum owedPremium to reibursement amount
-        owedPremium += stakerReimbursement[_staker];
-        // reset reimbursement amount
-        stakerReimbursement[_staker] = 0;
-
-        IERC20(_token).safeTransfer(_staker, owedPremium);
 
         // update premiumBalance
         premiumBalance -= totalPremiumToClaim;
