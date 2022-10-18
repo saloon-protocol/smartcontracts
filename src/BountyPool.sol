@@ -42,6 +42,9 @@ contract BountyPool is Ownable, Initializable {
     // staker address => amount => timelock time
     mapping(address => TimelockInfo) public stakerTimelock;
 
+    // staker address => reimbursement amount
+    mapping(address => uint256) public stakerReimbursement;
+
     TimelockInfo public poolCapTimelock;
     TimelockInfo public APYTimelock;
     TimelockInfo public withdrawalTimelock;
@@ -307,6 +310,56 @@ contract BountyPool is Ownable, Initializable {
             );
             // set executed to true
             poolCapTimelock.executed = true;
+        }
+        StakingInfo[] memory stakersDeposits = stakersDeposit;
+        uint256 stakingLenght = stakersDeposits.length - 1;
+        uint256 totalStakingBalance = stakersDeposits[stakingLenght]
+            .stakeBalance;
+
+        // if stakers deposit > newPoolcap reimburse different to users
+        if (totalStakingBalance > _amount) {
+            // calculate difference = (stakers deposit - newPoolcap)
+            uint256 diff = totalStakingBalance - _amount;
+            // loop through stakers
+            address[] memory stakersList = stakerList;
+            uint256 length = stakersList.length - 1;
+
+            for (uint256 i; i < length; ) {
+                address stakerAddress = stakersList[i];
+                uint256 arraySize = staker[stakerAddress].length - 1;
+                uint256 dec = decimals;
+                // calculate current stakersDeposit individual percentage of each staker
+                uint256 percentage = (staker[stakerAddress][arraySize]
+                    .stakeBalance * (10**dec)) / totalStakingBalance;
+
+                // amount = calculate individual difference percentage per staker
+                uint256 amount = (diff * percentage) / (10**dec);
+
+                // add amount to instant claim mapping variable that gets added and reset in claimPremium
+                stakerReimbursement[stakerAddress] = amount;
+                // decrease stakerBalance by amount
+                StakingInfo memory newInfo;
+                // update balance
+                newInfo.stakeBalance =
+                    staker[stakerAddress][arraySize].stakeBalance -
+                    amount;
+                // update current time
+                newInfo.balanceTimeStamp = block.timestamp;
+                // push to array
+                staker[stakerAddress].push(newInfo);
+
+                unchecked {
+                    ++i;
+                }
+            }
+
+            //  subtract and update: stakersDeposit - diff
+            StakingInfo memory newDepositInfo;
+            newDepositInfo.balanceTimeStamp = block.timestamp;
+            newDepositInfo.stakeBalance =
+                stakersDeposits[stakingLenght].stakeBalance -
+                diff;
+            stakersDeposit.push(newDepositInfo);
         }
 
         poolCap = _amount;
@@ -874,7 +927,13 @@ contract BountyPool is Ownable, Initializable {
             denominator;
         // subtract saloon fee
         totalPremiumToClaim -= saloonFee;
-        uint256 owedPremium = totalPremiumToClaim;
+        // sum stakerReimbursement in case there is any. Not very gas efficicent at the moment.
+        uint256 owedPremium = totalPremiumToClaim +
+            stakerReimbursement[_staker];
+        stakerReimbursement[_staker] = 0;
+        // sum owedPremium to reibursement amount
+
+        // reset reimbursement amount
 
         // if premium belance < owedPremium
         //  call billpremium
@@ -882,7 +941,8 @@ contract BountyPool is Ownable, Initializable {
         if (currentPremiumBalance < owedPremium) {
             billPremium(_token, _projectWallet);
         }
-        IERC20(_token).transfer(_staker, owedPremium);
+
+        IERC20(_token).safeTransfer(_staker, owedPremium);
 
         // update premiumBalance
         premiumBalance -= totalPremiumToClaim;
