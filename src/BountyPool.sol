@@ -1001,10 +1001,19 @@ contract BountyPool is Ownable, Initializable {
             uint256[] memory APYChange = APYChanges;
             uint256 len = APYChange.length;
 
-            // if APYChanges len = 0 use last APYrecord[]
+            // if APYChanges len = 0 use lastTimeClaimed as periodStart
             if (len == 0) {
                 periodStart = _lastTimeClaimed;
                 periodEnd = block.timestamp;
+                uint256 apy = APYrecord[length - 1].periodAPY;
+                // loop through stakers balance fluctiation during this period
+                totalPeriodClaim += calculateBalance(
+                    apy,
+                    periodStart,
+                    periodEnd,
+                    _stakerInfo,
+                    _stakerLength
+                );
             } else {
                 // else do loop
                 for (uint256 i; i < len; ++i) {
