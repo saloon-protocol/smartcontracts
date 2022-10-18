@@ -986,7 +986,8 @@ contract BountyPool is Ownable, Initializable {
                     periodStart,
                     periodEnd,
                     _stakerInfo,
-                    _stakerLength
+                    _stakerLength,
+                    false
                 );
             }
         } else {
@@ -1010,66 +1011,124 @@ contract BountyPool is Ownable, Initializable {
 
             // if APYChanges len = 0 use timestamp of last APYperiod or _lastTimeClaimed as periodStart
             if (len == 0) {
-                // if lastTimeClaimed is before last APYchange
-                if (_lastTimeClaimed < APYrecord[length - 1].timeStamp) {
-                    periodStart = APYrecord[length - 1].timeStamp;
-                } else {
-                    //TODO if _lastTimeClaimed the stakerBalance needs to be the last one...
-                    // this could be fixed by setting a bool input if _lastTimeClaimed is periodStart
-                    periodStart = _lastTimeClaimed;
-                }
+                totalPeriodClaim += noAPYChangeBalance(
+                    _stakerLength,
+                    length,
+                    _lastTimeClaimed,
+                    _stakerInfo,
+                    APYrecord
+                );
+            } else {
+                // else do loop
+                totalPeriodClaim += APYChangeBalance(
+                    _stakerLength,
+                    length,
+                    _lastTimeClaimed,
+                    _stakerInfo,
+                    APYrecord,
+                    APYChange
+                );
+            }
+        }
+        return totalPeriodClaim;
+    }
 
+    function noAPYChangeBalance(
+        uint256 _stakerLength,
+        uint256 length,
+        uint256 _lastTimeClaimed,
+        StakingInfo[] memory _stakerInfo,
+        APYperiods[] memory APYrecord
+    ) internal returns (uint256) {
+        bool pStartIsLastClaimed;
+        uint256 periodStart;
+        uint256 periodEnd;
+        uint256 totalPeriodClaim;
+        if (_lastTimeClaimed < APYrecord[length - 1].timeStamp) {
+            periodStart = APYrecord[length - 1].timeStamp;
+        } else {
+            //if _lastTimeClaimed the stakerBalance needs to be the last one...
+            // this could be fixed by setting a bool input if _lastTimeClaimed is periodStart
+            periodStart = _lastTimeClaimed;
+            pStartIsLastClaimed = true;
+        }
+
+        periodEnd = block.timestamp;
+        uint256 apy = APYrecord[length - 1].periodAPY;
+        // loop through stakers balance fluctiation during this period
+
+        totalPeriodClaim += calculateBalance(
+            apy,
+            periodStart,
+            periodEnd,
+            _stakerInfo,
+            _stakerLength,
+            pStartIsLastClaimed
+        );
+        return totalPeriodClaim;
+    }
+
+    function APYChangeBalance(
+        uint256 _stakerLength,
+        uint256 length,
+        uint256 _lastTimeClaimed,
+        StakingInfo[] memory _stakerInfo,
+        APYperiods[] memory APYrecord,
+        uint256[] memory APYChange
+    ) internal returns (uint256) {
+        bool pStartIsLastClaimed;
+        uint256 periodStart;
+        uint256 periodEnd;
+        uint256 totalPeriodClaim;
+        uint256 len = APYChange.length;
+
+        uint256 stkrLen = _stakerLength; // making compiler happy, avoiding stack too deep
+
+        for (uint256 i; i < len; ++i) {
+            if (i == 0) {
+                periodStart = _lastTimeClaimed;
+                // if _lastTimeClaimed the stakerBalance needs to be i - 1 in calculateBalance()...
+                pStartIsLastClaimed = true;
+            } else {
+                periodStart = APYrecord[APYChange[i]].timeStamp;
+            }
+
+            // period end is equal NOW for last APY that has been set
+
+            if (i == length - 1) {
                 periodEnd = block.timestamp;
-                uint256 apy = APYrecord[length - 1].periodAPY;
+            } else {
+                periodEnd = APYrecord[APYChange[i + 1]].timeStamp;
+            }
+
+            uint256 apy = APYrecord[APYChange[i]].periodAPY;
+
+            {
                 // loop through stakers balance fluctiation during this period
                 totalPeriodClaim += calculateBalance(
                     apy,
                     periodStart,
                     periodEnd,
                     _stakerInfo,
-                    _stakerLength
+                    stkrLen,
+                    pStartIsLastClaimed
                 );
-            } else {
-                // else do loop
-                for (uint256 i; i < len; ++i) {
-                    if (i == 0) {
-                        //TODO if _lastTimeClaimed the stakerBalance needs to be the last one...
-                        // this could be fixed by setting a bool input if _lastTimeClaimed is periodStart
-                        periodStart = _lastTimeClaimed;
-                    } else {
-                        periodStart = APYrecord[APYChange[i]].timeStamp;
-                    }
-
-                    // period end is equal NOW for last APY that has been set
-                    if (i == length - 1) {
-                        periodEnd = block.timestamp;
-                    } else {
-                        periodEnd = APYrecord[APYChange[i + 1]].timeStamp;
-                    }
-                    uint256 apy = APYrecord[APYChange[i]].periodAPY;
-                    // loop through stakers balance fluctiation during this period
-                    totalPeriodClaim += calculateBalance(
-                        apy,
-                        periodStart,
-                        periodEnd,
-                        _stakerInfo,
-                        _stakerLength
-                    );
-                }
             }
         }
         return totalPeriodClaim;
     }
 
     function calculateBalance(
-        uint256 apy,
+        uint256 _apy,
         uint256 _periodStart,
         uint256 _periodEnd,
         StakingInfo[] memory _stakerInfo,
-        uint256 _stakerLength
+        uint256 _stakerLength,
+        bool _pStartIsLastClaimed
     ) internal returns (uint256) {
         uint256 balanceClaim;
         uint256 duration;
+        uint256 apy = _apy;
         {
             for (uint256 i; i < _stakerLength; ++i) {
                 // check staker balance at that moment
@@ -1084,24 +1143,72 @@ contract BountyPool is Ownable, Initializable {
         {
             uint256[] memory stakrChange = stakerChange;
             uint256 len = stakrChange.length;
-            for (uint256 i; i < len; ++i) {
-                // check distance difference to period start
+            //if len = 0 (no staking change)
+            if (len == 0) {
+                duration = _periodStart;
+                balanceClaim =
+                    (((_stakerInfo[_stakerLength - 1].stakeBalance * apy) /
+                        denominator) / YEAR) *
+                    duration;
+            } else {
+                // else loop
+                uint256 periodClaim;
+                for (uint256 i; i < len; ++i) {
+                    // check distance difference to period start
 
-                if (i == len - 1) {
-                    duration =
-                        _periodEnd -
-                        _stakerInfo[stakrChange[i]].balanceTimeStamp;
-                } else {
-                    duration =
-                        _stakerInfo[stakrChange[i + 1]].balanceTimeStamp -
-                        _stakerInfo[stakrChange[i]].balanceTimeStamp;
+                    if (i == len - 1) {
+                        duration =
+                            _periodEnd -
+                            _stakerInfo[stakrChange[i]].balanceTimeStamp;
+                    } else {
+                        duration =
+                            _stakerInfo[stakrChange[i + 1]].balanceTimeStamp -
+                            _stakerInfo[stakrChange[i]].balanceTimeStamp;
+                    }
+
+                    // calculate timestampClaim
+                    // if periodStart = _LastClaimed use i -1 staker Balance
+                    if (_pStartIsLastClaimed == true) {
+                        uint256 duration2;
+                        if (i == 0) {
+                            // calculate duration from lastClaimed until new staking change
+                            duration = (_stakerInfo[stakrChange[i]]
+                                .balanceTimeStamp - _periodStart);
+
+                            // calculate duration from current i to next stake change or period end
+                            if (i == len - 1) {
+                                duration2 =
+                                    _periodEnd -
+                                    _stakerInfo[stakrChange[i]]
+                                        .balanceTimeStamp;
+                            } else {
+                                duration2 =
+                                    _stakerInfo[stakrChange[i + 1]]
+                                        .balanceTimeStamp -
+                                    _stakerInfo[stakrChange[i]]
+                                        .balanceTimeStamp;
+                            }
+                            // calcualte amount to claim from lastClaim to stake change
+                            periodClaim =
+                                (((_stakerInfo[stakrChange[i] - 1]
+                                    .stakeBalance * apy) / denominator) /
+                                    YEAR) *
+                                duration;
+                            // add amount to claim from current i to i+1 or period end
+                            periodClaim +=
+                                (((_stakerInfo[stakrChange[i]].stakeBalance *
+                                    apy) / denominator) / YEAR) *
+                                duration2;
+                        }
+                    } else {
+                        periodClaim =
+                            (((_stakerInfo[stakrChange[i]].stakeBalance * apy) /
+                                denominator) / YEAR) *
+                            duration;
+                    }
+
+                    balanceClaim += periodClaim;
                 }
-
-                // calculate timestampClaim
-                uint256 periodClaim = (((_stakerInfo[stakrChange[i]]
-                    .stakeBalance * apy) / denominator) / YEAR) * duration;
-
-                balanceClaim += periodClaim;
             }
         }
         delete stakerChange;
