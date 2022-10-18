@@ -1001,7 +1001,7 @@ contract BountyPool is Ownable, Initializable {
             uint256[] memory APYChange = APYChanges;
             uint256 len = APYChange.length;
 
-            // if APYChanges len = 0 use timestamp of last APYperiod as periodStart
+            // if APYChanges len = 0 use timestamp of last APYperiod or _lastTimeClaimed as periodStart
             if (len == 0) {
                 // if lastTimeClaimed is before last APYchange
                 if (_lastTimeClaimed < APYrecord[length - 1].timeStamp) {
