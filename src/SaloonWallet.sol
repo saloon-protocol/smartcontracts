@@ -46,7 +46,8 @@ contract SaloonWallet {
         // calculate commision
         uint256 saloonCommission = (_amount * (BOUNTY_COMMISSION**decimals)) /
             (DENOMINATOR**decimals);
-        uint256 hunterPayout = (_amount**decimals) - saloonCommission;
+
+        uint256 hunterPayout = (_amount) - saloonCommission;
         // update variables and mappings
         hunterTokenBalance[_hunter][_token] += hunterPayout;
         cummulativeHackerPayouts += hunterPayout;
@@ -55,18 +56,13 @@ contract SaloonWallet {
         cummulativeCommission += saloonCommission;
     }
 
-    function premiumFeesCollected(
-        address _token,
-        uint256 _decimals,
-        uint256 _amount
-    ) external onlyManager {
-        // handle decimals
-        uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
-        uint256 amount = _amount**decimals;
-
-        saloonTokenBalance[_token] += amount;
-        premiumFees += amount;
-        saloonTotalBalance += amount;
+    function premiumFeesCollected(address _token, uint256 _amount)
+        external
+        onlyManager
+    {
+        saloonTokenBalance[_token] += _amount;
+        premiumFees += _amount;
+        saloonTotalBalance += _amount;
     }
 
     //

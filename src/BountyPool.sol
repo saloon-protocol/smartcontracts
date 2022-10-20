@@ -117,7 +117,7 @@ contract BountyPool is Ownable, Initializable {
 
     //#################### Functions *******************\\
 
-    // ADMIN PAY BOUNTY public
+    // ADMIN PAY BOUNTY
     // this implementation uses investors funds first before project deposit,
     // future implementation might use a more hybrid and sophisticated splitting of costs.
     function payBounty(
@@ -133,29 +133,67 @@ contract BountyPool is Ownable, Initializable {
         address[] memory stakersList = stakerList;
         // cache length
         uint256 length = stakersList.length;
+        if (stakersList.length > 0) {
+            // check if stakersDeposit is enough
+            if (stakersDeposits[stakingLenght].stakeBalance >= _amount) {
+                // decrease stakerDeposit
+                uint256 newStakersDeposit = stakersDeposits[stakingLenght]
+                    .stakeBalance - _amount;
+                // push new value to array
+                StakingInfo memory stakingInfo;
+                stakingInfo.balanceTimeStamp = block.timestamp;
+                stakingInfo.stakeBalance = newStakersDeposit;
 
-        // check if stakersDeposit is enough
-        if (stakersDeposits[stakingLenght].stakeBalance >= _amount) {
-            // decrease stakerDeposit
-            stakersDeposits[stakingLenght].stakeBalance -= _amount;
-            // push new value to array
-            StakingInfo memory stakingInfo;
-            stakingInfo.balanceTimeStamp = block.timestamp;
-            stakingInfo.stakeBalance = stakersDeposits[stakingLenght]
-                .stakeBalance;
+                // if staker deposit == 0
+                // check new pushed value
+                if (newStakersDeposit == 0) {
+                    for (uint256 i; i < length; ++i) {
+                        // update StakingInfo struct
+                        StakingInfo memory newInfo;
+                        newInfo.balanceTimeStamp = block.timestamp;
+                        newInfo.stakeBalance = 0;
 
-            // if staker deposit == 0
-            // check new pushed value
-            if (stakersDeposits[stakingLenght].stakeBalance == 0) {
+                        address stakerAddress = stakersList[i];
+                        staker[stakerAddress].push(newInfo);
+                    }
+
+                    // deduct saloon commission and transfer
+                    calculateCommissioAndTransferPayout(
+                        _token,
+                        _hunter,
+                        _saloonWallet,
+                        _amount
+                    );
+
+                    // update stakersDeposit
+                    stakersDeposit.push(stakingInfo);
+                    // clean stakerList array
+                    delete stakerList;
+                    return true;
+                }
+                // calculate percentage of stakersDeposit
+                // note should we increase precision?
+                uint256 percentage = (_amount * (10**decimals)) /
+                    stakersDeposits[stakingLenght].stakeBalance;
+                // loop through all stakers and deduct percentage from their balances
                 for (uint256 i; i < length; ++i) {
+                    address stakerAddress = stakersList[i];
+                    uint256 arraySize = staker[stakerAddress].length - 1;
+                    uint256 oldStakerBalance = staker[stakerAddress][arraySize]
+                        .stakeBalance;
+
                     // update StakingInfo struct
                     StakingInfo memory newInfo;
                     newInfo.balanceTimeStamp = block.timestamp;
-                    newInfo.stakeBalance = 0;
 
-                    address stakerAddress = stakersList[i];
+                    newInfo.stakeBalance =
+                        oldStakerBalance -
+                        ((oldStakerBalance * percentage) / (10**decimals));
+
                     staker[stakerAddress].push(newInfo);
                 }
+                // push to
+                stakersDeposit.push(stakingInfo);
 
                 // deduct saloon commission and transfer
                 calculateCommissioAndTransferPayout(
@@ -165,70 +203,43 @@ contract BountyPool is Ownable, Initializable {
                     _amount
                 );
 
-                // update stakersDeposit
-                stakersDeposit.push(stakingInfo);
+                return true;
+            } else {
+                // reset baalnce of all stakers
+                for (uint256 i; i < length; ++i) {
+                    // update StakingInfo struct
+                    StakingInfo memory newInfo;
+                    newInfo.balanceTimeStamp = block.timestamp;
+                    newInfo.stakeBalance = 0;
+
+                    address stakerAddress = stakersList[i];
+                    staker[stakerAddress].push(newInfo);
+                }
                 // clean stakerList array
                 delete stakerList;
+                // if stakersDeposit not enough use projectDeposit to pay the rest
+                uint256 remainingCost = _amount -
+                    stakersDeposits[stakingLenght].stakeBalance;
+                // descrease project deposit by the remaining amount
+                projectDeposit -= remainingCost;
+
+                // set stakers deposit to 0
+                StakingInfo memory stakingInfo;
+                stakingInfo.balanceTimeStamp = block.timestamp;
+                stakingInfo.stakeBalance = 0;
+                stakersDeposit.push(stakingInfo);
+
+                // deduct saloon commission and transfer
+                calculateCommissioAndTransferPayout(
+                    _token,
+                    _hunter,
+                    _saloonWallet,
+                    _amount
+                );
+
                 return true;
             }
-            // calculate percentage of stakersDeposit
-            // note should we increase precision?
-            uint256 percentage = (_amount * PRECISION) /
-                stakersDeposits[stakingLenght].stakeBalance;
-            // loop through all stakers and deduct percentage from their balances
-            for (uint256 i; i < length; ++i) {
-                address stakerAddress = stakersList[i];
-                uint256 arraySize = staker[stakerAddress].length - 1;
-                uint256 oldStakerBalance = staker[stakerAddress][arraySize]
-                    .stakeBalance;
-
-                // update StakingInfo struct
-                StakingInfo memory newInfo;
-                newInfo.balanceTimeStamp = block.timestamp;
-                newInfo.stakeBalance =
-                    oldStakerBalance -
-                    ((oldStakerBalance * percentage) / denominator);
-
-                staker[stakerAddress].push(newInfo);
-            }
-            // push to
-            stakersDeposit.push(stakingInfo);
-
-            // deduct saloon commission and transfer
-            calculateCommissioAndTransferPayout(
-                _token,
-                _hunter,
-                _saloonWallet,
-                _amount
-            );
-
-            return true;
         } else {
-            // reset baalnce of all stakers
-            for (uint256 i; i < length; ++i) {
-                // update StakingInfo struct
-                StakingInfo memory newInfo;
-                newInfo.balanceTimeStamp = block.timestamp;
-                newInfo.stakeBalance = 0;
-
-                address stakerAddress = stakersList[i];
-                staker[stakerAddress].push(newInfo);
-            }
-            // clean stakerList array
-            delete stakerList;
-            // if stakersDeposit not enough use projectDeposit to pay the rest
-            uint256 remainingCost = _amount -
-                stakersDeposits[stakingLenght].stakeBalance;
-            // descrease project deposit by the remaining amount
-            projectDeposit -= remainingCost;
-
-            // set stakers deposit to 0
-            StakingInfo memory stakingInfo;
-            stakingInfo.balanceTimeStamp = block.timestamp;
-            stakingInfo.stakeBalance = stakersDeposits[stakingLenght]
-                .stakeBalance;
-            stakersDeposit.push(stakingInfo);
-
             // deduct saloon commission and transfer
             calculateCommissioAndTransferPayout(
                 _token,
@@ -236,6 +247,8 @@ contract BountyPool is Ownable, Initializable {
                 _saloonWallet,
                 _amount
             );
+
+            projectDeposit -= _amount;
 
             return true;
         }
@@ -300,6 +313,7 @@ contract BountyPool is Ownable, Initializable {
         poolCapTimelock.timelock = block.timestamp + PERIOD;
         poolCapTimelock.amount = _newPoolCap;
         poolCapTimelock.executed = false;
+        // note should this have a timelimit??
     }
 
     // PROJECT SET CAP
@@ -313,60 +327,62 @@ contract BountyPool is Ownable, Initializable {
                     poolCapLock.executed == false &&
                     poolCapLock.amount == _amount &&
                     poolCapLock.timelock != 0,
-                "Timelock not set or not completed"
+                "Timelock not set or not completed in time"
             );
             // set executed to true
             poolCapTimelock.executed = true;
         }
         StakingInfo[] memory stakersDeposits = stakersDeposit;
-        uint256 stakingLenght = stakersDeposits.length - 1;
-        uint256 totalStakingBalance = stakersDeposits[stakingLenght]
-            .stakeBalance;
+        uint256 stakingLenght = stakersDeposits.length;
 
         // if stakers deposit > newPoolcap reimburse different to users
-        if (totalStakingBalance > _amount) {
-            // calculate difference = (stakers deposit - newPoolcap)
-            uint256 diff = totalStakingBalance - _amount;
-            // loop through stakers
-            address[] memory stakersList = stakerList;
-            uint256 length = stakersList.length - 1;
+        if (stakingLenght > 0) {
+            uint256 totalStakingBalance = stakersDeposits[stakingLenght - 1]
+                .stakeBalance;
+            if (totalStakingBalance > _amount) {
+                address[] memory stakersList = stakerList;
+                uint256 length = stakersList.length;
+                // calculate difference = (stakers deposit - newPoolcap)
+                uint256 diff = totalStakingBalance - _amount;
+                // loop through stakers
 
-            for (uint256 i; i < length; ) {
-                address stakerAddress = stakersList[i];
-                uint256 arraySize = staker[stakerAddress].length - 1;
-                uint256 dec = decimals;
-                // calculate current stakersDeposit individual percentage of each staker
-                uint256 percentage = (staker[stakerAddress][arraySize]
-                    .stakeBalance * (10**dec)) / totalStakingBalance;
+                for (uint256 i; i < length; ) {
+                    address stakerAddress = stakersList[i];
+                    uint256 arraySize = staker[stakerAddress].length - 1;
+                    uint256 dec = decimals;
+                    // calculate current stakersDeposit individual percentage of each staker
+                    uint256 percentage = (staker[stakerAddress][arraySize]
+                        .stakeBalance * (10**dec)) / totalStakingBalance;
 
-                // amount = calculate individual difference percentage per staker
-                uint256 amount = (diff * percentage) / (10**dec);
+                    // amount = calculate individual difference percentage per staker
+                    uint256 amount = (diff * percentage) / (10**dec);
 
-                // add amount to instant claim mapping variable that gets added and reset in claimPremium
-                stakerReimbursement[stakerAddress] += amount;
-                // decrease stakerBalance by amount
-                StakingInfo memory newInfo;
-                // update balance
-                newInfo.stakeBalance =
-                    staker[stakerAddress][arraySize].stakeBalance -
-                    amount;
-                // update current time
-                newInfo.balanceTimeStamp = block.timestamp;
-                // push to array
-                staker[stakerAddress].push(newInfo);
+                    // add amount to instant claim mapping variable that gets added and reset in claimPremium
+                    stakerReimbursement[stakerAddress] += amount;
+                    // decrease stakerBalance by amount
+                    StakingInfo memory newInfo;
+                    // update balance
+                    newInfo.stakeBalance =
+                        staker[stakerAddress][arraySize].stakeBalance -
+                        amount;
+                    // update current time
+                    newInfo.balanceTimeStamp = block.timestamp;
+                    // push to array
+                    staker[stakerAddress].push(newInfo);
 
-                unchecked {
-                    ++i;
+                    unchecked {
+                        ++i;
+                    }
                 }
-            }
 
-            //  subtract and update: stakersDeposit - diff
-            StakingInfo memory newDepositInfo;
-            newDepositInfo.balanceTimeStamp = block.timestamp;
-            newDepositInfo.stakeBalance =
-                stakersDeposits[stakingLenght].stakeBalance -
-                diff;
-            stakersDeposit.push(newDepositInfo);
+                //  subtract and update: stakersDeposit - diff
+                StakingInfo memory newDepositInfo;
+                newDepositInfo.balanceTimeStamp = block.timestamp;
+                newDepositInfo.stakeBalance =
+                    stakersDeposits[stakingLenght - 1].stakeBalance -
+                    diff;
+                stakersDeposit.push(newDepositInfo);
+            }
         }
 
         poolCap = _amount;
@@ -376,6 +392,7 @@ contract BountyPool is Ownable, Initializable {
         APYTimelock.timelock = block.timestamp + PERIOD;
         APYTimelock.amount = _newAPY;
         APYTimelock.executed = false;
+        // note should this have a timelimit??
     }
 
     // PROJECT SET APY
@@ -467,7 +484,7 @@ contract BountyPool is Ownable, Initializable {
                 }
             }
         }
-        // disable instant withdrawals
+        // disable instant withdrawals ? note this is not in effect
         APYdropped = false;
 
         return true;
@@ -547,12 +564,25 @@ contract BountyPool is Ownable, Initializable {
                             block.timestamp -
                             _stakersDeposits[stakingChanges[i]]
                                 .balanceTimeStamp;
+
+                        premiumOwed +=
+                            ((
+                                ((_stakersDeposits[stakingChanges[i]]
+                                    .stakeBalance * _apy) / denominator)
+                            ) / YEAR) *
+                            duration;
                     } else {
                         duration =
                             _stakersDeposits[stakingChanges[i + 1]]
                                 .balanceTimeStamp -
                             _stakersDeposits[stakingChanges[i]]
                                 .balanceTimeStamp;
+                        premiumOwed +=
+                            ((
+                                ((_stakersDeposits[stakingChanges[i]]
+                                    .stakeBalance * _apy) / denominator)
+                            ) / YEAR) *
+                            duration;
                     }
                 } else {
                     if (i == 0) {
@@ -651,29 +681,81 @@ contract BountyPool is Ownable, Initializable {
             // If return valid is 0 run same things on catch block
             if (result == false) {
                 // if transfer fails APY is reset and premium is paid with new APY
+                uint256 newAPY = viewcurrentAPY();
                 // register new APYperiod
                 APYperiods memory newAPYperiod;
                 newAPYperiod.timeStamp = block.timestamp;
-                newAPYperiod.periodAPY = viewcurrentAPY();
+                newAPYperiod.periodAPY = newAPY;
                 APYrecords.push(newAPYperiod);
                 // set new APY
-                uint256 newAPY = viewcurrentAPY();
-                setDesiredAPY(_token, _projectWallet, newAPY);
+                // register new APYperiod
+                desiredAPY = newAPY;
 
+                address[] memory stakersList = stakerList;
+                if (stakersList.length > 0) {
+                    uint256 length = stakersList.length - 1;
+                    for (uint256 i; i < length; ) {
+                        address stakerAddress = stakersList[i];
+                        uint256 arraySize = staker[stakerAddress].length - 1;
+
+                        StakingInfo memory newInfo;
+                        // get last balance
+                        newInfo.stakeBalance = staker[stakerAddress][arraySize]
+                            .stakeBalance;
+                        // update current time
+                        newInfo.balanceTimeStamp = block.timestamp;
+                        // push to array so user can claim it.
+                        staker[stakerAddress].push(newInfo);
+
+                        unchecked {
+                            ++i;
+                        }
+                    }
+                }
                 return false;
             }
         } catch {
             // if transfer fails APY is reset and premium is paid with new APY
+            uint256 newAPY = viewcurrentAPY();
             // register new APYperiod
             APYperiods memory newAPYperiod;
             newAPYperiod.timeStamp = block.timestamp;
-            newAPYperiod.periodAPY = viewcurrentAPY();
+            newAPYperiod.periodAPY = newAPY;
             APYrecords.push(newAPYperiod);
             // set new APY
-            uint256 newAPY = viewcurrentAPY();
-            setDesiredAPY(_token, _projectWallet, newAPY);
+            // register new APYperiod
+            desiredAPY = newAPY;
+
+            address[] memory stakersList = stakerList;
+            if (stakersList.length > 0) {
+                uint256 length = stakersList.length - 1;
+                for (uint256 i; i < length; ) {
+                    address stakerAddress = stakersList[i];
+                    uint256 arraySize = staker[stakerAddress].length - 1;
+
+                    StakingInfo memory newInfo;
+                    // get last balance
+                    newInfo.stakeBalance = staker[stakerAddress][arraySize]
+                        .stakeBalance;
+                    // update current time
+                    newInfo.balanceTimeStamp = block.timestamp;
+                    // push to array so user can claim it.
+                    staker[stakerAddress].push(newInfo);
+
+                    unchecked {
+                        ++i;
+                    }
+                }
+            }
+
             return false;
         }
+        // IERC20(_token).safeTransferFrom(
+        //     _projectWallet,
+        //     address(this),
+        //     premiumOwed
+        // );
+
         // Calculate saloon fee
         uint256 saloonFee = (premiumOwed * premiumCommission) / denominator;
 
@@ -696,7 +778,7 @@ contract BountyPool is Ownable, Initializable {
         onlyManager
         returns (bool)
     {
-        require(projectDeposit <= _amount, "Amount bigger than deposit");
+        require(projectDeposit >= _amount, "Amount bigger than deposit");
 
         withdrawalTimelock.timelock = block.timestamp + PERIOD;
         withdrawalTimelock.timeLimit = block.timestamp + PERIOD + 3 days;
@@ -721,7 +803,7 @@ contract BountyPool is Ownable, Initializable {
                 withdrawalLock.executed == false &&
                 withdrawalLock.amount >= _amount &&
                 withdrawalLock.timelock != 0,
-            "Timelock not set or not completed"
+            "Timelock not set or not completed in time"
         );
         withdrawalTimelock.executed = true;
 
@@ -945,12 +1027,23 @@ contract BountyPool is Ownable, Initializable {
         // transfer
         if (currentPremiumBalance < owedPremium) {
             if (billPremium(_token, _projectWallet) == false) {
-                IERC20(_token).safeTransfer(
-                    _staker,
-                    stakerReimbursement[_staker]
-                );
+                uint256 reimbursement = stakerReimbursement[_staker];
+                IERC20(_token).safeTransfer(_staker, reimbursement);
                 stakerReimbursement[_staker] = 0;
+
+                return (reimbursement, false);
             }
+            // sum owedPremium to reibursement amount
+            owedPremium += stakerReimbursement[_staker];
+            // reset reimbursement amount
+            stakerReimbursement[_staker] = 0;
+
+            IERC20(_token).safeTransfer(_staker, owedPremium);
+
+            // update last time claimed
+            premiumBalance -= totalPremiumToClaim;
+            lastClaimed[_staker] = block.timestamp;
+            return (owedPremium, true);
         } else {
             // sum owedPremium to reibursement amount
             owedPremium += stakerReimbursement[_staker];
@@ -958,14 +1051,14 @@ contract BountyPool is Ownable, Initializable {
             stakerReimbursement[_staker] = 0;
 
             IERC20(_token).safeTransfer(_staker, owedPremium);
+
+            // update premiumBalance
+            premiumBalance -= totalPremiumToClaim;
+
+            // update last time claimed
+            lastClaimed[_staker] = block.timestamp;
+            return (owedPremium, true);
         }
-
-        // update premiumBalance
-        premiumBalance -= totalPremiumToClaim;
-
-        // update last time claimed
-        lastClaimed[_staker] = block.timestamp;
-        return (owedPremium, true);
     }
 
     function calculateBalancePerPeriod(
@@ -1154,7 +1247,7 @@ contract BountyPool is Ownable, Initializable {
             uint256 len = stakrChange.length;
             //if len = 0 (no staking change)
             if (len == 0) {
-                duration = _periodStart;
+                duration = block.timestamp - _periodStart;
                 balanceClaim =
                     (((_stakerInfo[_stakerLength - 1].stakeBalance * apy) /
                         denominator) / YEAR) *

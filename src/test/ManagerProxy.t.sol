@@ -27,8 +27,9 @@ contract ManagerProxyTest is DSTest, Script {
 
     address wmatic = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
     address projectwallet = address(1);
-    address investor = address(1);
-    address whitehat = address(2);
+    address investor = address(2);
+    address investor2 = address(4);
+    address whitehat = address(3);
     address owner = 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84;
     string bountyName = "YEEHAW";
     address bountyAddress;
@@ -39,8 +40,9 @@ contract ManagerProxyTest is DSTest, Script {
         uint256 forkId = vm.createFork(mumbai);
         vm.selectFork(forkId);
 
-        vm.deal(projectwallet, 100 ether);
-        vm.deal(investor, 100 ether);
+        vm.deal(projectwallet, 500 ether);
+        vm.deal(investor, 500 ether);
+        vm.deal(investor2, 500 ether);
 
         bountyProxy = new BountyProxy();
         proxyFactory = new BountyProxyFactory();
@@ -53,8 +55,11 @@ contract ManagerProxyTest is DSTest, Script {
             data,
             msg.sender
         );
+
         saloonwallet = new SaloonWallet(address(managerProxy));
         manager = BountyProxiesManager(address(managerProxy));
+        // transfer Beacon ownership to saloon
+        beacon.transferOwnership(address(manager));
         // bountyPool.initializeImplementation(address(managerProxy), 18);
         manager.initialize(proxyFactory, beacon, address(bountyPool));
         // bountyProxy.initialize(address(beacon), data, address(managerProxy));
@@ -70,83 +75,279 @@ contract ManagerProxyTest is DSTest, Script {
 
     function testManager() public {
         vm.startPrank(projectwallet);
-        ERC20(wmatic).approve(bountyAddress, 100 ether);
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
         wmatic.call{value: 40 ether}(abi.encodeWithSignature("deposit()", ""));
 
+        ///////// test init project setting up ////////////
         manager.projectDeposit(bountyName, 20);
-        manager.setBountyCapAndAPY(bountyName, 5000, 10);
+        uint256 projectDeposit = manager.viewProjectDeposit(bountyName);
+        assertEq(20 ether, projectDeposit);
+
         manager.scheduleProjectDepositWithdrawal(bountyName, 5);
+
+        manager.setBountyCapAndAPY(bountyName, 5000, 10);
+
         uint256 payout = manager.viewHackerPayout(bountyName);
         assertEq(18 ether, payout);
-        vm.warp(block.timestamp + 3 weeks);
+
+        vm.warp(block.timestamp + 8 days);
         manager.projectDepositWithdrawal(bountyName, 5);
 
+        uint256 projectDeposit2 = manager.viewProjectDeposit(bountyName);
+        assertEq(15 ether, projectDeposit2);
+
+        manager.scheduleProjectDepositWithdrawal(bountyName, 5);
+        vm.warp(block.timestamp + 8 days);
+        manager.projectDepositWithdrawal(bountyName, 5);
+
+        uint256 projectDeposit3 = manager.viewProjectDeposit(bountyName);
+        assertEq(10 ether, projectDeposit3);
+
         vm.stopPrank();
+        ///////// test init project setting up  END ////////////
 
         //// TEST UPGRADE MANAGER ////
         BountyProxiesManager newImplementation = new BountyProxiesManager();
         manager.upgradeTo(address(newImplementation));
-        /////////
+        /////////////////////////////////////////////
 
-        manager.viewBountyInfo(bountyName);
-        manager.viewProjectDeposit(bountyName);
-        manager.viewBountyBalance(bountyName);
-
-        ///////// INVESTOR ///////////
+        ///////// test stake, billPremium and claimPremium///////////
         vm.startPrank(investor);
         wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
 
-        ERC20(wmatic).approve(bountyAddress, 100 ether);
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
         manager.stake(bountyName, 20);
+
+        vm.warp(block.timestamp + 52 weeks);
+        manager.billPremiumForOnePool(bountyName);
         // uint256 payout2 = manager.viewHackerPayout(bountyName);
         // assertEq(31.5, payout2);
-        // assertEq()
+
+        vm.warp(block.timestamp);
+        manager.claimPremium(bountyName);
+
         manager.scheduleUnstake(bountyName, 5); //
 
-        vm.warp(block.timestamp + 4 weeks);
+        vm.warp(block.timestamp + 8 days);
         manager.unstake(bountyName, 5);
         vm.stopPrank();
-        ///////// INVESTOR END ///////////
-
-        // uint256 payout3 = manager.viewHackerPayout(bountyName);
-        // assertEq(27, payout3);
 
         // test bill premium for one pool
         // warp x and bill
-        // vm.warp(block.timestamp + 50 weeks);
-        // manager.billPremiumForOnePool(bountyName);
+        vm.warp(block.timestamp + 52 weeks);
+        manager.billPremiumForOnePool(bountyName);
 
         // test first claim premium as investor
-        // warp is not cummulative....
-        // NOTE: for some reason if I call billPremium before this event it doesnt work.
-        // TODO: Test on Live testnet to make sure this is only a mistake with the testing set up
-        vm.warp(block.timestamp + 100 weeks);
+
+        vm.warp(block.timestamp);
+        vm.startPrank(investor);
+        manager.claimPremium(bountyName);
+
+        manager.scheduleUnstake(bountyName, 15); //
+
+        vm.warp(block.timestamp + 8 days);
+        manager.unstake(bountyName, 15);
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + 200 weeks);
         vm.startPrank(investor);
         manager.claimPremium(bountyName);
         vm.stopPrank();
+        ///////// test stake, billPremium and claimPremium END ///////////
 
-        // test second claim premium as investor
-
+        ///////// test payBounty ////////////////////////////////////////////
+        uint256 balance = manager.viewBountyBalance(bountyName);
+        assertEq(balance, 1);
         // test payBounty
-        // bounty should have 30s by this point
-        // manager.payBounty(bountyName, whitehat, 20);
-        // uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
-        // // check hunters balance is correct
-        // assertEq(18, whitehatBalance);
-        // // check saloon balance is correct
-        // uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
-        // assertEq(2, saloonBalance);
+        manager.payBounty(bountyName, whitehat, 10);
+        uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
+        // check hunters balance is correct
+        assertEq(whitehatBalance, 9 ether);
+        // check saloon balance is correct
+        uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
+        assertEq(saloonBalance, 1 ether);
 
-        // test collect saloon premium
-        // assert how much premium saloonwallet has
+        uint256 totalDeposit = manager.viewProjectDeposit(bountyName);
+        // assertEq(totalDeposit,);
+        // uint256 managerBalance2 = ERC20(wmatic).balanceOf(address(manager));
+        // assertEq(managerBalance2, 1);
 
-        // test bill premium for all
+        // should fail (working)
+        // manager.payBounty(bountyName, whitehat, 9);
+        ///////// test payBounty END ////////////////////////////////////////////
+
+        ///////////test payout with multiple stakers covering it /////////////////
+        vm.startPrank(investor2);
+        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
+        manager.stake(bountyName, 10);
+        vm.stopPrank();
+
+        vm.startPrank(investor);
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
+        manager.stake(bountyName, 50);
+        vm.stopPrank();
+
+        uint256 balance2 = manager.viewBountyBalance(bountyName);
+        // assertEq(balance2, 1);
+
+        manager.payBounty(bountyName, whitehat, 50);
+
+        uint256 investorDeposit = manager.viewUserStakingBalance(
+            bountyName,
+            investor
+        );
+        assertEq(investorDeposit, 0);
+        uint256 investorDeposit2 = manager.viewUserStakingBalance(
+            bountyName,
+            investor2
+        );
+        assertEq(investorDeposit2, 0);
+        ///////////////////// END  ///////////////////////////////////
+
+        ////////////// test mixed payout (stakers and project) ////////////////////////////////////
+        vm.startPrank(projectwallet);
+        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
+        manager.projectDeposit(bountyName, 20);
+        vm.stopPrank();
+
+        vm.startPrank(investor);
+        manager.stake(bountyName, 5);
+        vm.stopPrank();
+
+        vm.startPrank(investor2);
+        manager.stake(bountyName, 10);
+        vm.stopPrank();
+
+        manager.payBounty(bountyName, whitehat, 32);
+        uint256 totalDeposit2 = manager.viewProjectDeposit(bountyName);
+        assertEq(totalDeposit2, 13 ether);
+        uint256 stakersDeposit2 = manager.viewstakersDeposit(bountyName);
+        assertEq(stakersDeposit2, 0);
+        uint256 investorDeposit6 = manager.viewUserStakingBalance(
+            bountyName,
+            investor2
+        );
+        assertEq(investorDeposit6, 0);
+        ///////////////////// END  ///////////////////////////////////
+
+        ///////////// test payout with no stakers //////////////////////////
+        manager.payBounty(bountyName, whitehat, 13);
+        // should fail (working)
+        // manager.payBounty(bountyName, whitehat, 1);
+
+        // test decrease pool cap
+        vm.startPrank(projectwallet);
+        manager.schedulePoolCapChange(bountyName, 100);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setPoolCap(bountyName, 100);
+        vm.stopPrank();
+        ///////////////////// END  ///////////////////////////////////
+
+        ////////////// / test increase pool cap //////////////////////////
+        vm.startPrank(projectwallet);
+        manager.schedulePoolCapChange(bountyName, 200);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setPoolCap(bountyName, 200);
+        uint256 poolCap = manager.viewPoolCap(bountyName);
+        assertEq(poolCap, 200 ether);
+        vm.stopPrank();
+        ///////////////////// END  ///////////////////////////////////
+
+        /////////////// test decrease pool cap when full //////////////////////////
+        vm.startPrank(projectwallet);
+        wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
+        manager.projectDeposit(bountyName, 100);
+        vm.stopPrank();
+
+        vm.startPrank(investor);
+        wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
+        manager.stake(bountyName, 100);
+        vm.stopPrank();
+
+        vm.startPrank(investor2);
+        wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
+        manager.stake(bountyName, 100);
+        vm.stopPrank();
+
+        vm.startPrank(projectwallet);
+        manager.schedulePoolCapChange(bountyName, 100);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setPoolCap(bountyName, 100);
+        uint256 poolCap2 = manager.viewPoolCap(bountyName);
+        assertEq(poolCap2, 100 ether);
+        vm.stopPrank();
+        // - testing reimbursement
+        // note this is returning slightly more 50. Timestamps in this test
+        // must make it so "investor" already claimed his share in past tests but no "investor2"
+        vm.startPrank(investor2);
+        manager.claimPremium(bountyName);
+        vm.stopPrank();
+
+        vm.startPrank(investor);
+
+        manager.claimPremium(bountyName);
+        vm.stopPrank();
+
+        uint256 investorDeposit3 = manager.viewUserStakingBalance(
+            bountyName,
+            investor
+        );
+        assertEq(investorDeposit3, 50 ether);
+        uint256 investorDeposit4 = manager.viewUserStakingBalance(
+            bountyName,
+            investor2
+        );
+        assertEq(investorDeposit4, 50 ether);
+        ///////////////////// END  ///////////////////////////////////
+
+        ///////////////// test decrease apy /////////////////////////
+        vm.startPrank(projectwallet);
+        manager.scheduleAPYChange(bountyName, 20);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setAPY(bountyName, 20);
+        uint256 apy = manager.viewDesiredAPY(bountyName);
+        assertEq(apy, 20 ether);
+        vm.stopPrank();
+        ///////////////////// END  ///////////////////////////////////
+
+        ////////////////// test increase apy /////////////////////////
+        vm.startPrank(projectwallet);
+        manager.scheduleAPYChange(bountyName, 100);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setAPY(bountyName, 100);
+        uint256 apy2 = manager.viewDesiredAPY(bountyName);
+        assertEq(apy2, 100 ether);
+        vm.stopPrank();
+        ///////////////////// END  ///////////////////////////////////
+
+        ////////////////// test collect saloon premium /////////////////////////
+        manager.withdrawSaloonPremiumFees();
+        uint256 saloonBalance2 = ERC20(wmatic).balanceOf(address(saloonwallet));
+        // assertEq(saloonBalance2, 0);
+        ///////////////////// END  ///////////////////////////////////
+
+        ////////////////// test Upgrade Bountypool contract ///////////////////////////////////
+        BountyPool newBountyPool = new BountyPool();
+        vm.prank(owner);
+        manager.updateBountyPoolImplementation(address(newBountyPool));
+        // note: currently no way of transferring ownership from Manager to anyone else.
+        ///////////////////// END  ///////////////////////////////////
+
+        ////////////////// project wallet can’t be billed fully causing APY change ///////////////////////////////////
+        vm.warp(block.timestamp + 200000 weeks);
+        vm.startPrank(investor2);
+        manager.claimPremium(bountyName);
+        vm.stopPrank();
+
+        uint256 apy3 = manager.viewDesiredAPY(bountyName);
+        assertEq(apy3, 100 ether);
+        ///////////////////// END  ///////////////////////////////////
+
+        //todo test bill premium for all
         // warp x and bill
-
-        // test Upgrade Bountypool contract
-
-        // test Upgrade factory contract
-
-        // test upgrade manager contract
     }
 }

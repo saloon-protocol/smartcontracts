@@ -44,11 +44,9 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         bool indexed whitelisted
     );
 
-    event PoolCapAndAPYChanged(
-        string indexed projectName,
-        uint256 indexed poolCap,
-        uint256 indexed apy
-    );
+    event PoolCapChanged(string indexed projectName, uint256 indexed poolCap);
+
+    event APYChanged(string indexed projectName, uint256 indexed apy);
 
     event WithdrawalorUnstakeScheduled(
         string indexed projectName,
@@ -219,7 +217,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         } else {
             uint256 apy = viewDesiredAPY(_projectName);
             uint256 poolCap = viewPoolCap(_projectName);
-            emit PoolCapAndAPYChanged(_projectName, poolCap, apy);
+            emit PoolCapChanged(_projectName, poolCap);
+            emit APYChanged(_projectName, apy);
         }
         return true;
     }
@@ -248,11 +247,8 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             } else {
                 uint256 apy = viewDesiredAPY(bountiesArray[i].projectName);
                 uint256 poolCap = viewPoolCap(bountiesArray[i].projectName);
-                emit PoolCapAndAPYChanged(
-                    bountiesArray[i].projectName,
-                    poolCap,
-                    apy
-                );
+                emit PoolCapChanged(bountiesArray[i].projectName, poolCap);
+                emit APYChanged(bountiesArray[i].projectName, apy);
             }
         }
         return true;
@@ -317,7 +313,6 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
             saloonWallet.premiumFeesCollected(
                 bountiesArray[i].token,
-                bountiesArray[i].decimals,
                 totalCollected
             );
             collected += totalCollected;
@@ -379,7 +374,76 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             desiredAPY
         );
 
-        emit PoolCapAndAPYChanged(_projectName, poolCap, desiredAPY);
+        emit PoolCapChanged(_projectName, poolCap);
+        emit APYChanged(_projectName, desiredAPY);
+        return true;
+    }
+
+    function schedulePoolCapChange(
+        string memory _projectName,
+        uint256 _newPoolCap
+    ) external returns (bool) {
+        Bounties memory bounty = bountyDetails[_projectName];
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+        // require msg.sender == projectWallet
+        require(msg.sender == bounty.projectWallet, "Not project owner");
+        uint256 poolCap = _newPoolCap * (10**bounty.decimals);
+        bounty.proxyAddress.schedulePoolCapChange(poolCap);
+
+        return true;
+    }
+
+    function setPoolCap(string memory _projectName, uint256 _newPoolCap)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+        // require msg.sender == projectWallet
+        require(msg.sender == bounty.projectWallet, "Not project owner");
+        uint256 poolCap = _newPoolCap * (10**bounty.decimals);
+        bounty.proxyAddress.setPoolCap(poolCap);
+
+        emit PoolCapChanged(_projectName, poolCap);
+        return true;
+    }
+
+    function scheduleAPYChange(string memory _projectName, uint256 _newAPY)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+        // require msg.sender == projectWallet
+        require(msg.sender == bounty.projectWallet, "Not project owner");
+        uint256 poolCap = _newAPY * (10**bounty.decimals);
+        bounty.proxyAddress.scheduleAPYChange(poolCap);
+
+        return true;
+    }
+
+    function setAPY(string memory _projectName, uint256 _newAPY)
+        external
+        returns (bool)
+    {
+        Bounties memory bounty = bountyDetails[_projectName];
+        // check if active
+        require(notDead(bounty.dead) == true, "Bounty is Dead");
+        // require msg.sender == projectWallet
+        require(msg.sender == bounty.projectWallet, "Not project owner");
+        uint256 apy = _newAPY * (10**bounty.decimals);
+
+        // set APY
+        bounty.proxyAddress.setDesiredAPY(
+            bounty.token,
+            bounty.projectWallet,
+            apy
+        );
+
+        emit APYChanged(_projectName, apy);
         return true;
     }
 
