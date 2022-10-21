@@ -8,7 +8,7 @@ import "./BountyProxyFactory.sol";
 import "./IBountyProxyFactory.sol";
 import "./BountyPool.sol";
 
-import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "./lib/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 

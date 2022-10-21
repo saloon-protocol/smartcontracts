@@ -945,90 +945,6 @@
         }
       }
     },
-    "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol": {
-      "lastModificationDate": 1663886293810,
-      "contentHash": "276c43bc941216533214efddb9048027",
-      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "OwnableUpgradeable": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "OwnableUpgradeable.sol/OwnableUpgradeable.json"
-        }
-      }
-    },
-    "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol": {
-      "lastModificationDate": 1663886279669,
-      "contentHash": "c220276b7e1a9bb7275c8fd69e58eaf0",
-      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.2",
-      "artifacts": {
-        "InitializableUp": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "InitializableUp.sol/InitializableUp.json"
-        }
-      }
-    },
     "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol": {
       "lastModificationDate": 1663884364736,
       "contentHash": "ca7c97e716d9caa787e6b63cb28b61d3",
@@ -1065,48 +981,6 @@
       "artifacts": {
         "AddressUpgradeable": {
           "0.8.10+commit.fc410830.Darwin.appleclang": "AddressUpgradeable.sol/AddressUpgradeable.json"
-        }
-      }
-    },
-    "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol": {
-      "lastModificationDate": 1663886316267,
-      "contentHash": "31a7a362166bf47150b337ab2f296ea6",
-      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ContextUpgradeable": {
-          "0.8.10+commit.fc410830.Darwin.appleclang": "ContextUpgradeable.sol/ContextUpgradeable.json"
         }
       }
     },
@@ -1239,8 +1113,8 @@
       }
     },
     "src/BountyProxiesManager.sol": {
-      "lastModificationDate": 1666248265004,
-      "contentHash": "d3961a46fdc85c7b85cd450163c105e0",
+      "lastModificationDate": 1666311344181,
+      "contentHash": "69a1ee58fb2827b42d5e0e14a0368816",
       "sourceName": "src/BountyProxiesManager.sol",
       "solcConfig": {
         "settings": {
@@ -1287,15 +1161,15 @@
         "lib/openzeppelin-contracts/contracts/utils/Address.sol",
         "lib/openzeppelin-contracts/contracts/utils/Context.sol",
         "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "src/BountyPool.sol",
         "src/BountyProxy.sol",
         "src/BountyProxyFactory.sol",
         "src/IBountyProxyFactory.sol",
-        "src/SaloonWallet.sol"
+        "src/SaloonWallet.sol",
+        "src/lib/ContextUpgradeable.sol",
+        "src/lib/InitializableUpgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "=0.8.10",
       "artifacts": {
@@ -1599,6 +1473,132 @@
         }
       }
     },
+    "src/lib/ContextUpgradeable.sol": {
+      "lastModificationDate": 1666311118767,
+      "contentHash": "03a28bb78b08bc7ab56fe99bf1cb7ce5",
+      "sourceName": "src/lib/ContextUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "src/lib/InitializableUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ContextUpgradeable": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "ContextUpgradeable.sol/ContextUpgradeable.json"
+        }
+      }
+    },
+    "src/lib/InitializableUpgradeable.sol": {
+      "lastModificationDate": 1666311239816,
+      "contentHash": "c7ca6c4fe2fa36d3bd8b48a5f466a06e",
+      "sourceName": "src/lib/InitializableUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.2",
+      "artifacts": {
+        "InitializableUpgradeable": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "InitializableUpgradeable.sol/InitializableUpgradeable.json"
+        }
+      }
+    },
+    "src/lib/OwnableUpgradeable.sol": {
+      "lastModificationDate": 1666311075337,
+      "contentHash": "8d3bafc09f1715e5234723c2aeefd7e2",
+      "sourceName": "src/lib/OwnableUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "src/lib/ContextUpgradeable.sol",
+        "src/lib/InitializableUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "OwnableUpgradeable": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "OwnableUpgradeable.sol/OwnableUpgradeable.json"
+        }
+      }
+    },
     "src/test/ManagerProxy.t.sol": {
       "lastModificationDate": 1666251507459,
       "contentHash": "587a3ca3a8b2cad3d109a7987e4257b1",
@@ -1654,17 +1654,17 @@
         "lib/openzeppelin-contracts/contracts/utils/Address.sol",
         "lib/openzeppelin-contracts/contracts/utils/Context.sol",
         "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/InitializableUp.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "src/BountyPool.sol",
         "src/BountyProxiesManager.sol",
         "src/BountyProxy.sol",
         "src/BountyProxyFactory.sol",
         "src/IBountyProxyFactory.sol",
         "src/ManagerProxy.sol",
-        "src/SaloonWallet.sol"
+        "src/SaloonWallet.sol",
+        "src/lib/ContextUpgradeable.sol",
+        "src/lib/InitializableUpgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "=0.8.10",
       "artifacts": {
