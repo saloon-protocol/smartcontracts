@@ -124,8 +124,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     ) external onlyOwner returns (bool) {
         require(_to != address(0), "Address Zero");
         uint256 decimals = ERC20(_token).decimals();
-        uint256 amount = _amount * (10**decimals);
-        saloonWallet.withdrawSaloonFunds(_token, _to, amount, decimals);
+        saloonWallet.withdrawSaloonFunds(_token, _to, _amount, decimals);
 
         emit SaloonFundsWithdrawal(_token, _amount);
         return true;
@@ -280,7 +279,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             bountyDetails[_projectName].token,
             bountyDetails[_projectName].decimals,
             _hunter,
-            amount
+            _amount
         );
 
         emit BountyPaid(

@@ -44,10 +44,13 @@ contract SaloonWallet {
         // handle decimals
         uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
         // calculate commision
-        uint256 saloonCommission = (_amount * (BOUNTY_COMMISSION**decimals)) /
-            (DENOMINATOR**decimals);
+        uint256 saloonCommission = (_amount *
+            10**decimals *
+            (BOUNTY_COMMISSION)) / (DENOMINATOR);
 
-        uint256 hunterPayout = (_amount) - saloonCommission;
+        uint256 amount = _amount * (10**decimals);
+
+        uint256 hunterPayout = (amount) - saloonCommission;
         // update variables and mappings
         hunterTokenBalance[_hunter][_token] += hunterPayout;
         cummulativeHackerPayouts += hunterPayout;
@@ -77,12 +80,12 @@ contract SaloonWallet {
 
         //  handle decimals to change state variables
         uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
-        uint256 amount = _amount**decimals;
+        uint256 amount = _amount * (10**decimals);
         // decrease saloon funds variable
         saloonTokenBalance[_token] -= amount;
         saloonTotalBalance -= amount;
 
-        IERC20(_token).safeTransfer(_to, _amount);
+        IERC20(_token).safeTransfer(_to, amount);
 
         return true;
     }
