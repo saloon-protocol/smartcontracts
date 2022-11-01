@@ -180,143 +180,144 @@ contract ManagerProxyTest is DSTest, Script {
         // manager.payBounty(bountyName, whitehat, 9);
         ///////// test payBounty END ////////////////////////////////////////////
 
-        ///////////test payout with multiple stakers covering it /////////////////
-        // vm.startPrank(investor2);
-        // wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+        /////////test payout with multiple stakers covering it /////////////////
+        vm.startPrank(investor2);
+        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
 
-        // ERC20(wmatic).approve(bountyAddress, 1000 ether);
-        // manager.stake(bountyName, 10);
-        // vm.stopPrank();
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
+        manager.stake(bountyName, 10);
+        vm.stopPrank();
 
-        // vm.startPrank(investor);
-        // ERC20(wmatic).approve(bountyAddress, 1000 ether);
-        // manager.stake(bountyName, 50);
-        // vm.stopPrank();
+        vm.startPrank(investor);
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
+        manager.stake(bountyName, 50);
+        vm.stopPrank();
 
-        // uint256 balance2 = manager.viewBountyBalance(bountyName);
-        // // assertEq(balance2, 1);
+        uint256 balance2 = manager.viewBountyBalance(bountyName);
+        // assertEq(balance2, 1);
 
-        // manager.payBounty(bountyName, whitehat, 50);
+        manager.payBounty(bountyName, whitehat, 50);
 
-        // uint256 investorDeposit = manager.viewUserStakingBalance(
-        //     bountyName,
-        //     investor
-        // );
-        // assertEq(investorDeposit, 0);
-        // uint256 investorDeposit2 = manager.viewUserStakingBalance(
-        //     bountyName,
-        //     investor2
-        // );
-        // assertEq(investorDeposit2, 0);
-        // ///////////////////// END  ///////////////////////////////////
+        uint256 investorDeposit = manager.viewUserStakingBalance(
+            bountyName,
+            investor
+        );
+        assertEq(investorDeposit, 0);
+        uint256 investorDeposit2 = manager.viewUserStakingBalance(
+            bountyName,
+            investor2
+        );
+        assertEq(investorDeposit2, 0);
+        ///////////////////// END  ///////////////////////////////////
 
-        // ////////////// test mixed payout (stakers and project) ////////////////////////////////////
-        // vm.startPrank(projectwallet);
-        // wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
+        ////////////// test mixed payout (stakers and project) ////////////////////////////////////
+        vm.startPrank(projectwallet);
+        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
 
-        // ERC20(wmatic).approve(bountyAddress, 1000 ether);
-        // manager.projectDeposit(bountyName, 20);
-        // vm.stopPrank();
+        ERC20(wmatic).approve(bountyAddress, 1000 ether);
+        manager.projectDeposit(bountyName, 20);
+        vm.stopPrank();
 
-        // vm.startPrank(investor);
-        // manager.stake(bountyName, 5);
-        // vm.stopPrank();
+        vm.startPrank(investor);
+        manager.stake(bountyName, 5);
+        vm.stopPrank();
 
-        // vm.startPrank(investor2);
-        // manager.stake(bountyName, 10);
-        // vm.stopPrank();
+        vm.startPrank(investor2);
+        manager.stake(bountyName, 10);
+        vm.stopPrank();
 
-        // manager.payBounty(bountyName, whitehat, 32);
-        // uint256 totalDeposit2 = manager.viewProjectDeposit(bountyName);
-        // assertEq(totalDeposit2, 13 ether);
-        // uint256 stakersDeposit2 = manager.viewstakersDeposit(bountyName);
-        // assertEq(stakersDeposit2, 0);
-        // uint256 investorDeposit6 = manager.viewUserStakingBalance(
-        //     bountyName,
-        //     investor2
-        // );
-        // assertEq(investorDeposit6, 0);
-        // ///////////////////// END  ///////////////////////////////////
+        manager.payBounty(bountyName, whitehat, 32);
+        uint256 totalDeposit2 = manager.viewProjectDeposit(bountyName);
+        assertEq(totalDeposit2, 13 ether);
+        uint256 stakersDeposit2 = manager.viewstakersDeposit(bountyName);
+        assertEq(stakersDeposit2, 0);
+        uint256 investorDeposit6 = manager.viewUserStakingBalance(
+            bountyName,
+            investor2
+        );
+        assertEq(investorDeposit6, 0);
+        ///////////////////// END  ///////////////////////////////////
 
-        // ///////////// test payout with no stakers //////////////////////////
-        // manager.payBounty(bountyName, whitehat, 13);
-        // // should fail (working)
-        // // manager.payBounty(bountyName, whitehat, 1);
+        ///////////// test payout with no stakers //////////////////////////
+        manager.payBounty(bountyName, whitehat, 13);
+        // should fail (working)
+        // manager.payBounty(bountyName, whitehat, 1);
 
-        // // test decrease pool cap
-        // vm.startPrank(projectwallet);
-        // manager.schedulePoolCapChange(bountyName, 100);
-        // vm.warp(block.timestamp + 2 weeks);
-        // manager.setPoolCap(bountyName, 100);
-        // vm.stopPrank();
-        // ///////////////////// END  ///////////////////////////////////
+        // test decrease pool cap
+        vm.startPrank(projectwallet);
+        manager.schedulePoolCapChange(bountyName, 100);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setPoolCap(bountyName, 100);
+        vm.stopPrank();
+        ///////////////////// END  ///////////////////////////////////
 
-        // ////////////// / test increase pool cap //////////////////////////
-        // vm.startPrank(projectwallet);
-        // manager.schedulePoolCapChange(bountyName, 200);
-        // vm.warp(block.timestamp + 2 weeks);
-        // manager.setPoolCap(bountyName, 200);
-        // uint256 poolCap = manager.viewPoolCap(bountyName);
-        // assertEq(poolCap, 200 ether);
-        // vm.stopPrank();
-        // ///////////////////// END  ///////////////////////////////////
+        ////////////// / test increase pool cap //////////////////////////
+        vm.startPrank(projectwallet);
+        manager.schedulePoolCapChange(bountyName, 200);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setPoolCap(bountyName, 200);
+        uint256 poolCap = manager.viewPoolCap(bountyName);
+        assertEq(poolCap, 200 ether);
+        vm.stopPrank();
+        ///////////////////// END  ///////////////////////////////////
 
-        // /////////////// test decrease pool cap when full //////////////////////////
-        // vm.startPrank(projectwallet);
-        // wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
-        // manager.projectDeposit(bountyName, 100);
-        // vm.stopPrank();
+        /////////////// test decrease pool cap when full //////////////////////////
+        vm.startPrank(projectwallet);
+        wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
+        manager.projectDeposit(bountyName, 100);
+        vm.stopPrank();
 
-        // vm.startPrank(investor);
-        // wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
-        // manager.stake(bountyName, 100);
-        // vm.stopPrank();
+        vm.startPrank(investor);
+        wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
+        manager.stake(bountyName, 100);
+        vm.stopPrank();
 
-        // vm.startPrank(investor2);
-        // wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
-        // manager.stake(bountyName, 100);
-        // vm.stopPrank();
+        vm.startPrank(investor2);
+        wmatic.call{value: 150 ether}(abi.encodeWithSignature("deposit()", ""));
+        manager.stake(bountyName, 100);
+        vm.stopPrank();
 
-        // vm.startPrank(projectwallet);
-        // manager.schedulePoolCapChange(bountyName, 100);
-        // vm.warp(block.timestamp + 2 weeks);
-        // manager.setPoolCap(bountyName, 100);
-        // uint256 poolCap2 = manager.viewPoolCap(bountyName);
-        // assertEq(poolCap2, 100 ether);
-        // vm.stopPrank();
-        // // - testing reimbursement
-        // // note this is returning slightly more 50. Timestamps in this test
-        // // must make it so "investor" already claimed his share in past tests but no "investor2"
-        // vm.startPrank(investor2);
-        // manager.claimPremium(bountyName);
-        // vm.stopPrank();
+        vm.startPrank(projectwallet);
+        manager.schedulePoolCapChange(bountyName, 100);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setPoolCap(bountyName, 100);
+        uint256 poolCap2 = manager.viewPoolCap(bountyName);
+        assertEq(poolCap2, 100 ether);
+        vm.stopPrank();
+        // - testing reimbursement
+        // note this is returning slightly more 50. Timestamps in this test
+        // must make it so "investor" already claimed his share in past tests but no "investor2"
+        vm.startPrank(investor2);
+        manager.claimPremium(bountyName);
+        vm.stopPrank();
 
-        // vm.startPrank(investor);
+        vm.startPrank(investor);
 
-        // manager.claimPremium(bountyName);
-        // vm.stopPrank();
+        manager.claimPremium(bountyName);
+        vm.stopPrank();
 
-        // uint256 investorDeposit3 = manager.viewUserStakingBalance(
-        //     bountyName,
-        //     investor
-        // );
-        // assertEq(investorDeposit3, 50 ether);
-        // uint256 investorDeposit4 = manager.viewUserStakingBalance(
-        //     bountyName,
-        //     investor2
-        // );
-        // assertEq(investorDeposit4, 50 ether);
+        uint256 investorDeposit3 = manager.viewUserStakingBalance(
+            bountyName,
+            investor
+        );
+        assertEq(investorDeposit3, 50 ether);
+        uint256 investorDeposit4 = manager.viewUserStakingBalance(
+            bountyName,
+            investor2
+        );
+        assertEq(investorDeposit4, 50 ether);
         // ///////////////////// END  ///////////////////////////////////
 
         // ///////////////// test decrease apy /////////////////////////
-        // vm.startPrank(projectwallet);
-        // manager.scheduleAPYChange(bountyName, 20);
-        // vm.warp(block.timestamp + 2 weeks);
-        // manager.setAPY(bountyName, 20);
-        // uint256 apy = manager.viewDesiredAPY(bountyName);
-        // assertEq(apy, 20 ether);
-        // vm.stopPrank();
-        // ///////////////////// END  ///////////////////////////////////
+        vm.startPrank(projectwallet);
+        manager.scheduleAPYChange(bountyName, 20);
+        vm.warp(block.timestamp + 2 weeks);
+        manager.setAPY(bountyName, 20);
+        uint256 apy = manager.viewDesiredAPY(bountyName);
+        assertEq(apy, 20 ether);
+        vm.stopPrank();
+        manager.billPremiumForOnePool(bountyName);
+        ///////////////////// END  ///////////////////////////////////
 
         // ////////////////// test increase apy /////////////////////////
         // vm.startPrank(projectwallet);

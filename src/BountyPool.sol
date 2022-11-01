@@ -9,11 +9,11 @@ import "./SaloonWallet.sol";
 
 /*
 BountyPool handles all logic for a bounty.
-- Projects can set different APYs and poolCaps at any time.
-- Stakers should be able to stake or unstake any time.
+- Projects can set different APYs and poolCaps at any time (timelock applies).
+- Stakers can stake or unstake any time (timelock applies for unstaking).
 - Premium calculations are made dynamically according to users balance, APY and staking period duration.
-
 */
+
 contract BountyPool is Ownable, Initializable {
     using SafeERC20 for IERC20;
     //#################### State Variables *****************\\
@@ -87,6 +87,7 @@ contract BountyPool is Ownable, Initializable {
 
     //#################### State Variables End *****************\\
 
+    /// @dev Initializes new bounty pool
     function initializeImplementation(address _manager, uint256 _decimals)
         public
         initializer
@@ -117,9 +118,12 @@ contract BountyPool is Ownable, Initializable {
 
     //#################### Functions *******************\\
 
-    // ADMIN PAY BOUNTY
-    // this implementation uses investors funds first before project deposit,
-    // future implementation might use a more hybrid and sophisticated splitting of costs.
+    /// @dev Pays bounty and subtracts staker balances according to weight in pool.
+    /// This implementation uses stakers funds to pay the bounty first before using project deposit.
+    /// @param _token Token the bounty is going to be paid in.
+    /// @param _saloonWallet Address the Saloon commission will be sent to.
+    /// @param _hunter Hunter wallet address the bounty will be paid to.
+    /// @param _amount Amount to be paid including Hunter payout + Saloon commission.
     function payBounty(
         address _token,
         address _saloonWallet,
@@ -254,6 +258,12 @@ contract BountyPool is Ownable, Initializable {
         }
     }
 
+    /// @dev Calculates Saloon commission and transfers it to _saloonWallet,
+    /// as well as transferring the hunter payout to _hunter.
+    /// @param _token Token the bounty is going to be paid in.
+    /// @param _saloonWallet Address the Saloon commission will be sent to.
+    /// @param _hunter Hunter wallet address the bounty will be paid to.
+    /// @param _amount Amount to be paid including Hunter payout + Saloon commission.
     function calculateCommissioAndTransferPayout(
         address _token,
         address _hunter,
@@ -271,7 +281,9 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // ADMIN HARVEST FEES
+    /// @dev Transfer already collected Saloon premium fees to _saloonWallet.
+    /// @param _token Token the fees are paid in.
+    /// @param _saloonWallet Address the Saloon commission will be sent to.
     function collectSaloonPremiumFees(address _token, address _saloonWallet)
         external
         onlyManager
@@ -288,8 +300,11 @@ contract BountyPool is Ownable, Initializable {
         return totalCollected;
     }
 
-    // PROJECT DEPOSIT
+    /// @dev Makes a payout deposit for the proejct.
     // project must approve this address first.
+    /// @param _token Token the bounty is going to be paid in.
+    /// @param _projectWallet Project address deposint the payout.
+    /// @param _amount Amount to be paid including Hunter payout + Saloon commission.
     function bountyDeposit(
         address _token,
         address _projectWallet,
@@ -309,6 +324,8 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
+    /// @dev Schedules a change in Pool Cap for a determined amount.
+    /// @param _newPoolCap Amount the new Pool Cap is going to be set to once timelock is over.
     function schedulePoolCapChange(uint256 _newPoolCap) external onlyManager {
         poolCapTimelock.timelock = block.timestamp + PERIOD;
         poolCapTimelock.amount = _newPoolCap;
@@ -316,7 +333,9 @@ contract BountyPool is Ownable, Initializable {
         // note should this have a timelimit??
     }
 
-    // PROJECT SET CAP
+    /// @dev Set new Pool Cap as scheduled.
+    /// if poolCap = 0 scheduling is not necessary
+    /// @param _amount New pool cap as specificied when scheduling(if necessary).
     function setPoolCap(uint256 _amount) external onlyManager {
         // check timelock if current poolCap != 0
         if (poolCap != 0) {
@@ -388,6 +407,8 @@ contract BountyPool is Ownable, Initializable {
         poolCap = _amount;
     }
 
+    /// @dev Schedules a change in APY for a determined amount.
+    /// @param _newAPY Amount the new APY is going to be set to once timelock is over.
     function scheduleAPYChange(uint256 _newAPY) external onlyManager {
         APYTimelock.timelock = block.timestamp + PERIOD;
         APYTimelock.amount = _newAPY;
@@ -395,12 +416,16 @@ contract BountyPool is Ownable, Initializable {
         // note should this have a timelimit??
     }
 
-    // PROJECT SET APY
-    // project must approve this address first.
-    // project will have to pay upfront cost of full period on the first time.
-    // this will serve two purposes:
-    // 1. sign of good faith and working payment system
-    // 2. if theres is ever a problem with payment the initial premium deposit can be used as a buffer so users can still be paid while issue is fixed.
+    /// @dev Set new APY as scheduled.
+    /// If APY = 0 scheduling is not required.
+    /// project must approve this address first.
+    /// project will have to pay upfront cost of full period on the first time.
+    /// this will serve two purposes:
+    /// 1. sign of good faith and working payment system
+    /// 2. if theres is ever a problem with payment the initial premium deposit can be used as a buffer so users can still be paid while issue is fixed.
+    /// @param _desiredAPY New apy as specificied when scheduling (if necessary).
+    /// @param _token Token the premium is going to be paid in.
+    /// @param _projectWallet Project address that will continuously be billed for premium payments.
     function setDesiredAPY(
         address _token,
         address _projectWallet,
@@ -490,6 +515,8 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
+    /// @dev Calculates how much premium is owed since last time it was paid.
+    /// Loops through variance in total staking balance and takes into account how long it lasted.
     function calculatePremiumOwed(
         uint256 _apy,
         uint256 _stakingLenght,
@@ -645,8 +672,8 @@ contract BountyPool is Ownable, Initializable {
         return premiumOwed;
     }
 
-    // PROJECT PAY weekly/monthly PREMIUM to this address
-    // this address needs to be approved first
+    /// @notice Bill premium owned since last time paid.
+    /// this address needs to be approved first
     function billPremium(address _token, address _projectWallet)
         public
         onlyManagerOrSelf
@@ -657,13 +684,12 @@ contract BountyPool is Ownable, Initializable {
         uint256 lastPaid = lastTimePaid;
         uint256 apy = desiredAPY;
 
-        // check when function was called last time and pay premium according to how much time has passed since then.
-        /*
+        /* 
+        check when function was called last time and pay premium according to how much time has passed since then.
         - average variance since last paid
             - needs to take into account how long each variance is...
-        
+        obs: this could probably be done more efficiently...
         */
-        // this is very granular and maybe not optimal...
         uint256 premiumOwed = calculatePremiumOwed(
             apy,
             stakingLenght,
@@ -750,11 +776,6 @@ contract BountyPool is Ownable, Initializable {
 
             return false;
         }
-        // IERC20(_token).safeTransferFrom(
-        //     _projectWallet,
-        //     address(this),
-        //     premiumOwed
-        // );
 
         // Calculate saloon fee
         uint256 saloonFee = (premiumOwed * premiumCommission) / denominator;
@@ -773,6 +794,8 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
+    /// @dev Schedules project deposit withdrawal.
+    /// @param _amount Amount to be withdrawn once timelock is over.
     function scheduleprojectDepositWithdrawal(uint256 _amount)
         external
         onlyManager
@@ -788,7 +811,7 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // PROJECT DEPOSIT WITHDRAWAL
+    /// @dev Withdraws the _amount sechuduled.
     function projectDepositWithdrawal(
         address _token,
         address _projectWallet,
@@ -812,8 +835,8 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // STAKING
-    // staker needs to approve this address first
+    /// @dev Stake funds into the bounty pool
+    /// staker needs to approve this address first
     function stake(
         address _token,
         address _staker,
@@ -889,6 +912,9 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
+    /// @dev Schedules unstake for a determined amount.
+    /// @param _staker Staker address where the unstaked funds we be returned to.
+    /// @param _amount Amount to be unstaked from _staker balance once timelock is over.
     function scheduleUnstake(address _staker, uint256 _amount)
         external
         onlyManager
@@ -910,8 +936,7 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // UNSTAKING
-    // otherwise have to wait for timelock period
+    /// @dev Unstakes _amount as previously scheduled
     function unstake(
         address _token,
         address _staker,
@@ -991,8 +1016,10 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    // claim premium
-
+    /// @dev Claim premium for a specifc staker.
+    /// @param _token Token the premium is going to be paid in.
+    /// @param _staker Staker address that is claiming the premium.
+    /// @param _projectWallet Project address to bill premium if current balance is not sufficient.
     function claimPremium(
         address _token,
         address _staker,
@@ -1018,14 +1045,10 @@ contract BountyPool is Ownable, Initializable {
         totalPremiumToClaim -= saloonFee;
         // sum stakerReimbursement in case there is any. Not very gas efficicent at the moment.
         uint256 owedPremium = totalPremiumToClaim;
-        // sum owedPremium to reibursement amount
-
-        // reset reimbursement amount
 
         // if premium balance < owedPremium
-        //  call billpremium
-        // transfer
         if (currentPremiumBalance < owedPremium) {
+            //  call billpremium
             if (billPremium(_token, _projectWallet) == false) {
                 uint256 reimbursement = stakerReimbursement[_staker];
                 IERC20(_token).safeTransfer(_staker, reimbursement);
@@ -1061,6 +1084,12 @@ contract BountyPool is Ownable, Initializable {
         }
     }
 
+    ///@dev Calculates staker premium to claim
+    /// Iterates over periods with different APYs and/or staking amounts
+    /// @param _lastTimeClaimed Last time user claimed premium.
+    /// @param _stakerInfo Record of staker balance changes
+    /// @param _stakerInfo length of record of staker balance changes
+    /// @param APYrecord Record of APY changes since _lastTimeClaimed
     function calculateBalancePerPeriod(
         uint256 _lastTimeClaimed,
         StakingInfo[] memory _stakerInfo,
@@ -1135,6 +1164,7 @@ contract BountyPool is Ownable, Initializable {
         return totalPeriodClaim;
     }
 
+    /// @dev Calculates premium owed during a period where APY hasn't changed.
     function noAPYChangeBalance(
         uint256 _stakerLength,
         uint256 length,
@@ -1170,6 +1200,7 @@ contract BountyPool is Ownable, Initializable {
         return totalPeriodClaim;
     }
 
+    /// @dev Calculates premium owed during a period where APY has changed at least once.
     function APYChangeBalance(
         uint256 _stakerLength,
         uint256 length,
@@ -1317,6 +1348,7 @@ contract BountyPool is Ownable, Initializable {
         return balanceClaim;
     }
 
+    /// @dev Calculates premium to claim for staker
     function calculatePremiumToClaim(
         uint256 _lastTimeClaimed,
         StakingInfo[] memory _stakerInfo,

@@ -1064,9 +1064,82 @@
         }
       }
     },
+    "script/Deploy.s.sol": {
+      "lastModificationDate": 1666851931382,
+      "contentHash": "10cce1220d7a24882044a7c74de4b05e",
+      "sourceName": "script/Deploy.s.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Script.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "src/BountyPool.sol",
+        "src/BountyProxiesManager.sol",
+        "src/BountyProxy.sol",
+        "src/BountyProxyFactory.sol",
+        "src/IBountyProxyFactory.sol",
+        "src/ManagerProxy.sol",
+        "src/SaloonWallet.sol",
+        "src/lib/ContextUpgradeable.sol",
+        "src/lib/InitializableUpgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "MyScript": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "Deploy.s.sol/MyScript.json"
+        }
+      }
+    },
     "src/BountyPool.sol": {
-      "lastModificationDate": 1666307568826,
-      "contentHash": "95a489253fd0d35fb32cbb13ca31eb2b",
+      "lastModificationDate": 1667264784497,
+      "contentHash": "6eefa3c4fdf9faf83a781a4b11069aa8",
       "sourceName": "src/BountyPool.sol",
       "solcConfig": {
         "settings": {
@@ -1600,8 +1673,8 @@
       }
     },
     "src/test/ManagerProxy.t.sol": {
-      "lastModificationDate": 1666664017486,
-      "contentHash": "4be3a53e96811c7b41a2f95d3c3c06f1",
+      "lastModificationDate": 1666677725061,
+      "contentHash": "337e5146d93bd9d201816d0c473ad8f0",
       "sourceName": "src/test/ManagerProxy.t.sol",
       "solcConfig": {
         "settings": {
@@ -1670,6 +1743,80 @@
       "artifacts": {
         "ManagerProxyTest": {
           "0.8.10+commit.fc410830.Darwin.appleclang": "ManagerProxy.t.sol/ManagerProxyTest.json"
+        }
+      }
+    },
+    "src/test/Premium.t.sol": {
+      "lastModificationDate": 1666679632122,
+      "contentHash": "c2493bf81bbd444580fd9cd805fd72eb",
+      "sourceName": "src/test/Premium.t.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/ds-test/src/test.sol",
+        "lib/forge-std/src/Script.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Clones.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "src/BountyPool.sol",
+        "src/BountyProxiesManager.sol",
+        "src/BountyProxy.sol",
+        "src/BountyProxyFactory.sol",
+        "src/IBountyProxyFactory.sol",
+        "src/ManagerProxy.sol",
+        "src/SaloonWallet.sol",
+        "src/lib/ContextUpgradeable.sol",
+        "src/lib/InitializableUpgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol"
+      ],
+      "versionRequirement": "=0.8.10",
+      "artifacts": {
+        "PremiumTest": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "Premium.t.sol/PremiumTest.json"
         }
       }
     },
