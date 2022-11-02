@@ -6,7 +6,7 @@ import "forge-std/Script.sol";
 import "forge-std/Script.sol";
 import "../../src/BountyProxy.sol";
 import "../../src/BountyPool.sol";
-import "../../src/EnshieldWallet.sol";
+import "../../src/SaloonWallet.sol";
 import "../../src/BountyProxiesManager.sol";
 import "../../src/ManagerProxy.sol";
 
@@ -23,7 +23,7 @@ contract PremiumTest is DSTest, Script {
     BountyProxiesManager bountyProxiesManager;
     ManagerProxy managerProxy;
     BountyProxiesManager manager;
-    EnshieldWallet enshieldwallet;
+    SaloonWallet saloonwallet;
 
     address wmatic = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
     address projectwallet = address(1);
@@ -56,9 +56,9 @@ contract PremiumTest is DSTest, Script {
             msg.sender
         );
 
-        enshieldwallet = new EnshieldWallet(address(managerProxy));
+        saloonwallet = new SaloonWallet(address(managerProxy));
         manager = BountyProxiesManager(address(managerProxy));
-        // transfer Beacon ownership to enshield
+        // transfer Beacon ownership to saloon
         beacon.transferOwnership(address(manager));
         // bountyPool.initializeImplementation(address(managerProxy), 18);
         manager.initialize(proxyFactory, beacon, address(bountyPool));
@@ -67,7 +67,7 @@ contract PremiumTest is DSTest, Script {
             payable(address(bountyProxy)),
             address(managerProxy)
         );
-        manager.updateEnshieldWallet(address(enshieldwallet));
+        manager.updateSaloonWallet(address(saloonwallet));
         manager.updateTokenWhitelist(address(wmatic), true);
         manager.deployNewBounty("", bountyName, address(wmatic), projectwallet);
         bountyAddress = manager.getBountyAddressByName(bountyName);

@@ -6,7 +6,7 @@ import "forge-std/Script.sol";
 import "forge-std/Script.sol";
 import "../../src/BountyProxy.sol";
 import "../../src/BountyPool.sol";
-import "../../src/EnshieldWallet.sol";
+import "../../src/SaloonWallet.sol";
 import "../../src/BountyProxiesManager.sol";
 import "../../src/ManagerProxy.sol";
 
@@ -23,7 +23,7 @@ contract ManagerProxyTest is DSTest, Script {
     BountyProxiesManager bountyProxiesManager;
     ManagerProxy managerProxy;
     BountyProxiesManager manager;
-    EnshieldWallet enshieldwallet;
+    SaloonWallet saloonwallet;
 
     address wmatic = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
     address projectwallet = address(1);
@@ -56,9 +56,9 @@ contract ManagerProxyTest is DSTest, Script {
             msg.sender
         );
 
-        enshieldwallet = new EnshieldWallet(address(managerProxy));
+        saloonwallet = new SaloonWallet(address(managerProxy));
         manager = BountyProxiesManager(address(managerProxy));
-        // transfer Beacon ownership to enshield
+        // transfer Beacon ownership to saloon
         beacon.transferOwnership(address(manager));
         // bountyPool.initializeImplementation(address(managerProxy), 18);
         manager.initialize(proxyFactory, beacon, address(bountyPool));
@@ -67,7 +67,7 @@ contract ManagerProxyTest is DSTest, Script {
             payable(address(bountyProxy)),
             address(managerProxy)
         );
-        manager.updateEnshieldWallet(address(enshieldwallet));
+        manager.updateSaloonWallet(address(saloonwallet));
         manager.updateTokenWhitelist(address(wmatic), true);
         manager.deployNewBounty("", bountyName, address(wmatic), projectwallet);
         bountyAddress = manager.getBountyAddressByName(bountyName);
@@ -163,17 +163,15 @@ contract ManagerProxyTest is DSTest, Script {
         uint256 whitehatBalance = ERC20(wmatic).balanceOf(whitehat);
         // check hunters balance is correct
         assertEq(whitehatBalance, 9 ether);
-        // check enshield balance is correct
-        uint256 enshieldBalance = ERC20(wmatic).balanceOf(
-            address(enshieldwallet)
-        );
-        assertEq(enshieldBalance, 1 ether);
-        uint256 enshieldLocal = manager.viewEnshieldBalance();
-        assertEq(enshieldLocal, 1 ether);
+        // check saloon balance is correct
+        uint256 saloonBalance = ERC20(wmatic).balanceOf(address(saloonwallet));
+        assertEq(saloonBalance, 1 ether);
+        uint256 saloonLocal = manager.viewSaloonBalance();
+        assertEq(saloonLocal, 1 ether);
 
         // uint256 totalDeposit = manager.viewProjectDeposit(bountyName);
 
-        manager.withdrawEnshield(wmatic, projectwallet, 1);
+        manager.withdrawSaloon(wmatic, projectwallet, 1);
         // assertEq(totalDeposit,);
         // uint256 managerBalance2 = ERC20(wmatic).balanceOf(address(manager));
         // assertEq(managerBalance2, 1);
@@ -331,10 +329,10 @@ contract ManagerProxyTest is DSTest, Script {
         // vm.stopPrank();
         // ///////////////////// END  ///////////////////////////////////
 
-        // ////////////////// test collect enshield premium /////////////////////////
-        // manager.withdrawEnshieldPremiumFees();
-        // uint256 enshieldBalance2 = ERC20(wmatic).balanceOf(address(enshieldwallet));
-        // // assertEq(enshieldBalance2, 0);
+        // ////////////////// test collect saloon premium /////////////////////////
+        // manager.withdrawSaloonPremiumFees();
+        // uint256 saloonBalance2 = ERC20(wmatic).balanceOf(address(saloonwallet));
+        // // assertEq(saloonBalance2, 0);
         // ///////////////////// END  ///////////////////////////////////
 
         // ////////////////// test Upgrade Bountypool contract ///////////////////////////////////

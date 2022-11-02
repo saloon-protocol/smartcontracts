@@ -3,7 +3,7 @@ pragma solidity 0.8.10;
 
 import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
-import "./EnshieldWallet.sol";
+import "./SaloonWallet.sol";
 import "./BountyProxyFactory.sol";
 import "./IBountyProxyFactory.sol";
 import "./BountyPool.sol";
@@ -13,6 +13,8 @@ import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
+    /// PUBLIC STORAGE ///
+
     event DeployNewBounty(
         address indexed sender,
         address indexed _projectWallet,
@@ -26,10 +28,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         address indexed projectWallet
     );
 
-    event EnshieldFundsWithdrawal(
-        address indexed token,
-        uint256 indexed amount
-    );
+    event SaloonFundsWithdrawal(address indexed token, uint256 indexed amount);
 
     event BountyPaid(
         uint256 indexed time,
@@ -66,12 +65,12 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         uint256 indexed newStaked
     );
 
-    event EnshieldPremiumCollected(uint256 indexed totalCollected);
+    event SaloonPremiumCollected(uint256 indexed totalCollected);
 
     BountyProxyFactory public factory;
     UpgradeableBeacon public beacon;
     address public bountyImplementation;
-    EnshieldWallet public enshieldWallet;
+    SaloonWallet public saloonWallet;
 
     struct Bounties {
         BountyPool proxyAddress;
@@ -111,23 +110,23 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         onlyOwner
     {}
 
-    //////// UPDATE enshield WALLET FOR HUNTER PAYOUTS //////
-    function updateEnshieldWallet(address _newWallet) external onlyOwner {
+    //////// UPDATE SALOON WALLET FOR HUNTER PAYOUTS //////
+    function updateSaloonWallet(address _newWallet) external onlyOwner {
         require(_newWallet != address(0), "Address cant be zero");
-        enshieldWallet = EnshieldWallet(_newWallet);
+        saloonWallet = SaloonWallet(_newWallet);
     }
 
-    //////// WITHDRAW FROM Enshield WALLET //////
-    function withdrawEnshield(
+    //////// WITHDRAW FROM SALOON WALLET //////
+    function withdrawSaloon(
         address _token,
         address _to,
         uint256 _amount
     ) external onlyOwner returns (bool) {
         require(_to != address(0), "Address Zero");
         uint256 decimals = ERC20(_token).decimals();
-        enshieldWallet.withdrawEnshieldFunds(_token, _to, _amount, decimals);
+        saloonWallet.withdrawSaloonFunds(_token, _to, _amount, decimals);
 
-        emit EnshieldFundsWithdrawal(_token, _amount);
+        emit SaloonFundsWithdrawal(_token, _amount);
         return true;
     }
 
@@ -271,12 +270,12 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
 
         bountyDetails[_projectName].proxyAddress.payBounty(
             bountyDetails[_projectName].token,
-            address(enshieldWallet),
+            address(saloonWallet),
             _hunter,
             amount
         );
 
-        enshieldWallet.bountyPaid(
+        saloonWallet.bountyPaid(
             bountyDetails[_projectName].token,
             bountyDetails[_projectName].decimals,
             _hunter,
@@ -293,7 +292,7 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     /// ADMIN CLAIM PREMIUM FEES for ALL BOUNTIES///
-    function withdrawEnshieldPremiumFees() external onlyOwner returns (bool) {
+    function withdrawSaloonPremiumFees() external onlyOwner returns (bool) {
         // cache bounty bounties listt
         Bounties[] memory bountiesArray = bountiesList;
         uint256 length = bountiesArray.length;
@@ -306,18 +305,18 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
             // collect the premium fees from bounty
             uint256 totalCollected = bountiesArray[i]
                 .proxyAddress
-                .collectEnshieldPremiumFees(
+                .collectSaloonPremiumFees(
                     bountiesArray[i].token,
-                    address(enshieldWallet)
+                    address(saloonWallet)
                 );
 
-            enshieldWallet.premiumFeesCollected(
+            saloonWallet.premiumFeesCollected(
                 bountiesArray[i].token,
                 totalCollected
             );
             collected += totalCollected;
         }
-        emit EnshieldPremiumCollected(collected);
+        emit SaloonPremiumCollected(collected);
         return true;
     }
 
@@ -751,17 +750,17 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         return address(bountyDetails[_projectName].projectWallet);
     }
 
-    //  enshield WALLET VIEW FUNCTIONS
-    function viewEnshieldBalance() external view returns (uint256) {
-        return enshieldWallet.viewEnshieldBalance();
+    //  SALOON WALLET VIEW FUNCTIONS
+    function viewSaloonBalance() external view returns (uint256) {
+        return saloonWallet.viewSaloonBalance();
     }
 
-    function viewTotalEarnedEnshield() external view returns (uint256) {
-        return enshieldWallet.viewTotalEarnedEnshield();
+    function viewTotalEarnedSaloon() external view returns (uint256) {
+        return saloonWallet.viewTotalEarnedSaloon();
     }
 
     function viewTotalHackerPayouts() external view returns (uint256) {
-        return enshieldWallet.viewTotalHackerPayouts();
+        return saloonWallet.viewTotalHackerPayouts();
     }
 
     function viewHunterTotalTokenPayouts(address _token, address _hunter)
@@ -769,11 +768,11 @@ contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
         view
         returns (uint256)
     {
-        return enshieldWallet.viewHunterTotalTokenPayouts(_token, _hunter);
+        return saloonWallet.viewHunterTotalTokenPayouts(_token, _hunter);
     }
 
-    function viewTotalEnshieldCommission() external view returns (uint256) {
-        return enshieldWallet.viewTotalEnshieldCommission();
+    function viewTotalSaloonCommission() external view returns (uint256) {
+        return saloonWallet.viewTotalSaloonCommission();
     }
 
     ///////////////////////    VIEW FUNCTIONS END  ////////////////////////

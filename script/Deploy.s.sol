@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "../src/BountyProxy.sol";
 import "../src/BountyProxyFactory.sol";
 import "../src/BountyPool.sol";
-import "../src/EnshieldWallet.sol";
+import "../src/SaloonWallet.sol";
 import "../src/BountyProxiesManager.sol";
 import "../src/ManagerProxy.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
@@ -37,6 +37,7 @@ contract MyScript is Script {
             address(managerProxy)
         );
         // NOTE INTERACT
+
         // address wmatic = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
         // address projectwallet = 0x0376e82258Ed00A9D7c6513eC9ddaEac015DEdFc;
         // string memory bountyName = "YEEHAW";
