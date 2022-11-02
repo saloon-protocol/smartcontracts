@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "../src/BountyProxy.sol";
 import "../src/BountyProxyFactory.sol";
 import "../src/BountyPool.sol";
-import "../src/SaloonWallet.sol";
+import "../src/EnshieldWallet.sol";
 import "../src/BountyProxiesManager.sol";
 import "../src/ManagerProxy.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";

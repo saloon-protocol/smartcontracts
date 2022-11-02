@@ -14,7 +14,7 @@ import "../../src/ManagerProxy.sol";
 
 // import "solmate/tokens/WETH.sol";
 
-contract PremiumTest is DSTest, Script {
+contract TransferTest is DSTest, Script {
     bytes data = "";
     BountyProxy bountyProxy;
     BountyProxyFactory proxyFactory;
@@ -67,62 +67,16 @@ contract PremiumTest is DSTest, Script {
             payable(address(bountyProxy)),
             address(managerProxy)
         );
-        manager.updateEnshieldWallet(address(enshieldwallet));
-        manager.updateTokenWhitelist(address(wmatic), true);
-        manager.deployNewBounty("", bountyName, address(wmatic), projectwallet);
-        bountyAddress = manager.getBountyAddressByName(bountyName);
+
+        manager.transferOwnership(whitehat);
+        proxyFactory.transferOwnership(whitehat);
     }
 
-    function testPremium() public {
-        vm.startPrank(projectwallet);
-        ERC20(wmatic).approve(bountyAddress, 1000 ether);
-        wmatic.call{value: 100 ether}(abi.encodeWithSignature("deposit()", ""));
+    function testTransfer() public {
+        address mOwner = manager.owner();
+        assertEq(mOwner, whitehat);
 
-        manager.projectDeposit(bountyName, 20);
-        uint256 projectDeposit = manager.viewProjectDeposit(bountyName);
-        assertEq(20 ether, projectDeposit);
-        manager.setBountyCapAndAPY(bountyName, 5000, 10);
-        vm.stopPrank();
-
-        vm.startPrank(investor);
-        wmatic.call{value: 80 ether}(abi.encodeWithSignature("deposit()", ""));
-
-        ERC20(wmatic).approve(bountyAddress, 1000 ether);
-        vm.warp(block.timestamp + 2 weeks);
-        manager.stake(bountyName, 20);
-        vm.stopPrank();
-
-        vm.warp(block.timestamp + 52 weeks);
-        manager.billPremiumForOnePool(bountyName);
-
-        vm.warp(block.timestamp + 2 weeks);
-        manager.billPremiumForOnePool(bountyName);
-
-        // vm.startPrank(projectwallet);
-        // manager.scheduleAPYChange(bountyName, 20);
-        // vm.warp(block.timestamp + 2 weeks);
-        // manager.setAPY(bountyName, 20);
-        // vm.stopPrank();
-        // uint256 apy = manager.viewDesiredAPY(bountyName);
-        // assertEq(apy, 20 ether);
-        // vm.warp(block.timestamp + 52 weeks);
-        // manager.billPremiumForOnePool(bountyName);
-
-        vm.startPrank(projectwallet);
-        vm.warp(block.timestamp + 52 weeks);
-        manager.scheduleAPYChange(bountyName, 5);
-        vm.warp(block.timestamp + 2 weeks);
-        manager.setAPY(bountyName, 5);
-        vm.stopPrank();
-
-        vm.startPrank(projectwallet);
-        vm.warp(block.timestamp + 104 weeks);
-        manager.scheduleAPYChange(bountyName, 10);
-        vm.warp(block.timestamp + 2 weeks);
-        manager.setAPY(bountyName, 10);
-        vm.stopPrank();
-
-        vm.warp(block.timestamp + 156 weeks);
-        manager.billPremiumForOnePool(bountyName);
+        address pOwner = proxyFactory.owner();
+        assertEq(pOwner, whitehat);
     }
 }

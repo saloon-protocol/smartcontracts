@@ -3,7 +3,7 @@ pragma solidity 0.8.10;
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract SaloonWallet {
+contract EnshieldWallet {
     using SafeERC20 for IERC20;
 
     uint256 public constant BOUNTY_COMMISSION = 10;
@@ -13,7 +13,7 @@ contract SaloonWallet {
 
     // premium fees to collect
     uint256 public premiumFees;
-    uint256 public saloonTotalBalance;
+    uint256 public enshieldTotalBalance;
     uint256 public cummulativeCommission;
     uint256 public cummulativeHackerPayouts;
 
@@ -21,9 +21,9 @@ contract SaloonWallet {
     // hunter address => token address => amount
     mapping(address => mapping(address => uint256)) public hunterTokenBalance;
 
-    // saloon balance per token
+    // enshield balance per token
     // token address => amount
-    mapping(address => uint256) public saloonTokenBalance;
+    mapping(address => uint256) public enshieldTokenBalance;
 
     constructor(address _manager) {
         manager = _manager;
@@ -44,46 +44,46 @@ contract SaloonWallet {
         // handle decimals
         uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
         // calculate commision
-        uint256 saloonCommission = (_amount *
+        uint256 enshieldCommission = (_amount *
             10**decimals *
             (BOUNTY_COMMISSION)) / (DENOMINATOR);
 
         uint256 amount = _amount * (10**decimals);
 
-        uint256 hunterPayout = (amount) - saloonCommission;
+        uint256 hunterPayout = (amount) - enshieldCommission;
         // update variables and mappings
         hunterTokenBalance[_hunter][_token] += hunterPayout;
         cummulativeHackerPayouts += hunterPayout;
-        saloonTokenBalance[_token] += saloonCommission;
-        saloonTotalBalance += saloonCommission;
-        cummulativeCommission += saloonCommission;
+        enshieldTokenBalance[_token] += enshieldCommission;
+        enshieldTotalBalance += enshieldCommission;
+        cummulativeCommission += enshieldCommission;
     }
 
     function premiumFeesCollected(address _token, uint256 _amount)
         external
         onlyManager
     {
-        saloonTokenBalance[_token] += _amount;
+        enshieldTokenBalance[_token] += _amount;
         premiumFees += _amount;
-        saloonTotalBalance += _amount;
+        enshieldTotalBalance += _amount;
     }
 
     //
-    // WITHDRAW FUNDS TO ANY ADDRESS saloon admin
-    function withdrawSaloonFunds(
+    // WITHDRAW FUNDS TO ANY ADDRESS enshield admin
+    function withdrawEnshieldFunds(
         address _token,
         address _to,
         uint256 _amount,
         uint256 _decimals
     ) external onlyManager returns (bool) {
-        require(_amount <= saloonTokenBalance[_token], "not enough balance");
+        require(_amount <= enshieldTokenBalance[_token], "not enough balance");
 
         //  handle decimals to change state variables
         uint256 decimals = 18 - _decimals == 0 ? 18 : 18 - _decimals;
         uint256 amount = _amount * (10**decimals);
-        // decrease saloon funds variable
-        saloonTokenBalance[_token] -= amount;
-        saloonTotalBalance -= amount;
+        // decrease enshield funds variable
+        enshieldTokenBalance[_token] -= amount;
+        enshieldTotalBalance -= amount;
 
         IERC20(_token).safeTransfer(_to, amount);
 
@@ -92,15 +92,15 @@ contract SaloonWallet {
 
     ///////////////////////   VIEW FUNCTIONS  ////////////////////////
 
-    // VIEW SALOON CURRENT TOTAL BALANCE
-    function viewSaloonBalance() external view returns (uint256) {
-        return saloonTotalBalance;
+    // VIEW enshield CURRENT TOTAL BALANCE
+    function viewEnshieldBalance() external view returns (uint256) {
+        return enshieldTotalBalance;
     }
 
     // VIEW COMMISSIONS PLUS PREMIUM
-    function viewTotalEarnedSaloon() external view returns (uint256) {
+    function viewTotalEarnedEnshield() external view returns (uint256) {
         uint256 premiums = viewTotalPremiums();
-        uint256 commissions = viewTotalSaloonCommission();
+        uint256 commissions = viewTotalEnshieldCommission();
 
         return premiums + commissions;
     }
@@ -120,7 +120,7 @@ contract SaloonWallet {
     }
 
     // VIEW TOTAL COMMISSION
-    function viewTotalSaloonCommission() public view returns (uint256) {
+    function viewTotalEnshieldCommission() public view returns (uint256) {
         return cummulativeCommission;
     }
 

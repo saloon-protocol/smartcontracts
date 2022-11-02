@@ -1,11 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-// import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
-import "./SaloonWallet.sol";
+import "./EnshieldWallet.sol";
 
 /*
 BountyPool handles all logic for a bounty.
@@ -14,7 +12,7 @@ BountyPool handles all logic for a bounty.
 - Premium calculations are made dynamically according to users balance, APY and staking period duration.
 */
 
-contract BountyPool is Ownable, Initializable {
+contract BountyPool is Initializable {
     using SafeERC20 for IERC20;
     //#################### State Variables *****************\\
 
@@ -30,8 +28,8 @@ contract BountyPool is Ownable, Initializable {
     uint256 public premiumCommission;
     uint256 public denominator;
 
-    uint256 public saloonBountyCommission;
-    uint256 public saloonPremiumFees;
+    uint256 public enshieldBountyCommission;
+    uint256 public enshieldPremiumFees;
     uint256 public premiumBalance;
 
     uint256 public desiredAPY;
@@ -121,12 +119,12 @@ contract BountyPool is Ownable, Initializable {
     /// @dev Pays bounty and subtracts staker balances according to weight in pool.
     /// This implementation uses stakers funds to pay the bounty first before using project deposit.
     /// @param _token Token the bounty is going to be paid in.
-    /// @param _saloonWallet Address the Saloon commission will be sent to.
+    /// @param _enshieldWallet Address the enshield commission will be sent to.
     /// @param _hunter Hunter wallet address the bounty will be paid to.
-    /// @param _amount Amount to be paid including Hunter payout + Saloon commission.
+    /// @param _amount Amount to be paid including Hunter payout + enshield commission.
     function payBounty(
         address _token,
-        address _saloonWallet,
+        address _enshieldWallet,
         address _hunter,
         uint256 _amount
     ) public onlyManager returns (bool) {
@@ -161,11 +159,11 @@ contract BountyPool is Ownable, Initializable {
                         staker[stakerAddress].push(newInfo);
                     }
 
-                    // deduct saloon commission and transfer
+                    // deduct enshield commission and transfer
                     calculateCommissioAndTransferPayout(
                         _token,
                         _hunter,
-                        _saloonWallet,
+                        _enshieldWallet,
                         _amount
                     );
 
@@ -199,11 +197,11 @@ contract BountyPool is Ownable, Initializable {
                 // push to
                 stakersDeposit.push(stakingInfo);
 
-                // deduct saloon commission and transfer
+                // deduct enshield commission and transfer
                 calculateCommissioAndTransferPayout(
                     _token,
                     _hunter,
-                    _saloonWallet,
+                    _enshieldWallet,
                     _amount
                 );
 
@@ -233,22 +231,22 @@ contract BountyPool is Ownable, Initializable {
                 stakingInfo.stakeBalance = 0;
                 stakersDeposit.push(stakingInfo);
 
-                // deduct saloon commission and transfer
+                // deduct enshield commission and transfer
                 calculateCommissioAndTransferPayout(
                     _token,
                     _hunter,
-                    _saloonWallet,
+                    _enshieldWallet,
                     _amount
                 );
 
                 return true;
             }
         } else {
-            // deduct saloon commission and transfer
+            // deduct enshield commission and transfer
             calculateCommissioAndTransferPayout(
                 _token,
                 _hunter,
-                _saloonWallet,
+                _enshieldWallet,
                 _amount
             );
 
@@ -258,44 +256,44 @@ contract BountyPool is Ownable, Initializable {
         }
     }
 
-    /// @dev Calculates Saloon commission and transfers it to _saloonWallet,
+    /// @dev Calculates enshield commission and transfers it to _enshieldWallet,
     /// as well as transferring the hunter payout to _hunter.
     /// @param _token Token the bounty is going to be paid in.
-    /// @param _saloonWallet Address the Saloon commission will be sent to.
+    /// @param _enshieldWallet Address the enshield commission will be sent to.
     /// @param _hunter Hunter wallet address the bounty will be paid to.
-    /// @param _amount Amount to be paid including Hunter payout + Saloon commission.
+    /// @param _amount Amount to be paid including Hunter payout + enshield commission.
     function calculateCommissioAndTransferPayout(
         address _token,
         address _hunter,
-        address _saloonWallet,
+        address _enshieldWallet,
         uint256 _amount
     ) internal returns (bool) {
-        // deduct saloon commission
-        uint256 saloonCommission = (_amount * bountyCommission) / denominator;
-        uint256 hunterPayout = _amount - saloonCommission;
+        // deduct enshield commission
+        uint256 enshieldCommission = (_amount * bountyCommission) / denominator;
+        uint256 hunterPayout = _amount - enshieldCommission;
         // transfer to hunter
         IERC20(_token).safeTransfer(_hunter, hunterPayout);
-        // transfer commission to saloon address
-        IERC20(_token).safeTransfer(_saloonWallet, saloonCommission);
+        // transfer commission to enshield address
+        IERC20(_token).safeTransfer(_enshieldWallet, enshieldCommission);
 
         return true;
     }
 
-    /// @dev Transfer already collected Saloon premium fees to _saloonWallet.
+    /// @dev Transfer already collected enshield premium fees to _enshieldWallet.
     /// @param _token Token the fees are paid in.
-    /// @param _saloonWallet Address the Saloon commission will be sent to.
-    function collectSaloonPremiumFees(address _token, address _saloonWallet)
+    /// @param _enshieldWallet Address the enshield commission will be sent to.
+    function collectEnshieldPremiumFees(address _token, address _enshieldWallet)
         external
         onlyManager
         returns (uint256)
     {
-        uint256 totalCollected = saloonPremiumFees;
+        uint256 totalCollected = enshieldPremiumFees;
 
         // reset claimable fees
-        saloonPremiumFees = 0;
+        enshieldPremiumFees = 0;
 
-        // send current fees to saloon address
-        IERC20(_token).safeTransfer(_saloonWallet, totalCollected);
+        // send current fees to enshield address
+        IERC20(_token).safeTransfer(_enshieldWallet, totalCollected);
 
         return totalCollected;
     }
@@ -304,7 +302,7 @@ contract BountyPool is Ownable, Initializable {
     // project must approve this address first.
     /// @param _token Token the bounty is going to be paid in.
     /// @param _projectWallet Project address deposint the payout.
-    /// @param _amount Amount to be paid including Hunter payout + Saloon commission.
+    /// @param _amount Amount to be paid including Hunter payout + enshield commission.
     function bountyDeposit(
         address _token,
         address _projectWallet,
@@ -777,11 +775,11 @@ contract BountyPool is Ownable, Initializable {
             return false;
         }
 
-        // Calculate saloon fee
-        uint256 saloonFee = (premiumOwed * premiumCommission) / denominator;
+        // Calculate enshield fee
+        uint256 enshieldFee = (premiumOwed * premiumCommission) / denominator;
 
-        // update saloon claimable fee
-        saloonPremiumFees += saloonFee;
+        // update enshield claimable fee
+        enshieldPremiumFees += enshieldFee;
 
         // update premiumBalance
         premiumBalance += premiumOwed;
@@ -1038,11 +1036,11 @@ contract BountyPool is Ownable, Initializable {
             stakerInfo,
             stakerLength
         );
-        // Calculate saloon fee
-        uint256 saloonFee = (totalPremiumToClaim * premiumCommission) /
+        // Calculate enshield fee
+        uint256 enshieldFee = (totalPremiumToClaim * premiumCommission) /
             denominator;
-        // subtract saloon fee
-        totalPremiumToClaim -= saloonFee;
+        // subtract enshield fee
+        totalPremiumToClaim -= enshieldFee;
         // sum stakerReimbursement in case there is any. Not very gas efficicent at the moment.
         uint256 owedPremium = totalPremiumToClaim;
 
@@ -1388,10 +1386,10 @@ contract BountyPool is Ownable, Initializable {
                 projectDeposit +
                 stakersDeposits[stakingLenght - 1].stakeBalance;
         }
-        uint256 saloonCommission = (totalBalance * bountyCommission) /
+        uint256 enshieldCommission = (totalBalance * bountyCommission) /
             denominator;
 
-        return totalBalance - saloonCommission;
+        return totalBalance - enshieldCommission;
     }
 
     function viewBountyBalance() external view returns (uint256) {
