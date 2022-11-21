@@ -12,6 +12,7 @@ import "./lib/OwnableUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
+/// How to simplify this?
 contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     event DeployNewBounty(
         address indexed sender,
