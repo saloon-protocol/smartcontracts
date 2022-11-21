@@ -13,8 +13,6 @@ import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
-    /// PUBLIC STORAGE ///
-
     event DeployNewBounty(
         address indexed sender,
         address indexed _projectWallet,
