@@ -13,6 +13,10 @@ import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 /// How to simplify this?
+/// remove APY and deposit changes
+
+/// what is needed?
+///
 contract BountyProxiesManager is OwnableUpgradeable, UUPSUpgradeable {
     event DeployNewBounty(
         address indexed sender,

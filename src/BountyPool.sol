@@ -41,6 +41,8 @@ contract BountyPool is Ownable, Initializable {
     uint256 public requiredPremiumBalancePerPeriod;
     uint256 public stakingPause;
 
+    bool private initialized; //note maybbe have this in manager
+
     // staker => last time premium was claimed
     mapping(address => uint256) public lastClaimed;
     // staker address => StakingInfo array
@@ -324,97 +326,15 @@ contract BountyPool is Ownable, Initializable {
         return true;
     }
 
-    /// @dev Schedules a change in Pool Cap for a determined amount.
-    /// @param _newPoolCap Amount the new Pool Cap is going to be set to once timelock is over.
-    function schedulePoolCapChange(uint256 _newPoolCap) external onlyManager {
-        poolCapTimelock.timelock = block.timestamp + PERIOD;
-        poolCapTimelock.amount = _newPoolCap;
-        poolCapTimelock.executed = false;
-        // note should this have a timelimit??
-    }
-
     /// @dev Set new Pool Cap as scheduled.
     /// if poolCap = 0 scheduling is not necessary
     /// @param _amount New pool cap as specificied when scheduling(if necessary).
     function setPoolCap(uint256 _amount) external onlyManager {
-        // check timelock if current poolCap != 0
-        if (poolCap != 0) {
-            TimelockInfo memory poolCapLock = poolCapTimelock;
-            // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
-            require(
-                poolCapLock.timelock < block.timestamp &&
-                    poolCapLock.executed == false &&
-                    poolCapLock.amount == _amount &&
-                    poolCapLock.timelock != 0,
-                "Timelock not set or not completed in time"
-            );
-            // set executed to true
-            poolCapTimelock.executed = true;
-        }
-        StakingInfo[] memory stakersDeposits = stakersDeposit;
-        uint256 stakingLenght = stakersDeposits.length;
-
-        // if stakers deposit > newPoolcap reimburse different to users
-        if (stakingLenght > 0) {
-            uint256 totalStakingBalance = stakersDeposits[stakingLenght - 1]
-                .stakeBalance;
-            if (totalStakingBalance > _amount) {
-                address[] memory stakersList = stakerList;
-                uint256 length = stakersList.length;
-                // calculate difference = (stakers deposit - newPoolcap)
-                uint256 diff = totalStakingBalance - _amount;
-                // loop through stakers
-
-                for (uint256 i; i < length; ) {
-                    address stakerAddress = stakersList[i];
-                    uint256 arraySize = staker[stakerAddress].length - 1;
-                    uint256 dec = decimals;
-                    // calculate current stakersDeposit individual percentage of each staker
-                    uint256 percentage = (staker[stakerAddress][arraySize]
-                        .stakeBalance * (10**dec)) / totalStakingBalance;
-
-                    // amount = calculate individual difference percentage per staker
-                    uint256 amount = (diff * percentage) / (10**dec);
-
-                    // add amount to instant claim mapping variable that gets added and reset in claimPremium
-                    stakerReimbursement[stakerAddress] += amount;
-                    // decrease stakerBalance by amount
-                    StakingInfo memory newInfo;
-                    // update balance
-                    newInfo.stakeBalance =
-                        staker[stakerAddress][arraySize].stakeBalance -
-                        amount;
-                    // update current time
-                    newInfo.balanceTimeStamp = block.timestamp;
-                    // push to array
-                    staker[stakerAddress].push(newInfo);
-
-                    unchecked {
-                        ++i;
-                    }
-                }
-
-                //  subtract and update: stakersDeposit - diff
-                StakingInfo memory newDepositInfo;
-                newDepositInfo.balanceTimeStamp = block.timestamp;
-                newDepositInfo.stakeBalance =
-                    stakersDeposits[stakingLenght - 1].stakeBalance -
-                    diff;
-                stakersDeposit.push(newDepositInfo);
-            }
-        }
-
         poolCap = _amount;
     }
 
     /// @dev Schedules a change in APY for a determined amount.
     /// @param _newAPY Amount the new APY is going to be set to once timelock is over.
-    function scheduleAPYChange(uint256 _newAPY) external onlyManager {
-        APYTimelock.timelock = block.timestamp + PERIOD;
-        APYTimelock.amount = _newAPY;
-        APYTimelock.executed = false;
-        // note should this have a timelimit??
-    }
 
     /// @dev Set new APY as scheduled.
     /// If APY = 0 scheduling is not required.
@@ -426,91 +346,25 @@ contract BountyPool is Ownable, Initializable {
     /// @param _desiredAPY New apy as specificied when scheduling (if necessary).
     /// @param _token Token the premium is going to be paid in.
     /// @param _projectWallet Project address that will continuously be billed for premium payments.
+    /// TODO when calling this from manager ensure poolCap has been called first
     function setDesiredAPY(
         address _token,
         address _projectWallet,
         uint256 _desiredAPY // make sure APY has right amount of decimals (1e18)
     ) public onlyManagerOrSelf returns (bool) {
-        // check timelock if current APY != 0
-        if (desiredAPY != 0) {
-            TimelockInfo memory APYLock = APYTimelock;
-            // Check If queued check time has passed && its hasnt been executed && timestamp cant be =0
-            require(
-                APYLock.timelock < block.timestamp &&
-                    APYLock.executed == false &&
-                    APYLock.amount == _desiredAPY &&
-                    APYLock.timelock != 0,
-                "Timelock not set or not completed"
-            );
-            // set executed to true
-            APYTimelock.executed = true;
-        }
-        uint256 currentPremiumBalance = premiumBalance;
-        uint256 newRequiredPremiumBalancePerPeriod;
-        StakingInfo[] memory stakersDeposits = stakersDeposit;
-        uint256 stakingLenght = stakersDeposits.length;
-        if (stakingLenght != 0) {
-            if (stakersDeposits[stakingLenght - 1].stakeBalance != 0) {
-                // bill all premium due before changing APY
-                billPremium(_token, _projectWallet);
-            }
-        } else {
-            // ensure there is enough premium balance to pay stakers new APY for one period
-            newRequiredPremiumBalancePerPeriod =
-                (((poolCap * _desiredAPY) / denominator) / YEAR) *
-                PERIOD;
-            // note: this might lead to leftover premium if project decreases APY, we will see what to do about that later
-            if (currentPremiumBalance < newRequiredPremiumBalancePerPeriod) {
-                // calculate difference to be paid
-                uint256 difference = newRequiredPremiumBalancePerPeriod -
-                    currentPremiumBalance;
-                // transfer to this address
-                IERC20(_token).safeTransferFrom(
-                    _projectWallet,
-                    address(this),
-                    difference
-                );
-                // increase premium
-                premiumBalance += difference;
-            }
-        }
+        // ensure there is enough premium balance to pay stakers new APY for one period
+        uint256 newRequiredPremiumBalancePerPeriod = (((poolCap * _desiredAPY) /
+            denominator) / YEAR) * PERIOD;
 
-        requiredPremiumBalancePerPeriod = newRequiredPremiumBalancePerPeriod;
+        IERC20(_token).safeTransferFrom(
+            _projectWallet,
+            address(this),
+            newRequiredPremiumBalancePerPeriod
+        );
+        // increase premium
+        premiumBalance = newRequiredPremiumBalancePerPeriod;
 
-        // register new APYperiod
-        APYperiods memory newAPYperiod;
-        newAPYperiod.timeStamp = block.timestamp;
-        newAPYperiod.periodAPY = _desiredAPY;
-        APYrecords.push(newAPYperiod);
-
-        // set APY
         desiredAPY = _desiredAPY;
-
-        // loop through stakerList array and push new balance for new APY period time stamp for every staker
-
-        address[] memory stakersList = stakerList;
-        if (stakersList.length > 0) {
-            uint256 length = stakersList.length - 1;
-            for (uint256 i; i < length; ) {
-                address stakerAddress = stakersList[i];
-                uint256 arraySize = staker[stakerAddress].length - 1;
-
-                StakingInfo memory newInfo;
-                // get last balance
-                newInfo.stakeBalance = staker[stakerAddress][arraySize]
-                    .stakeBalance;
-                // update current time
-                newInfo.balanceTimeStamp = block.timestamp;
-                // push to array so user can claim it.
-                staker[stakerAddress].push(newInfo);
-
-                unchecked {
-                    ++i;
-                }
-            }
-        }
-        // disable instant withdrawals ? note this is not in effect
-        APYdropped = false;
 
         return true;
     }
