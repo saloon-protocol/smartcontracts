@@ -13,35 +13,34 @@ import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 
 /* Implement:
 - Scheduled withdrawals
-- Bounty payouts needing to decrement all stakers
-- Billing premium when necessary.
-- add token whitelist and whitelist check in `addNewBounty`
+- Project deposits
+- DONE Bounty payouts needing to decrement all stakers
+- DONE - Billing premium when necessary.
+- DONE (all deployments go through BPM) - add token whitelist and whitelist check in `addNewBounty`
 - Make it upgradeable
+- Add back Saloon fees
 */
 
 ///NOTE `tokensPerSecond` needs to be substituted by something `tokenReward`
 
-interface IMigratorChef {
-    // Perform LP token migration from legacy PancakeSwap to CakeSwap.
-    // Take the current LP token address and return the new LP token address.
-    // Migrator should have full access to the caller's LP token.
-    // Return the new LP token address.
-    //
-    // XXX Migrator must have allowance access to PancakeSwap LP tokens.
-    // CakeSwap must mint EXACTLY the same amount of CakeSwap LP tokens or
-    // else something bad will happen. Traditional PancakeSwap does not
-    // do that so be careful!
-    function migrate(IERC20 token) external returns (IERC20);
-}
-
-contract MasterChef is Ownable, ReentrancyGuard {
+contract SaloonChef is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+
+    uint256 public constant YEAR = 365 days;
+    uint256 public constant PERIOD = 1 weeks;
+
+    uint256 public bountyCommission;
+    uint256 public premiumCommission;
+
+    uint256 public saloonBountyCommission;
+    uint256 public saloonPremiumFees;
+    uint256 public premiumBalance;
 
     // Info of each user.
     struct UserInfo {
         uint256 amount; // How many LP tokens the user has provided.
-        uint256 lastTokenPerShare; // Reward debt. See explanation below.
+        uint256 lastRewardTime; // Reward debt. See explanation below.
         uint256 unclaimed; // Unclaimed reward in Oasis.
 
         //
@@ -60,13 +59,15 @@ contract MasterChef is Ownable, ReentrancyGuard {
     // Info of each pool.
     struct PoolInfo {
         IERC20 token; // Address of LP token contract.
+        uint8 tokenDecimals;
         address projectWallet;
         uint256 allocPoint; // How many allocation points assigned to this pool. Tokens to distribute per block.
         uint256 projectDeposit;
-        uint256 apy;
-        uint256 poolLimit;
+        uint16 apy;
+        uint256 poolCap;
         uint256 totalStaked;
         uint256 lastRewardTime; // Last block number that Tokens distribution occurs.
+        uint256 lastBilledTime;
         uint256 accTokenPerShare; // Accumulated Tokens per share, times 1e18. See below.
         bool initialized;
     }
@@ -77,8 +78,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
     // Bonus muliplier for early cake makers.
     uint256 public denominator = 100 * (1e18);
 
-    // The migrator contract. It has a lot of power. Can only be set through governance (owner).
-    IMigratorChef public migrator;
+    uint16 public BPS = 10000;
+
+    address[] public stakerList;
 
     // Info of each pool.
     PoolInfo[] public poolInfo;
@@ -106,14 +108,15 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     // Add a new l to the pool. Can only be called by the owner.
-    function addNewBountyPool(
-        IERC20 _token,
-        address _projectWallet,
-        bool _withUpdate //note should be this defaulted to true or false?
+    function initialize(
+        address _token,
+        uint8 _tokenDecimals,
+        address _projectWallet
+        // bool _withUpdate //note should be this defaulted to true or false?
     ) public onlyOwner {
-        if (_withUpdate) {
-            massUpdatePools(); //note is this necessary?
-        }
+        // if (_withUpdate) {
+        //     massUpdatePools(); //note is this necessary?
+        // }
         uint256 lastRewardTime = block.timestamp > startTime
             ? block.timestamp
             : startTime;
@@ -121,67 +124,38 @@ contract MasterChef is Ownable, ReentrancyGuard {
         // totalAllocPoint = totalAllocPoint.add(_allocPoint); // note this doesnt seem necessary
         poolInfo.push(
             PoolInfo({
-                token: _token,
+                token: IERC20(_token),
+                tokenDecimals: _tokenDecimals,
                 projectWallet: _projectWallet,
-                lastRewardTime: lastRewardTime
+                allocPoint: 0,
+                projectDeposit: 0,
+                apy: 0,
+                poolCap: 0,
+                totalStaked: 0,
+                lastRewardTime: lastRewardTime,
+                lastBilledTime: 0,
+                accTokenPerShare: 0,
+                initialized: false
             })
         );
+
     }
 
-    function setDepositAPYandPoolLimit(
-        uint256 _pid,
-        uint256 _deposit,
-        uint256 _apy
-    ) external {
-        PoolInfo storage pool = poolInfo[_pid];
+    function setAPYandPoolCap(
+        // uint256 _pid,
+        uint256 _poolCap,
+        uint16 _apy
+    ) public onlyOwner {
+        PoolInfo storage pool = poolInfo[0];
 
-        require(
-            msg.sender == pool.projectWallet && pool.initialized == false,
-            "Not authorized"
-        );
+        require(!pool.initialized, "Pool already initialized");
+        require(_apy > 0 && _apy <= 10000, "APY out of range");
+        require(_poolCap > 100 * (10**pool.tokenDecimals) && _poolCap <= 10000000 * (10**pool.tokenDecimals), "Pool cap out of range");
         // transferfrom token
-        pool.projectDeposit = _deposit;
+        pool.poolCap = _poolCap;
         pool.apy = _apy;
         pool.initialized = true;
     }
-
-    // // Update the given pool's CAKE allocation point. Can only be called by the owner.
-    // // NOTE how can this be used to update APY, deposit?
-    // function set(
-    //     uint256 _pid,
-    //     uint256 _allocPoint,
-    //     bool _withUpdate
-    // ) public onlyOwner {
-    //     if (_withUpdate) {
-    //         massUpdatePools();
-    //     }
-    //     uint256 prevAllocPoint = poolInfo[_pid].allocPoint;
-    //     poolInfo[_pid].allocPoint = _allocPoint;
-    //     if (prevAllocPoint != _allocPoint) {
-    //         totalAllocPoint = totalAllocPoint.sub(prevAllocPoint).add(
-    //             _allocPoint
-    //         );
-    //         updateStakingPool();
-    //     }
-    // }
-
-    // // Set the migrator contract. Can only be called by the owner.
-    // function setMigrator(IMigratorChef _migrator) public onlyOwner {
-    //     migrator = _migrator;
-    // }
-
-    // // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
-    // //TODO change this function to migrate funds and staker data to another pool?
-    // function migrate(uint256 _pid) public {
-    //     require(address(migrator) != address(0), "migrate: no migrator");
-    //     PoolInfo storage pool = poolInfo[_pid];
-    //     IBEP20 lpToken = pool.lpToken;
-    //     uint256 bal = lpToken.balanceOf(address(this));
-    //     lpToken.safeApprove(address(migrator), bal);
-    //     IBEP20 newLpToken = migrator.migrate(lpToken);
-    //     require(bal == newLpToken.balanceOf(address(this)), "migrate: bad");
-    //     pool.lpToken = newLpToken;
-    // }
 
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to)
@@ -193,164 +167,224 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     // make into function to view Pending yield to claim
-    function pendingToken(uint256 _pid, address _user)
-        external
+    function pendingToken(address _user)
+        public
         view
         returns (uint256)
     {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        PoolInfo storage pool = poolInfo[0];
+        UserInfo storage user = userInfo[0][_user];
         uint256 accTokenPerShare = pool.accTokenPerShare;
         uint256 totalStaked = pool.totalStaked;
-        if (block.timestamp > pool.lastRewardTime && totalStaked != 0) {
+        uint256 tokenReward = 0;
+        if (block.timestamp > user.lastRewardTime && totalStaked != 0) {
             uint256 multiplier = getMultiplier(
-                pool.lastRewardTime,
+                user.lastRewardTime,
                 block.timestamp
             );
 
             // note/todo should we calculate tokensPerSecond based on user.amount or totalStaked and APY?
-            uint256 tokensPerSecond = ((user.amount * pool.apy) / denominator) /
-                31536000; //todo fix decimals so this doesnt under/overflow
-
-            uint256 tokenReward = multiplier.mul(tokensPerSecond);
-            accTokenPerShare = accTokenPerShare.add(
-                tokenReward.mul(1e18).div(totalStaked)
-            );
+            uint256 tokensPerSecond = ((user.amount * denominator * pool.apy) / BPS) / YEAR;
+                                //     10*10**6 * 10000 / 10000 / 30000000
+            tokenReward = multiplier.mul(tokensPerSecond) / denominator;
         }
-        return
-            user
-                .amount
-                .mul(accTokenPerShare.sub(user.lastTokenPerShare))
-                .div(1e18)
-                .add(user.unclaimed);
-    }
-
-    // Update reward variables for all pools. Be careful of gas spending!
-    function massUpdatePools() public {
-        uint256 length = poolInfo.length;
-        for (uint256 pid = 0; pid < length; ++pid) {
-            updatePool(pid);
-        }
-    }
-
-    // Update reward variables of the given pool to be up-to-date.
-    function updatePool(uint256 _pid) public {
-        PoolInfo storage pool = poolInfo[_pid];
-        if (block.timestamp <= pool.lastRewardTime) {
-            return;
-        }
-        if (pool.totalStaked == 0) {
-            pool.lastRewardTime = block.timestamp;
-            return;
-        }
-        // multiplier =  block.timestamp - pool.lastRewardTime
-        uint256 multiplier = getMultiplier(
-            pool.lastRewardTime,
-            block.timestamp
-        );
-
-        // // note/todo should we calculate tokensPerSecond based on user.amount and APY?
-        // uint256 tokensPerSecond = ((totalStaked? * pool.apy) / denominator) /
-        //     31536000; //todo fix decimals so this doesnt under/overflow
-
-        uint256 tokenReward = multiplier.mul(tokensPerSecond);
-
-        pool.accTokenPerShare = pool.accTokenPerShare.add(
-            tokenReward.mul(1e18).div(pool.totalStaked) //note does this last variable make sense?
-        );
-
-        pool.lastRewardTime = block.timestamp;
+        return tokenReward;
     }
 
     // Stake tokens in a Bounty pool to earn premium payments.
-    function stake(uint256 _pid, uint256 _amount) public {
-        require(_pid != 0, "deposit Token by staking");
+    function stake(address _user, uint256 _amount) external nonReentrant onlyOwner returns (bool) {
+        require(_amount > 0);
 
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
+        PoolInfo storage pool = poolInfo[0];
+        UserInfo storage user = userInfo[0][_user];
 
-        _updateUserReward(_pid, true);
+        _updateUserReward(_user, true);
 
-        if (_amount > 0) {
-            pool.token.safeTransferFrom(msg.sender, address(this), _amount);
-            user.amount = user.amount.add(_amount);
-            pool.totalStaked = pool.totalStaked.add(_amount);
-        }
+        if (user.amount == 0) stakerList.push(_user);
+
+        pool.token.safeTransferFrom(_user, address(this), _amount);
+        user.amount = user.amount.add(_amount);
+        pool.totalStaked = pool.totalStaked.add(_amount);
+
         require(
-            pool.poolLimit > 0 && pool.totalStaked <= pool.poolLimit,
+            pool.poolCap > 0 && pool.totalStaked <= pool.poolCap,
             "Exceeded pool limit"
         );
 
+
+
         // emit Deposit(msg.sender, _pid, _amount); //todo change to Staking event
+        return true;
     }
 
     // Withdraw LP tokens from MasterChef.
-    function unstake(uint256 _pid, uint256 _amount) public {
-        require(_pid != 0, "withdraw Token by unstaking");
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
+    function unstake(address _user, uint256 _amount) external nonReentrant onlyOwner returns (bool) {
+        PoolInfo storage pool = poolInfo[0];
+        UserInfo storage user = userInfo[0][_user];
         require(user.amount >= _amount, "withdraw: not good");
 
-        updatePool(_pid);
-        uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e18).sub(
-            user.lastTokenPerShare
-        );
+        _updateUserReward(_user, true);
 
-        uint256 amount = _amount + pending;
-        if (amount > 0) {
+        if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
-            pool.token.safeTransfer(address(msg.sender), amount);
+            pool.totalStaked = pool.totalStaked.sub(_amount);
+            pool.token.safeTransfer(_user, _amount);
         }
-        user.lastTokenPerShare = user.amount.mul(pool.accTokenPerShare).div(
-            1e18
-        );
-        emit Withdraw(msg.sender, _pid, _amount);
+
+        if (user.amount == 0) {
+            uint256 length = stakerList.length;
+            for (uint256 i; i < length; ) {
+                if (stakerList[i] == _user) {
+                    address lastAddress = stakerList[length - 1];
+                    stakerList[i] = lastAddress;
+                    stakerList.pop();
+                    break;
+                }
+
+                unchecked {
+                    ++i;
+                }
+            }
+        }
+        
+        // emit Withdraw(msg.sender, 0, _amount);
+        return true;
     }
 
-    // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) public {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        pool.token.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
-        user.amount = 0;
-        user.lastTokenPerShare = 0;
-    }
+    // // Withdraw without caring about rewards. EMERGENCY ONLY.
+    // function emergencyWithdraw(uint256 _pid) external nonReentrant onlyOwner {
+    //     PoolInfo storage pool = poolInfo[_pid];
+    //     UserInfo storage user = userInfo[_pid][msg.sender];
+    //     pool.token.safeTransfer(address(msg.sender), user.amount);
+    //     emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+    //     user.amount = 0;
+    //     user.lastTokenPerShare = 0;
+    // }
 
     // Update the rewards of caller, and harvests if needed
-    function _updateUserReward(uint256 _pid, bool _shouldHarvest) internal {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        updatePool(_pid);
+    function _updateUserReward(address _user, bool _shouldHarvest) internal {
+        PoolInfo storage pool = poolInfo[0];
+        UserInfo storage user = userInfo[0][_user];
+        // updatePool(0);
         if (user.amount == 0) {
-            user.lastTokenPerShare = pool.accTokenPerShare;
+            user.lastRewardTime = block.timestamp;
+            return;
         }
-        uint256 pending = user
-            .amount
-            .mul(pool.accTokenPerShare.sub(user.lastTokenPerShare))
-            .div(1e18)
-            .add(user.unclaimed);
-        user.unclaimed = _shouldHarvest ? 0 : pending;
-        if (pending > 0) {
-            //todo transfer pending premium to user account
-            //todo emit Claim event
+        uint256 pending = pendingToken(_user);
+        if (pending > premiumBalance) billPremium();
+
+        if (!_shouldHarvest) {
+            user.unclaimed += pending;
+            user.lastRewardTime = block.timestamp;
+            return;
         }
-        user.lastTokenPerShare = pool.accTokenPerShare;
+
+        uint256 totalPending = pending + user.unclaimed;
+        if (totalPending > 0) {
+            pool.token.safeTransfer(_user, totalPending);
+            user.unclaimed = 0;
+        }
+        user.lastRewardTime = block.timestamp;
     }
 
     // Harvest one pool
-    function claim(uint256 _pid) external nonReentrant {
-        _updateUserReward(_pid, true);
+    function claimPremium(address _user) external nonReentrant onlyOwner {
+        _updateUserReward(_user, true);
     }
 
-    // Safe cake transfer function, just in case if rounding error causes pool to not have enough CAKEs.
-    // function safeCakeTransfer(address _to, uint256 _amount) internal {
-    //     syrup.safeCakeTransfer(_to, _amount);
-    // }
 
-    // Update dev address by the previous dev.
-    function dev(address _devaddr) public {
-        require(msg.sender == devaddr, "dev: wut?");
-        devaddr = _devaddr;
+    function billPremium()
+        public
+        onlyOwner
+        returns (bool)
+    {
+        PoolInfo storage pool = poolInfo[0];
+        uint256 totalStaked = pool.totalStaked;
+        uint16 apy = pool.apy;
+        uint256 poolCap = pool.poolCap;
+
+        uint256 premiumOwed = (((poolCap * apy * PERIOD) / BPS) / YEAR);
+        IERC20(pool.token).safeTransferFrom(
+            pool.projectWallet,
+            address(this),
+            premiumOwed
+        );
+
+        // // Calculate saloon fee
+        // uint256 saloonFee = (premiumOwed * premiumCommission) / denominator;
+
+        // // update saloon claimable fee
+        // saloonPremiumFees += saloonFee;
+
+        // update premiumBalance
+        premiumBalance += premiumOwed;
+
+        pool.lastBilledTime = block.timestamp;
+
+        return true;
     }
+
+    function payBounty(
+        // address _saloonWallet,
+        address _hunter,
+        uint256 _amount
+    ) 
+    public 
+    onlyOwner
+    returns (bool) {
+        PoolInfo storage pool = poolInfo[0];
+        uint256 totalStaked = pool.totalStaked;
+        uint256 poolTotal = totalStaked + pool.projectDeposit;
+        uint256 percentage = 0;
+        
+        if (_amount < poolTotal) {
+            percentage = (_amount * BPS / poolTotal); // If precision is lost, amount was too low anyway.  
+            pool.projectDeposit -= pool.projectDeposit * percentage / BPS;          
+        } else if (_amount == poolTotal) {
+            percentage = BPS;
+            pool.projectDeposit = 0;  
+        } else {
+            revert("Amount too high");
+        }
+
+        uint256 length = stakerList.length;
+        for (uint256 i; i < length; ) {
+            address _user = stakerList[i];
+            UserInfo storage user = userInfo[0][_user];
+            _updateUserReward(_user, false);
+            user.amount -= user.amount * percentage / BPS;
+            unchecked {
+                ++i;
+            }
+        }
+
+        if (_amount == poolTotal) delete stakerList;
+        pool.token.safeTransfer(_hunter, _amount);
+
+        return true;
+
+
+    }
+
+    function collectSaloonPremiumFees(address _token, address _saloonWallet)
+        external
+        // onlyManager
+        returns (uint256)
+    {}
+
+    function viewBountyBalance() external view returns (uint256) {
+        PoolInfo memory pool = poolInfo[0];
+        return pool.totalStaked;
+    }
+
+    function viewStakersDeposit() external view returns (uint256) {
+        UserInfo storage user = userInfo[0][msg.sender];
+        return user.amount;
+    }
+
+    function viewPoolCap() external view returns (uint256) {
+        PoolInfo memory pool = poolInfo[0];
+        return pool.poolCap;
+    }
+
 }
