@@ -3,16 +3,12 @@ pragma solidity ^0.8.0;
 import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-// import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
-// import "openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 /// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
 /// Ensure there is enough access control
-
-/// `add` -> addNewBBountyPool
 
 /* Implement:
 - DONE Solve stack too deep
