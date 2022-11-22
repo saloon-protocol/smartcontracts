@@ -15,7 +15,7 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 /// `add` -> addNewBBountyPool
 
 /* Implement:
-- TODO Solve stack too deep
+- DONE Solve stack too deep
 - DONE Add back Saloon fees and commissions
 - DONE Withdraw saloon fee and commission to somewhere else
 - DONE Make it upgradeable
@@ -57,19 +57,16 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         IERC20 token; // Address of LP token contract.
         uint8 tokenDecimals;
         address projectWallet;
-        uint256 allocPoint; // How many allocation points assigned to this pool. Tokens to distribute per block.
         uint256 projectDeposit;
         uint16 apy;
         uint256 poolCap;
         uint256 totalStaked;
-        uint256 lastRewardTime; // Last block number that Tokens distribution occurs.
         uint256 lastBilledTime;
-        uint256 accTokenPerShare; // Accumulated Tokens per share, times 1e18. See below.
-        bool initialized;
         uint256 timelock;
         uint256 timeLimit;
         uint256 withdrawalScheduledAmount;
         bool WithdrawalExecuted;
+        bool initialized;
     }
 
     uint256 public denominator = 100 * (1e18);
@@ -114,24 +111,21 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint8 _tokenDecimals,
         address _projectWallet
     ) public onlyOwner {
-        uint256 lastRewardTime = block.timestamp > startTime
-            ? block.timestamp
-            : startTime;
+        // uint256 lastRewardTime = block.timestamp > startTime
+        //     ? block.timestamp
+        //     : startTime;
 
         poolInfo.push(
             PoolInfo({
                 token: IERC20(_token),
                 tokenDecimals: _tokenDecimals,
                 projectWallet: _projectWallet,
-                allocPoint: 0,
                 projectDeposit: 0,
                 apy: 0,
                 poolCap: 0,
                 totalStaked: 0,
-                lastRewardTime: lastRewardTime,
-                lastBilledTime: 0,
-                accTokenPerShare: 0,
                 initialized: false,
+                lastBilledTime: 0,
                 timelock: 0,
                 timeLimit: 0,
                 withdrawalScheduledAmount: 0,
