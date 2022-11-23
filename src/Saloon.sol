@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
@@ -27,11 +28,14 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    uint256 public constant YEAR = 365 days;
-    uint256 public constant PERIOD = 1 weeks;
+    uint256 constant YEAR = 365 days;
+    uint256 constant PERIOD = 1 weeks;
 
     uint256 constant bountyFee = 1000; // 10%
     uint256 constant premiumFee = 1000; // 10%
+    uint16 constant BPS = 10000;
+
+    uint256 public denominator = 100 * (1e18);
 
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
@@ -65,10 +69,6 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         bool initialized;
     }
 
-    uint256 public denominator = 100 * (1e18);
-
-    uint16 constant BPS = 10000;
-
     address[] public stakerList;
 
     // Info of each pool.
@@ -80,15 +80,19 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     // The block number when CAKE mining starts.
     uint256 public startTime;
 
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(
-        address indexed user,
-        uint256 indexed pid,
-        uint256 amount
-    );
+    event Staked(address indexed user, uint256 indexed pid, uint256 amount);
+    event Unstaked(address indexed user, uint256 indexed pid, uint256 amount);
 
-    // constructor() public {}
+    // event EmergencyWithdraw(
+    //     address indexed user,
+    //     uint256 indexed pid,
+    //     uint256 amount
+    // );
+
+    // initialize __Ownable_init();
+    function initialize() public initializer {
+        __Ownable_init();
+    }
 
     function _authorizeUpgrade(address _newImplementation)
         internal
@@ -240,7 +244,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
 
             uint256 tokenReward = multiplier.mul(tokensPerSecond) / denominator;
 
-            // Check if this calcualtion is done correctly
+            // note saloonPremiumProfit variable is updated in billPremium()
             uint256 saloonPremiumCommission = (tokenReward * premiumFee) / BPS;
 
             pendingReward = tokenReward - saloonPremiumCommission;
@@ -272,7 +276,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             "Exceeded pool limit"
         );
 
-        // emit Deposit(msg.sender, _pid, _amount); //todo change to Staking event
+        emit Staked(msg.sender, _pid, _amount);
         return true;
     }
 
@@ -334,7 +338,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             }
         }
 
-        // emit Withdraw(msg.sender, 0, _amount);
+        emit Unstaked(msg.sender, _pid, _amount);
         return true;
     }
 
@@ -400,7 +404,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             premiumOwed
         );
 
-        // Calculate saloon fee // TODO check if commission is calculated properly
+        // Calculate saloon fee
         uint256 saloonPremiumCommission = (premiumOwed * premiumFee) / BPS;
 
         // update saloon claimable fee
@@ -448,7 +452,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
 
         if (_amount == poolTotal) delete stakerList;
 
-        // calculate saloon commission //TODO check if fee commission is calcualted correctly
+        // calculate saloon commission
         uint256 saloonCommission = (_amount * bountyFee) / BPS;
         // subtract commission from payout
         uint256 hunterPayout = _amount - saloonCommission;
