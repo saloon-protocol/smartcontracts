@@ -31,8 +31,8 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
 
-    uint256 constant bountyFee = 1000; // 10%
-    uint256 constant premiumFee = 1000; // 10%
+    uint16 constant bountyFee = 1000; // 10%
+    uint16 constant premiumFee = 1000; // 10%
     uint16 constant BPS = 10000;
 
     uint256 public denominator = 100 * (1e18);
@@ -67,6 +67,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint256 withdrawalScheduledAmount;
         bool WithdrawalExecuted;
         bool initialized;
+        address[] stakerList;
     }
 
     address[] public stakerList;
@@ -110,7 +111,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         address _token,
         uint8 _tokenDecimals,
         address _projectWallet
-    ) public onlyOwner {
+    ) external onlyOwner {
         // uint256 lastRewardTime = block.timestamp > startTime
         //     ? block.timestamp
         //     : startTime;
@@ -129,7 +130,8 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
                 timelock: 0,
                 timeLimit: 0,
                 withdrawalScheduledAmount: 0,
-                WithdrawalExecuted: false
+                WithdrawalExecuted: false,
+                stakerList: []
             })
         );
     }
@@ -139,7 +141,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint256 _poolCap,
         uint16 _apy,
         uint256 _deposit
-    ) public {
+    ) external {
         PoolInfo storage pool = poolInfo[_pid];
 
         require(!pool.initialized, "Pool already initialized");
@@ -157,7 +159,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             _deposit
         );
 
-        pool.projectDeposit = _deposit;
+        pool.projectDeposit += _deposit;
         pool.poolCap = _poolCap;
         pool.apy = _apy;
         pool.initialized = true;
@@ -257,17 +259,18 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint256 _pid,
         address _user,
         uint256 _amount
-    ) external nonReentrant onlyOwner returns (bool) {
+    ) external nonReentrant returns (bool) {
         require(_amount > 0);
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
 
-        _updateUserReward(_pid, _user, true);
+        bool _shouldHarvest = _user == msg.sender ? true : false;
+        _updateUserReward(_pid, _user);
 
-        if (user.amount == 0) stakerList.push(_user);
+        if (user.amount == 0) pool.stakerList.push(_user);
 
-        pool.token.safeTransferFrom(_user, address(this), _amount);
+        pool.token.safeTransferFrom(msg.sender, address(this), _amount);
         user.amount = user.amount.add(_amount);
         pool.totalStaked = pool.totalStaked.add(_amount);
 
@@ -276,7 +279,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             "Exceeded pool limit"
         );
 
-        emit Staked(msg.sender, _pid, _amount);
+        emit Staked(_user, _pid, _amount);
         return true;
     }
 
@@ -298,11 +301,10 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     // Withdraw LP tokens from MasterChef.
     function unstake(
         uint256 _pid,
-        address _user,
         uint256 _amount
-    ) external nonReentrant onlyOwner returns (bool) {
+    ) external nonReentrant returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
         require(
             user.timelock < block.timestamp &&
@@ -314,21 +316,21 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         );
         user.UnstakeExecuted = true;
 
-        _updateUserReward(_pid, _user, true);
+        _updateUserReward(_pid, msg.sender);
 
         if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
             pool.totalStaked = pool.totalStaked.sub(_amount);
-            pool.token.safeTransfer(_user, _amount);
+            pool.token.safeTransfer(msg.sender, _amount);
         }
 
         if (user.amount == 0) {
-            uint256 length = stakerList.length;
+            uint256 length = pool.stakerList.length;
             for (uint256 i; i < length; ) {
                 if (stakerList[i] == _user) {
-                    address lastAddress = stakerList[length - 1];
-                    stakerList[i] = lastAddress;
-                    stakerList.pop();
+                    address lastAddress = pool.stakerList[length - 1];
+                    pool.stakerList[i] = lastAddress;
+                    pool.stakerList.pop();
                     break;
                 }
 
@@ -355,8 +357,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     // Update the rewards of caller, and harvests if needed
     function _updateUserReward(
         uint256 _pid,
-        address _user,
-        bool _shouldHarvest
+        address _user
     ) internal {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -368,6 +369,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint256 pending = pendingToken(_pid, _user);
         if (pending > premiumBalance) billPremium(_pid);
 
+        bool _shouldHarvest = _user == msg.sender ? true : false;
         if (!_shouldHarvest) {
             user.unclaimed += pending;
             user.lastRewardTime = block.timestamp;
@@ -386,12 +388,11 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     function claimPremium(uint256 _pid, address _user)
         external
         nonReentrant
-        onlyOwner
     {
-        _updateUserReward(_pid, _user, true);
+        _updateUserReward(_pid, _user);
     }
 
-    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
+    function billPremium(uint256 _pid) public returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
         // uint256 totalStaked = pool.totalStaked;
         uint16 apy = pool.apy;
@@ -439,18 +440,18 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             revert("Amount too high");
         }
 
-        uint256 length = stakerList.length;
+        uint256 length = pool.stakerList.length;
         for (uint256 i; i < length; ) {
-            address _user = stakerList[i];
+            address _user = pool.stakerList[i];
             UserInfo storage user = userInfo[_pid][_user];
-            _updateUserReward(_pid, _user, false);
+            _updateUserReward(_pid, _user);
             user.amount -= (user.amount * percentage) / BPS;
             unchecked {
                 ++i;
             }
         }
 
-        if (_amount == poolTotal) delete stakerList;
+        if (_amount == poolTotal) delete pool.stakerList;
 
         // calculate saloon commission
         uint256 saloonCommission = (_amount * bountyFee) / BPS;
