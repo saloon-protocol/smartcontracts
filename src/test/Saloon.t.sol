@@ -28,11 +28,55 @@ contract SaloonTest is DSTest, Script {
         saloon.initialize();
     }
 
-    // =================================
+    // ============================
     // Test Implementation Update
-    // =================================
+    // ============================
     function testUpdate() public {
         Saloon NewSaloon = new Saloon();
         saloon.upgradeTo(address(NewSaloon));
     }
+
+    // ============================
+    // Test setAPYandPoolCapAndDeposit
+    // ============================
+
+    // ============================
+    // Test makeProjectDeposit
+    // ============================
+
+    // ============================
+    // Test scheduleProjectDepositWithdrawal
+    // ============================
+
+    // ============================
+    // Test projectDepositWithdrawal
+    // ============================
+
+    // ============================
+    // Test stake
+    // ============================
+
+    // ============================
+    // Test scheduleUnstake
+    // ============================
+
+    // ============================
+    // Test unstake
+    // ============================
+
+    // ============================
+    // Test claimPremium - stake multiple times in a row and then claim, test with different time frames between actions
+    // ============================
+
+    // ============================
+    // Test billPremium
+    // ============================
+
+    // ============================
+    // Test payBounty
+    // ============================
+
+    // ============================
+    // Test collectSaloonProfits
+    // ============================
 }

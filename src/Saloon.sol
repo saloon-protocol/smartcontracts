@@ -40,6 +40,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     uint256 public premiumBalance;
+    uint256 public requiredPremiumBalancePerPeriod;
 
     // Info of each user.
     struct UserInfo {
@@ -49,7 +50,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint256 timelock;
         uint256 timeLimit;
         uint256 unstakeScheduledAmount;
-        bool UnstakeExecuted;
+        bool unstakeExecuted;
     }
 
     // Info of each pool.
@@ -65,12 +66,12 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         uint256 timelock;
         uint256 timeLimit;
         uint256 withdrawalScheduledAmount;
-        bool WithdrawalExecuted;
+        bool withdrawalExecuted;
         bool initialized;
         address[] stakerList;
     }
 
-    address[] public stakerList;
+    // address[] public stakerList;
 
     // Info of each pool.
     PoolInfo[] public poolInfo;
@@ -116,24 +117,23 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         //     ? block.timestamp
         //     : startTime;
 
-        poolInfo.push(
-            PoolInfo({
-                token: IERC20(_token),
-                tokenDecimals: _tokenDecimals,
-                projectWallet: _projectWallet,
-                projectDeposit: 0,
-                apy: 0,
-                poolCap: 0,
-                totalStaked: 0,
-                initialized: false,
-                lastBilledTime: 0,
-                timelock: 0,
-                timeLimit: 0,
-                withdrawalScheduledAmount: 0,
-                WithdrawalExecuted: false,
-                stakerList: []
-            })
-        );
+        PoolInfo memory newBounty;
+        newBounty.token = IERC20(_token);
+        newBounty.tokenDecimals = _tokenDecimals;
+        newBounty.projectWallet = _projectWallet;
+        newBounty.projectDeposit = 0;
+        newBounty.apy = 0;
+        newBounty.poolCap = 0;
+        newBounty.totalStaked = 0;
+        newBounty.initialized = false;
+        newBounty.lastBilledTime = 0;
+        newBounty.timelock = 0;
+        newBounty.timeLimit = 0;
+        newBounty.withdrawalScheduledAmount = 0;
+        newBounty.withdrawalExecuted = false;
+        newBounty.stakerList;
+
+        poolInfo.push(newBounty);
     }
 
     function setAPYandPoolCapAndDeposit(
@@ -158,6 +158,9 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             address(this),
             _deposit
         );
+
+        requiredPremiumBalancePerPeriod = (((_poolCap * _apy * PERIOD) / BPS) /
+            YEAR);
 
         pool.projectDeposit += _deposit;
         pool.poolCap = _poolCap;
@@ -189,7 +192,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         pool.timelock = block.timestamp + PERIOD;
         pool.timeLimit = block.timestamp + PERIOD + 3 days;
         pool.withdrawalScheduledAmount = _amount;
-        pool.WithdrawalExecuted = false;
+        pool.withdrawalExecuted = false;
         return true;
     }
 
@@ -202,12 +205,12 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         require(
             pool.timelock < block.timestamp &&
                 pool.timeLimit > block.timestamp &&
-                pool.WithdrawalExecuted == false &&
+                pool.withdrawalExecuted == false &&
                 pool.withdrawalScheduledAmount >= _amount &&
                 pool.timelock != 0,
             "Timelock not set or not completed in time"
         );
-        pool.WithdrawalExecuted = true;
+        pool.withdrawalExecuted = true;
 
         pool.projectDeposit -= _amount;
         IERC20(pool.token).safeTransfer(pool.projectWallet, _amount);
@@ -265,7 +268,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
 
-        bool _shouldHarvest = _user == msg.sender ? true : false;
+        // bool _shouldHarvest = _user == msg.sender ? true : false; note delete this line?
         _updateUserReward(_pid, _user);
 
         if (user.amount == 0) pool.stakerList.push(_user);
@@ -294,27 +297,28 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         user.timelock = block.timestamp + PERIOD;
         user.timeLimit = block.timestamp + PERIOD + 3 days;
         user.unstakeScheduledAmount = _amount;
-        user.UnstakeExecuted = false;
+        user.unstakeExecuted = false;
         return true;
     }
 
     // Withdraw LP tokens from MasterChef.
-    function unstake(
-        uint256 _pid,
-        uint256 _amount
-    ) external nonReentrant returns (bool) {
+    function unstake(uint256 _pid, uint256 _amount)
+        external
+        nonReentrant
+        returns (bool)
+    {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
         require(
             user.timelock < block.timestamp &&
                 user.timeLimit > block.timestamp &&
-                user.UnstakeExecuted == false &&
+                user.unstakeExecuted == false &&
                 user.unstakeScheduledAmount >= _amount &&
                 user.timelock != 0,
             "Timelock not set or not completed in time"
         );
-        user.UnstakeExecuted = true;
+        user.unstakeExecuted = true;
 
         _updateUserReward(_pid, msg.sender);
 
@@ -327,7 +331,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         if (user.amount == 0) {
             uint256 length = pool.stakerList.length;
             for (uint256 i; i < length; ) {
-                if (stakerList[i] == _user) {
+                if (pool.stakerList[i] == msg.sender) {
                     address lastAddress = pool.stakerList[length - 1];
                     pool.stakerList[i] = lastAddress;
                     pool.stakerList.pop();
@@ -355,10 +359,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     // }
 
     // Update the rewards of caller, and harvests if needed
-    function _updateUserReward(
-        uint256 _pid,
-        address _user
-    ) internal {
+    function _updateUserReward(uint256 _pid, address _user) internal {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         // updatePool(0);
@@ -367,7 +368,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             return;
         }
         uint256 pending = pendingToken(_pid, _user);
-        if (pending > premiumBalance) billPremium(_pid);
+        if (pending > premiumBalance) _billPremium(_pid);
 
         bool _shouldHarvest = _user == msg.sender ? true : false;
         if (!_shouldHarvest) {
@@ -381,38 +382,46 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             pool.token.safeTransfer(_user, totalPending);
             user.unclaimed = 0;
         }
-        user.lastRewardTime = block.timestamp;
+
+        premiumBalance -= user.lastRewardTime = block.timestamp;
     }
 
     // Harvest one pool
-    function claimPremium(uint256 _pid, address _user)
-        external
-        nonReentrant
-    {
-        _updateUserReward(_pid, _user);
+    function claimPremium(uint256 _pid) external nonReentrant {
+        _updateUserReward(_pid, msg.sender);
     }
 
-    function billPremium(uint256 _pid) public returns (bool) {
+    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
+        _billPremium(_pid);
+    }
+
+    function _billPremium(uint256 _pid) internal returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
         // uint256 totalStaked = pool.totalStaked;
-        uint16 apy = pool.apy;
-        uint256 poolCap = pool.poolCap;
 
-        uint256 premiumOwed = (((poolCap * apy * PERIOD) / BPS) / YEAR);
+        // uint16 apy = pool.apy;
+        // uint256 poolCap = pool.poolCap;
+
+        // uint256 premiumOwed = (((poolCap * apy * PERIOD) / BPS) / YEAR);
+
+        // Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
+        // This prevents anyone calling this 1000 times and draining the project wallet
+        uint256 billAmount = requiredPremiumBalancePerPeriod - premiumBalance;
+
         IERC20(pool.token).safeTransferFrom(
             pool.projectWallet,
             address(this),
-            premiumOwed
+            billAmount
         );
 
         // Calculate saloon fee
-        uint256 saloonPremiumCommission = (premiumOwed * premiumFee) / BPS;
+        uint256 saloonPremiumCommission = (billAmount * premiumFee) / BPS;
 
         // update saloon claimable fee
         saloonPremiumProfit[address(pool.token)] += saloonPremiumCommission;
 
-        // update premiumBalance
-        premiumBalance += premiumOwed;
+        // update premiumBalance note SUBSTRACT Saloon fee from Balance
+        premiumBalance += billAmount;
 
         pool.lastBilledTime = block.timestamp;
 
@@ -420,7 +429,6 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     }
 
     function payBounty(
-        // address _saloonWallet,
         uint256 _pid,
         address _hunter,
         uint256 _amount
