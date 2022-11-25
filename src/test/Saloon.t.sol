@@ -47,7 +47,7 @@ contract SaloonTest is DSTest, Script {
     // ============================
     // Test Implementation Update
     // ============================
-    function testUpdate() public {
+    function testUpdate() external {
         Saloon NewSaloon = new Saloon();
         saloon.upgradeTo(address(NewSaloon));
     }
@@ -55,33 +55,76 @@ contract SaloonTest is DSTest, Script {
     // ============================
     // Test addNewBountyPool
     // ============================
-    function testaddNewBountyPool() public {
+    function testaddNewBountyPool() external {
         pid = saloon.addNewBountyPool(address(usdc), 18, project);
     }
 
     // ============================
     // Test setAPYandPoolCapAndDeposit
     // ============================
-    function testsetAPYandPoolCapAndDeposit() public {
+    function testsetAPYandPoolCapAndDeposit() external {
         pid = saloon.addNewBountyPool(address(usdc), 18, project);
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
 
         // Test if APY and PoolCap can be set again (should revert)
+        vm.expectRevert("Pool already initialized");
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 0 ether);
     }
 
     // ============================
     // Test makeProjectDeposit
     // ============================
+    function testmakeProjectDeposit() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.makeProjectDeposit(pid, 10 ether);
+        uint256 bountyBalance = saloon.viewBountyBalance(pid);
+        assertEq(bountyBalance, 10 ether);
+    }
 
     // ============================
     // Test scheduleProjectDepositWithdrawal
     // ============================
+    function testscheduleProjectDepositWithdrawal() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.makeProjectDeposit(pid, 10 ether);
+        bool scheduled = saloon.scheduleProjectDepositWithdrawal(pid, 10 ether);
+
+        assert(true == scheduled);
+    }
 
     // ============================
     // Test projectDepositWithdrawal
     // ============================
+    function testprojectDepositWithdrawal() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.makeProjectDeposit(pid, 10 ether);
+        saloon.scheduleProjectDepositWithdrawal(pid, 10 ether);
+        vm.warp(block.timestamp + 8 days);
+        // Test if withdrawal is successfull during withdrawal window
+        bool completed = saloon.projectDepositWithdrawal(pid, 10 ether);
+        assert(true == completed);
+
+        // Test if withdrawal fails outside withdrawal window
+        saloon.makeProjectDeposit(pid, 10 ether);
+        saloon.scheduleProjectDepositWithdrawal(pid, 10 ether);
+        vm.warp(block.timestamp + 6 days);
+        vm.expectRevert("Timelock not set or not completed in time");
+        saloon.projectDepositWithdrawal(pid, 10 ether);
+
+        saloon.makeProjectDeposit(pid, 10 ether);
+        saloon.scheduleProjectDepositWithdrawal(pid, 10 ether);
+        vm.warp(block.timestamp + 11 days);
+        vm.expectRevert("Timelock not set or not completed in time");
+        saloon.projectDepositWithdrawal(pid, 10 ether);
+    }
 
     // ============================
     // Test stake
