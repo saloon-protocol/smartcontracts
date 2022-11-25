@@ -12,6 +12,7 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 /// Ensure there is enough access control
 
 /* Implement:
+- TODO add token whitelisting
 - DONE Solve stack too deep
 - DONE Add back Saloon fees and commissions
 - DONE Withdraw saloon fee and commission to somewhere else
@@ -112,7 +113,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         address _token,
         uint8 _tokenDecimals,
         address _projectWallet
-    ) external onlyOwner {
+    ) external onlyOwner returns (uint256) {
         // uint256 lastRewardTime = block.timestamp > startTime
         //     ? block.timestamp
         //     : startTime;
@@ -134,6 +135,10 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         newBounty.stakerList;
 
         poolInfo.push(newBounty);
+
+        // emit event
+
+        return (poolInfo.length - 1);
     }
 
     function setAPYandPoolCapAndDeposit(
@@ -147,7 +152,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         require(!pool.initialized, "Pool already initialized");
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
-            _poolCap > 100 * (10**pool.tokenDecimals) &&
+            _poolCap >= 100 * (10**pool.tokenDecimals) &&
                 _poolCap <= 10000000 * (10**pool.tokenDecimals),
             "Pool cap out of range"
         );
