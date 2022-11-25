@@ -71,6 +71,8 @@ contract SaloonTest is DSTest, Script {
         // Test if APY and PoolCap can be set again (should revert)
         vm.expectRevert("Pool already initialized");
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 0 ether);
+
+        // todo Test if poolCap can be exceeded by stakers
     }
 
     // ============================
@@ -129,14 +131,89 @@ contract SaloonTest is DSTest, Script {
     // ============================
     // Test stake
     // ============================
+    function testStake() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker, 1 ether);
+        uint256 stake = saloon.viewStake(pid);
+        assertEq(stake, 1 ether);
+    }
+
+    // ============================
+    // Test pendingToken
+    // ============================
+    function testpendingToken() external {
+        pid = saloon.addNewBountyPool(address(usdc), 6, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        uint256 poolCap = 100 * (1e6);
+        saloon.setAPYandPoolCapAndDeposit(pid, poolCap, 1000, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        uint256 stakeAmount = 10 * (1e6);
+        saloon.stake(pid, staker, stakeAmount);
+        uint256 stake = saloon.viewStake(pid);
+        // assertEq(stake, 1 ether);
+
+        vm.warp(block.timestamp + 365 days);
+        uint256 pending = saloon.pendingToken(pid, staker);
+        assertEq(pending, 1 ether);
+    }
 
     // ============================
     // Test scheduleUnstake
     // ============================
+    function testScheduleUnstake() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
+        vm.stopPrank();
+        //stake
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker, 1 ether);
+        uint256 stake = saloon.viewStake(pid);
+        assertEq(stake, 1 ether);
+
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(pid, 1 ether);
+        assert(scheduled == true);
+    }
 
     // ============================
     // Test unstake
     // ============================
+    function testUnstake() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
+        vm.stopPrank();
+        //stake
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker, 1 ether);
+        uint256 stake = saloon.viewStake(pid);
+        assertEq(stake, 1 ether);
+
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(pid, 1 ether);
+        assert(scheduled == true);
+
+        // todo unstake
+        // vm.warp(block.timestamp + 8 days);
+        // bool unstaked = saloon.unstake(pid, 1 ether);
+        // assert(unstaked == true);
+    }
 
     // ============================
     // Test claimPremium - stake multiple times in a row and then claim, test with different time frames between actions

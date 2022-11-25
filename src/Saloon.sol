@@ -36,7 +36,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
     uint16 constant premiumFee = 1000; // 10%
     uint16 constant BPS = 10000;
 
-    uint256 public denominator = 100 * (1e18);
+    uint256 constant denominator = 100 * (1e18);
 
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
@@ -246,18 +246,24 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
             uint256 multiplier = getMultiplier(
                 user.lastRewardTime,
                 block.timestamp
-            );
+            ); //note official
+
+            // uint256 multiplier = 365 days; //testing only
 
             //   10*10**6 * 10000 / 10000 / 30000000
-            uint256 tokensPerSecond = ((user.amount * denominator * pool.apy) /
-                BPS) / YEAR;
+            uint256 tokensPerSecond = ((user.amount * pool.apy) / BPS) / YEAR;
 
-            uint256 tokenReward = multiplier.mul(tokensPerSecond) / denominator;
+            // uint256 tokensPerSecond = (user.amount * denominator);
+
+            // uint256 tokenReward = multiplier.mul(tokensPerSecond) / denominator; //note why is this divided by denominator??
+            //note/todo lastReward time will be 0 for first time staker
+            uint256 tokenReward = multiplier.mul(tokensPerSecond);
 
             // note saloonPremiumProfit variable is updated in billPremium()
             uint256 saloonPremiumCommission = (tokenReward * premiumFee) / BPS;
 
-            pendingReward = tokenReward - saloonPremiumCommission;
+            pendingReward = tokenReward - saloonPremiumCommission; // note official
+            // pendingReward = tokensPerSecond;
         }
         return pendingReward;
     }
@@ -279,7 +285,7 @@ contract Saloon is OwnableUpgradeable, UUPSUpgradeable, ReentrancyGuard {
         if (user.amount == 0) pool.stakerList.push(_user);
 
         pool.token.safeTransferFrom(msg.sender, address(this), _amount);
-        user.amount = user.amount.add(_amount);
+        user.amount += _amount;
         pool.totalStaked = pool.totalStaked.add(_amount);
 
         require(
