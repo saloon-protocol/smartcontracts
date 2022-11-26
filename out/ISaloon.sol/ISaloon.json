@@ -1,0 +1,679 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {},
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/ISaloon.sol\":\"ISaloon\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":solmate/=lib/solmate/src/\"]},\"sources\":{\"lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34\",\"dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr\"]},\"src/ISaloon.sol\":{\"keccak256\":\"0xf2f17f49ad43c9b60b7e26abcdd91d227360217b6d4b166292597da5aaf2065b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://af79b7ed0e8114496d0114729ea9b92179f2f59844e7b25c72d915c1f8785d0d\",\"dweb:/ipfs/QmWH1vySuKBsSk7fHw9jqBtropVxrGRgdb1dKCz9xicrik\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.17+commit.8df45f5f"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":ds-test/=lib/ds-test/src/",
+        ":forge-std/=lib/forge-std/src/",
+        ":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/",
+        ":openzeppelin-contracts/=lib/openzeppelin-contracts/",
+        ":solmate/=lib/solmate/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/ISaloon.sol": "ISaloon"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b",
+        "urls": [
+          "bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34",
+          "dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr"
+        ],
+        "license": "MIT"
+      },
+      "src/ISaloon.sol": {
+        "keccak256": "0xf2f17f49ad43c9b60b7e26abcdd91d227360217b6d4b166292597da5aaf2065b",
+        "urls": [
+          "bzz-raw://af79b7ed0e8114496d0114729ea9b92179f2f59844e7b25c72d915c1f8785d0d",
+          "dweb:/ipfs/QmWH1vySuKBsSk7fHw9jqBtropVxrGRgdb1dKCz9xicrik"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/ISaloon.sol",
+    "id": 2356,
+    "exportedSymbols": {
+      "IERC20": [
+        1343
+      ],
+      "ISaloon": [
+        2355
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "32:785:15",
+    "nodes": [
+      {
+        "id": 2312,
+        "nodeType": "PragmaDirective",
+        "src": "32:23:15",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 2313,
+        "nodeType": "ImportDirective",
+        "src": "56:65:15",
+        "nodes": [],
+        "absolutePath": "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "file": "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 2356,
+        "sourceUnit": 1344,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 2355,
+        "nodeType": "ContractDefinition",
+        "src": "123:693:15",
+        "nodes": [
+          {
+            "id": 2345,
+            "nodeType": "StructDefinition",
+            "src": "173:479:15",
+            "nodes": [],
+            "canonicalName": "ISaloon.PoolInfo",
+            "members": [
+              {
+                "constant": false,
+                "id": 2316,
+                "mutability": "mutable",
+                "name": "token",
+                "nameLocation": "206:5:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "199:12:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_IERC20_$1343",
+                  "typeString": "contract IERC20"
+                },
+                "typeName": {
+                  "id": 2315,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 2314,
+                    "name": "IERC20",
+                    "nameLocations": [
+                      "199:6:15"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 1343,
+                    "src": "199:6:15"
+                  },
+                  "referencedDeclaration": 1343,
+                  "src": "199:6:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC20_$1343",
+                    "typeString": "contract IERC20"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2318,
+                "mutability": "mutable",
+                "name": "withdrawalExecuted",
+                "nameLocation": "259:18:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "254:23:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 2317,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "254:4:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2320,
+                "mutability": "mutable",
+                "name": "initialized",
+                "nameLocation": "292:11:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "287:16:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 2319,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "287:4:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2322,
+                "mutability": "mutable",
+                "name": "tokenDecimals",
+                "nameLocation": "319:13:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "313:19:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint8",
+                  "typeString": "uint8"
+                },
+                "typeName": {
+                  "id": 2321,
+                  "name": "uint8",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "313:5:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2324,
+                "mutability": "mutable",
+                "name": "apy",
+                "nameLocation": "349:3:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "342:10:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint16",
+                  "typeString": "uint16"
+                },
+                "typeName": {
+                  "id": 2323,
+                  "name": "uint16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "342:6:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2326,
+                "mutability": "mutable",
+                "name": "projectWallet",
+                "nameLocation": "370:13:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "362:21:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 2325,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "362:7:15",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2328,
+                "mutability": "mutable",
+                "name": "projectDeposit",
+                "nameLocation": "401:14:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "393:22:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2327,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "393:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2330,
+                "mutability": "mutable",
+                "name": "poolCap",
+                "nameLocation": "433:7:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "425:15:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2329,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "425:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2332,
+                "mutability": "mutable",
+                "name": "totalStaked",
+                "nameLocation": "458:11:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "450:19:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2331,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "450:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2334,
+                "mutability": "mutable",
+                "name": "totalPending",
+                "nameLocation": "487:12:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "479:20:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2333,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "479:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2336,
+                "mutability": "mutable",
+                "name": "requiredPremiumBalancePerPeriod",
+                "nameLocation": "517:31:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "509:39:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2335,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "509:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2338,
+                "mutability": "mutable",
+                "name": "premiumBalance",
+                "nameLocation": "566:14:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "558:22:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2337,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "558:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2341,
+                "mutability": "mutable",
+                "name": "poolTimelock",
+                "nameLocation": "603:12:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "590:25:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_TimelockInfo_$2354_storage_ptr",
+                  "typeString": "struct ISaloon.TimelockInfo"
+                },
+                "typeName": {
+                  "id": 2340,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 2339,
+                    "name": "TimelockInfo",
+                    "nameLocations": [
+                      "590:12:15"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 2354,
+                    "src": "590:12:15"
+                  },
+                  "referencedDeclaration": 2354,
+                  "src": "590:12:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_TimelockInfo_$2354_storage_ptr",
+                    "typeString": "struct ISaloon.TimelockInfo"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2344,
+                "mutability": "mutable",
+                "name": "stakerList",
+                "nameLocation": "635:10:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2345,
+                "src": "625:20:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 2342,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "625:7:15",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 2343,
+                  "nodeType": "ArrayTypeName",
+                  "src": "625:9:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "PoolInfo",
+            "nameLocation": "180:8:15",
+            "scope": 2355,
+            "visibility": "public"
+          },
+          {
+            "id": 2354,
+            "nodeType": "StructDefinition",
+            "src": "658:156:15",
+            "nodes": [],
+            "canonicalName": "ISaloon.TimelockInfo",
+            "members": [
+              {
+                "constant": false,
+                "id": 2347,
+                "mutability": "mutable",
+                "name": "timelock",
+                "nameLocation": "696:8:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2354,
+                "src": "688:16:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2346,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "688:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2349,
+                "mutability": "mutable",
+                "name": "timeLimit",
+                "nameLocation": "722:9:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2354,
+                "src": "714:17:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2348,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "714:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2351,
+                "mutability": "mutable",
+                "name": "withdrawalScheduledAmount",
+                "nameLocation": "749:25:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2354,
+                "src": "741:33:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 2350,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "741:7:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 2353,
+                "mutability": "mutable",
+                "name": "withdrawalExecuted",
+                "nameLocation": "789:18:15",
+                "nodeType": "VariableDeclaration",
+                "scope": 2354,
+                "src": "784:23:15",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 2352,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "784:4:15",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "TimelockInfo",
+            "nameLocation": "665:12:15",
+            "scope": 2355,
+            "visibility": "public"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "ISaloon",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          2355
+        ],
+        "name": "ISaloon",
+        "nameLocation": "133:7:15",
+        "scope": 2356,
+        "usedErrors": []
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 15
+}
