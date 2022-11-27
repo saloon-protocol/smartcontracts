@@ -245,7 +245,7 @@ contract Saloon is
         if (user.amount == 0) pool.stakerList.push(_user);
         pool.token.safeTransferFrom(msg.sender, address(this), _amount);
         user.amount += _amount;
-        pool.totalStaked = pool.totalStaked.add(_amount);
+        pool.totalStaked += _amount;
         require(
             pool.poolCap > 0 && pool.totalStaked <= pool.poolCap,
             "Exceeded pool limit"
@@ -335,8 +335,7 @@ contract Saloon is
             uint256 pendingMinusCommission;
             (, pending, pendingMinusCommission) = _billPremium(_pid, pending);
             if (pending > 0) {
-                pool.token.safeTransfer(_user, pending);
-                // user.unclaimed = 0;
+                pool.token.safeTransfer(_user, pendingMinusCommission);
                 pool.premiumBalance -= pending;
                 pool.premiumAvailable -= pendingMinusCommission;
                 user.lastRewardTime = block.timestamp;
@@ -344,11 +343,11 @@ contract Saloon is
         } else {
             // if billPremium is not called we need to calcualte commission here
             if (pending > 0) {
-                pool.token.safeTransfer(_user, pending);
                 // user.unclaimed = 0;
                 pool.premiumBalance -= pending;
                 uint256 saloonPremiumCommission = (pending * premiumFee) / BPS;
                 pending -= saloonPremiumCommission;
+                pool.token.safeTransfer(_user, pending);
                 pool.premiumAvailable -= pending;
                 user.lastRewardTime = block.timestamp;
             }
@@ -412,27 +411,75 @@ contract Saloon is
         PoolInfo storage pool = poolInfo[_pid];
         uint256 totalStaked = pool.totalStaked;
         uint256 poolTotal = totalStaked + pool.projectDeposit;
-        uint256 percentage = 0;
-        if (_amount < poolTotal) {
-            percentage = ((_amount * BPS) / poolTotal); // If precision is lost, amount was too low anyway.
-            pool.projectDeposit -= (pool.projectDeposit * percentage) / BPS;
+
+        // if stakers can cover payout
+        if (_amount <= totalStaked) {
+            if (_amount == totalStaked) {
+                // set all staker balances to zero
+                uint256 length = pool.stakerList.length;
+                for (uint256 i; i < length; ) {
+                    address _user = pool.stakerList[i];
+                    UserInfo storage user = userInfo[_pid][_user];
+                    _updateUserReward(_pid, _user);
+                    user.amount = 0;
+                    unchecked {
+                        ++i;
+                    }
+                }
+                pool.totalStaked = 0;
+                delete pool.stakerList;
+            } else {
+                uint256 percentage = ((_amount * bountyFee) / totalStaked);
+                uint256 length = pool.stakerList.length;
+                for (uint256 i; i < length; ) {
+                    address _user = pool.stakerList[i];
+                    UserInfo storage user = userInfo[_pid][_user];
+                    _updateUserReward(_pid, _user);
+                    uint256 userPay = (user.amount * percentage) / bountyFee;
+                    user.amount -= userPay;
+                    pool.totalStaked -= userPay;
+                    unchecked {
+                        ++i;
+                    }
+                }
+            }
+            // if stakers alone cannot cover payout
+        } else if (_amount > totalStaked && _amount < pool.projectDeposit) {
+            // set all staker balances to zero
+            uint256 length = pool.stakerList.length;
+            for (uint256 i; i < length; ) {
+                address _user = pool.stakerList[i];
+                UserInfo storage user = userInfo[_pid][_user];
+                _updateUserReward(_pid, _user);
+                user.amount = 0;
+                unchecked {
+                    ++i;
+                }
+            }
+            pool.totalStaked = 0;
+            delete pool.stakerList;
+            // calculate remaining amount for project to pay
+            uint256 projectPayout = poolTotal - totalStaked;
+            pool.projectDeposit -= projectPayout;
         } else if (_amount == poolTotal) {
-            percentage = BPS;
+            // set all staker balances to zero
+            uint256 length = pool.stakerList.length;
+            for (uint256 i; i < length; ) {
+                address _user = pool.stakerList[i];
+                UserInfo storage user = userInfo[_pid][_user];
+                _updateUserReward(_pid, _user);
+                user.amount = 0;
+                unchecked {
+                    ++i;
+                }
+            }
+            pool.totalStaked = 0;
+            delete pool.stakerList;
             pool.projectDeposit = 0;
         } else {
             revert("Amount too high");
         }
-        uint256 length = pool.stakerList.length;
-        for (uint256 i; i < length; ) {
-            address _user = pool.stakerList[i];
-            UserInfo storage user = userInfo[_pid][_user];
-            _updateUserReward(_pid, _user);
-            user.amount -= (user.amount * percentage) / BPS;
-            unchecked {
-                ++i;
-            }
-        }
-        if (_amount == poolTotal) delete pool.stakerList;
+
         // calculate saloon commission
         uint256 saloonCommission = (_amount * bountyFee) / BPS;
         // subtract commission from payout
@@ -460,6 +507,20 @@ contract Saloon is
     // ============================
     // View Functions
     // ============================
+
+    function viewSaloonProfitBalance(address _token)
+        external
+        view
+        returns (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 premiumProfit
+        )
+    {
+        bountyProfit = saloonBountyProfit[_token];
+        premiumProfit = saloonPremiumProfit[_token];
+        totalProfit = premiumProfit + bountyProfit;
+    }
 
     function viewBountyBalance(uint256 _pid) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
