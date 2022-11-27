@@ -127,18 +127,27 @@ contract Saloon is
             "Pool cap out of range"
         );
         require(msg.sender == pool.projectWallet, "Not authorized");
-        pool.requiredPremiumBalancePerPeriod = (((_poolCap * _apy * PERIOD) /
+        // requiredPremiumBalancePerPeriod includes Saloons commission
+        uint256 requiredPremiumBalancePerPeriod = (((_poolCap * _apy * PERIOD) /
             BPS) / YEAR);
+
+        uint256 saloonCommission = (requiredPremiumBalancePerPeriod * //note could make this a pool.variable
+            premiumFee) / BPS;
+
         IERC20(pool.token).safeTransferFrom(
             msg.sender,
             address(this),
-            _deposit + pool.requiredPremiumBalancePerPeriod
+            _deposit + requiredPremiumBalancePerPeriod
         );
         pool.projectDeposit += _deposit;
         pool.poolCap = _poolCap;
         pool.apy = _apy;
         pool.initialized = true;
-        pool.premiumBalance = pool.requiredPremiumBalancePerPeriod;
+        pool.premiumBalance = requiredPremiumBalancePerPeriod;
+        pool.requiredPremiumBalancePerPeriod = requiredPremiumBalancePerPeriod;
+        pool.premiumAvailable =
+            requiredPremiumBalancePerPeriod -
+            saloonCommission;
     }
 
     function makeProjectDeposit(uint256 _pid, uint256 _deposit) external {
@@ -180,7 +189,7 @@ contract Saloon is
                 pool.poolTimelock.timelock != 0,
             "Timelock not set or not completed in time"
         );
-        pool.withdrawalExecuted = true;
+        pool.poolTimelock.withdrawalExecuted = true;
         pool.projectDeposit -= _amount;
         IERC20(pool.token).safeTransfer(pool.projectWallet, _amount);
         return true;
@@ -203,7 +212,7 @@ contract Saloon is
     {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
-        // uint256 accTokenPerShare = pool.accTokenPerShare; //note delete ?
+
         uint256 totalStaked = pool.totalStaked;
         uint256 pendingReward;
         if (block.timestamp > user.lastRewardTime && totalStaked != 0) {
@@ -214,9 +223,10 @@ contract Saloon is
             );
             uint256 tokenReward = (((user.amount * pool.apy) / BPS) *
                 multiplier) / YEAR;
+
             // note saloonPremiumProfit variable is updated in billPremium()
-            uint256 saloonPremiumCommission = (tokenReward * premiumFee) / BPS;
-            pendingReward = tokenReward - saloonPremiumCommission;
+
+            pendingReward = tokenReward;
         }
         return pendingReward;
     }
@@ -319,22 +329,29 @@ contract Saloon is
             return;
         }
         uint256 pending = pendingToken(_pid, _user);
-        if (pending > pool.premiumBalance) _billPremium(_pid);
-        bool _shouldHarvest = _user == msg.sender ? true : false;
-        if (!_shouldHarvest) {
-            user.unclaimed += pending;
-            pool.totalPending += pending; //TODO Fix this so it updates totalPending in billPremium in the proper order
-            user.lastRewardTime = block.timestamp;
-            return;
-        }
-        uint256 totalPending = pending + user.unclaimed;
-        if (totalPending > 0) {
-            pool.token.safeTransfer(_user, totalPending);
-            user.unclaimed = 0;
-            // if pending exceeds premiumBalance this is going to underflow...
-            pool.premiumBalance = pending > pool.premiumBalance
-                ? 0
-                : pool.premiumBalance - totalPending;
+
+        if (pending > pool.premiumAvailable) {
+            // bill premium calcualtes commission
+            uint256 pendingMinusCommission;
+            (, pending, pendingMinusCommission) = _billPremium(_pid, pending);
+            if (pending > 0) {
+                pool.token.safeTransfer(_user, pending);
+                // user.unclaimed = 0;
+                pool.premiumBalance -= pending;
+                pool.premiumAvailable -= pendingMinusCommission;
+                user.lastRewardTime = block.timestamp;
+            }
+        } else {
+            // if billPremium is not called we need to calcualte commission here
+            if (pending > 0) {
+                pool.token.safeTransfer(_user, pending);
+                // user.unclaimed = 0;
+                pool.premiumBalance -= pending;
+                uint256 saloonPremiumCommission = (pending * premiumFee) / BPS;
+                pending -= saloonPremiumCommission;
+                pool.premiumAvailable -= pending;
+                user.lastRewardTime = block.timestamp;
+            }
         }
     }
 
@@ -344,36 +361,47 @@ contract Saloon is
     }
 
     function billPremium(uint256 _pid) public onlyOwner returns (bool) {
-        _billPremium(_pid);
+        _billPremium(_pid, 0);
     }
 
-    function _billPremium(uint256 _pid) internal returns (bool) {
+    function _billPremium(uint256 _pid, uint256 _pending)
+        internal
+        returns (
+            bool,
+            uint256,
+            uint256
+        )
+    {
         PoolInfo storage pool = poolInfo[_pid];
-        // uint256 totalStaked = pool.totalStaked;
-        // uint16 apy = pool.apy;
-        // uint256 poolCap = pool.poolCap;
-        // uint256 premiumOwed = (((poolCap * apy * PERIOD) / BPS) / YEAR);
+
         // Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
         // This prevents anyone calling this 1000 times and draining the project wallet
 
         uint256 billAmount = pool.requiredPremiumBalancePerPeriod -
-            pool.premiumBalance;
-        if (billAmount < pool.totalPending) billAmount += pool.totalPending;
+            pool.premiumBalance; // NOTE bill premium now doesnt bill includiing saloon commission...
+
+        if (billAmount < _pending) billAmount += _pending; // this is not being updated correctly
 
         IERC20(pool.token).safeTransferFrom(
             pool.projectWallet,
             address(this),
             billAmount
         );
-        pool.totalPending = 0;
+        // pool.totalPending = 0;
         // Calculate saloon fee
         uint256 saloonPremiumCommission = (billAmount * premiumFee) / BPS;
+
+        pool.premiumBalance += billAmount;
+
         // update saloon claimable fee
         saloonPremiumProfit[address(pool.token)] += saloonPremiumCommission;
-        // update premiumBalance note SUBSTRACT Saloon fee from Balance
-        pool.premiumBalance += billAmount;
-        // pool.lastBilledTime = block.timestamp;
-        return true;
+
+        uint256 pendingMinusCommission = billAmount - saloonPremiumCommission;
+
+        // available to make premium payment ->
+        pool.premiumAvailable += pendingMinusCommission;
+
+        return (true, billAmount, pendingMinusCommission);
     }
 
     function payBounty(
@@ -448,6 +476,16 @@ contract Saloon is
     function viewPoolCap(uint256 _pid) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return pool.poolCap;
+    }
+
+    function viewUserInfo(uint256 _pid, address _user)
+        external
+        view
+        returns (uint256 amount, uint256 unclaimed)
+    {
+        UserInfo storage user = userInfo[_pid][_user];
+        amount = user.amount;
+        unclaimed = user.unclaimed;
     }
 
     function viewPoolPremiumInfo(uint256 _pid)

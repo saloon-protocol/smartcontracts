@@ -293,21 +293,16 @@ contract SaloonTest is DSTest, Script {
         (, uint256 requiredPremiumBalancePerPeriod, ) = saloon
             .viewPoolPremiumInfo(pid);
 
-        uint256 expectedRequiredPremium = ((1000 * 100 ether * 1 weeks) /
-            10000);
-        uint256 expectedRequiredPremiumPerWeek = expectedRequiredPremium /
-            365 days;
-        assertEq(
-            requiredPremiumBalancePerPeriod,
-            expectedRequiredPremiumPerWeek
-        );
+        // requiredPremiumBalancePerPeriod should be equal premiumBalance
+        (, , uint256 premiumBalance) = saloon.viewPoolPremiumInfo(pid);
+        assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
 
         uint256 balanceBefore = usdc.balanceOf(address(saloon));
         assertEq(balanceBefore, 2 ether + requiredPremiumBalancePerPeriod);
 
         vm.warp(block.timestamp + 365 days);
         uint256 pending = saloon.pendingToken(pid, staker);
-        uint256 pendingExpected = 9 * 1e16; // .09 ether
+        uint256 pendingExpected = 10 * 1e16; // 0.1 ether
         assertEq(pending, pendingExpected);
 
         saloon.billPremium(pid);
@@ -315,29 +310,32 @@ contract SaloonTest is DSTest, Script {
         uint256 balanceAfterBilling = usdc.balanceOf(address(saloon));
         assertEq(balanceAfterBilling, balanceBefore);
 
+        // requiredPremiumBalancePerPeriod should be equal premiumBalance
+        (, , uint256 premiumBalance2) = saloon.viewPoolPremiumInfo(pid);
+        assertEq(premiumBalance2, requiredPremiumBalancePerPeriod);
+
         vm.startPrank(staker);
         //test if after claiming balance decreases by the amount of pending
         saloon.claimPremium(pid);
+
         // 2 ether + requiredPremiumBalancePerPeriod - pendingExpected
         uint256 balanceExpected = balanceAfterBilling - pendingExpected;
         uint256 balanceAfterClaim = usdc.balanceOf(address(saloon));
         assertEq(balanceAfterClaim, balanceExpected);
+
+        // test if requiredPremiumBalancePerPeriod is topped up when premiumAvailable is not enough
+        vm.warp(block.timestamp + 730 days);
+        saloon.claimPremium(pid);
+        uint256 balanceAfterClaim2 = usdc.balanceOf(address(saloon));
+        assertEq(balanceAfterClaim2, balanceExpected);
         vm.stopPrank();
 
         // test if billing tops up requiredPremiumBalancePerPeriod
         saloon.billPremium(pid);
-        uint256 balanceAfterBilling2 = usdc.balanceOf(address(saloon));
-        assertEq(balanceAfterBilling2, balanceBefore);
+        uint256 balanceAfterBBill2 = usdc.balanceOf(address(saloon));
+        assertEq(balanceAfterBBill2, balanceBefore);
 
-        // test if billing occurs after calling claimPremium when current balance is not sufficient
-        vm.startPrank(staker);
-        vm.warp(block.timestamp + 100 * 365 days);
-        uint256 premiumPaid = 100 * 9 * 1e16;
-        saloon.claimPremium(pid);
-        uint256 balanceAfterBilling3 = usdc.balanceOf(address(saloon));
-        uint256 expectedBalanceAfterBilling = balanceBefore - premiumPaid;
-        // expected balance is .09 bigger...
-        assertEq(balanceAfterBilling3, expectedBalanceAfterBilling);
+        // todo test saloonCommission
     }
 
     // ============================
