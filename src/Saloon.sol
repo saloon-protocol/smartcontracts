@@ -457,6 +457,10 @@ contract Saloon is
         return true;
     }
 
+    // ============================
+    // View Functions
+    // ============================
+
     function viewBountyBalance(uint256 _pid) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return (pool.totalStaked + pool.projectDeposit);

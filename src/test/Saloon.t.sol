@@ -341,7 +341,26 @@ contract SaloonTest is DSTest, Script {
     // ============================
     // Test payBounty
     // ============================
+    function testpayBounty() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
+        vm.stopPrank();
 
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker, 1 ether);
+        uint256 stake = saloon.viewStake(pid);
+        assertEq(stake, 1 ether);
+        vm.stopPrank();
+
+        // todo test hunters balance got the right amount
+
+        // todo test saloonBountyProfit got the right amount
+
+        // todo test stakers balance was reduced properly
+    }
     // ============================
     // Test collectSaloonProfits
     // ============================
