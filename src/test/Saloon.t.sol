@@ -69,7 +69,7 @@ contract SaloonTest is DSTest, Script {
     function testaddNewBountyPoolBadToken() external {
         saloon.updateTokenWhitelist(address(usdc), false);
         vm.expectRevert("token not whitelisted");
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
     }
 
     // ============================
@@ -84,14 +84,14 @@ contract SaloonTest is DSTest, Script {
     // Test addNewBountyPool
     // ============================
     function testaddNewBountyPool() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
     }
 
     // ============================
     // Test setAPYandPoolCapAndDeposit
     // ============================
     function testsetAPYandPoolCapAndDeposit() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
@@ -107,7 +107,7 @@ contract SaloonTest is DSTest, Script {
     // Test makeProjectDeposit
     // ============================
     function testmakeProjectDeposit() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.makeProjectDeposit(pid, 10 ether);
@@ -119,7 +119,7 @@ contract SaloonTest is DSTest, Script {
     // Test scheduleProjectDepositWithdrawal
     // ============================
     function testscheduleProjectDepositWithdrawal() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.makeProjectDeposit(pid, 10 ether);
@@ -132,7 +132,7 @@ contract SaloonTest is DSTest, Script {
     // Test projectDepositWithdrawal
     // ============================
     function testprojectDepositWithdrawal() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.makeProjectDeposit(pid, 10 ether);
@@ -160,7 +160,7 @@ contract SaloonTest is DSTest, Script {
     // Test stake
     // ============================
     function testStake() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
@@ -177,7 +177,7 @@ contract SaloonTest is DSTest, Script {
     // Test pendingToken
     // ============================
     function testpendingToken() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         uint256 poolCap = 100 * (1e18);
@@ -202,7 +202,7 @@ contract SaloonTest is DSTest, Script {
     // Test scheduleUnstake
     // ============================
     function testScheduleUnstake() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
@@ -223,7 +223,7 @@ contract SaloonTest is DSTest, Script {
     // Test unstake
     // ============================
     function testUnstake() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
@@ -270,7 +270,7 @@ contract SaloonTest is DSTest, Script {
     // Test claimPremium
     // ============================
     function testClaimPremium() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
@@ -312,7 +312,7 @@ contract SaloonTest is DSTest, Script {
     // Test billPremium
     // ============================
     function testbillPremium() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
@@ -325,11 +325,11 @@ contract SaloonTest is DSTest, Script {
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
-        (, uint256 requiredPremiumBalancePerPeriod, ) = saloon
+        (uint256 requiredPremiumBalancePerPeriod, ) = saloon
             .viewPoolPremiumInfo(pid);
 
         // requiredPremiumBalancePerPeriod should be equal premiumBalance
-        (, , uint256 premiumBalance) = saloon.viewPoolPremiumInfo(pid);
+        (, uint256 premiumBalance) = saloon.viewPoolPremiumInfo(pid);
         assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
 
         uint256 balanceBefore = usdc.balanceOf(address(saloon));
@@ -346,7 +346,7 @@ contract SaloonTest is DSTest, Script {
         assertEq(balanceAfterBilling, balanceBefore);
 
         // requiredPremiumBalancePerPeriod should be equal premiumBalance
-        (, , uint256 premiumBalance2) = saloon.viewPoolPremiumInfo(pid);
+        (, uint256 premiumBalance2) = saloon.viewPoolPremiumInfo(pid);
         assertEq(premiumBalance2, requiredPremiumBalancePerPeriod);
 
         vm.startPrank(staker);
@@ -380,7 +380,7 @@ contract SaloonTest is DSTest, Script {
     // Test payBounty
     // ============================
     function testpayBounty() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 3 ether);
@@ -442,7 +442,7 @@ contract SaloonTest is DSTest, Script {
     // Test collectSaloonProfits
     // ============================
     function testcollectSaloonProfits() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 3 ether);
@@ -483,7 +483,7 @@ contract SaloonTest is DSTest, Script {
     // Test collectAllSaloonProfits
     // ============================
     function testcollectAllSaloonProfits() external {
-        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 3 ether);
@@ -508,7 +508,7 @@ contract SaloonTest is DSTest, Script {
         // Repeat with pool with token DAI
 
         saloon.updateTokenWhitelist(address(dai), true);
-        uint256 pid2 = saloon.addNewBountyPool(address(dai), 18, project);
+        uint256 pid2 = saloon.addNewBountyPool(address(dai), project, "yeehaw");
         vm.startPrank(project);
         dai.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid2, 100 ether, 1000, 3 ether);

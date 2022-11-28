@@ -6,19 +6,20 @@ interface ISaloon {
     // Info of each pool.
     struct PoolInfo {
         IERC20 token; // Address of LP token contract.
-        bool initialized;
         uint8 tokenDecimals;
         uint16 apy;
         address projectWallet;
+        string projectName;
         uint256 projectDeposit;
         uint256 poolCap;
         uint256 totalStaked;
-        uint256 totalPending;
         uint256 requiredPremiumBalancePerPeriod;
         uint256 premiumBalance;
         uint256 premiumAvailable;
         TimelockInfo poolTimelock;
         address[] stakerList;
+        bool isActive;
+        uint256 freezeTime;
     }
 
     struct TimelockInfo {

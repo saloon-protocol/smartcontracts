@@ -13,9 +13,10 @@ import "./ISaloon.sol";
 
 /* Implement:
 - DONE add token whitelisting
-- TODO event emissions
+- TEST event emissions
 - DONE Saloon collect all profits
-- TODO Wind down (kill) bounties
+- TEST Wind down (kill) bounties
+- TEST Ownership transfer
 - DONE Solve stack too deep
 - DONE Add back Saloon fees and commissions
 - DONE Withdraw saloon fee and commission to somewhere else
@@ -43,6 +44,7 @@ contract Saloon is
     uint16 constant premiumFee = 1000; // 10%
     uint16 constant BPS = 10000;
     uint256 constant PRECISION = 1e18;
+    address pendingOwner;
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     // Info of each user.
@@ -67,20 +69,48 @@ contract Saloon is
     // Mapping of whitelisted tokens
     address[] public activeTokens;
 
+    event NewBountyDeployed(
+        uint256 indexed pid,
+        address indexed token,
+        uint256 indexed tokenDecimals
+    );
+
     event Staked(address indexed user, uint256 indexed pid, uint256 amount);
     event Unstaked(address indexed user, uint256 indexed pid, uint256 amount);
 
-    // event EmergencyWithdraw(
-    //     address indexed user,
-    //     uint256 indexed pid,
-    //     uint256 amount
-    // );
-    // initialize __Ownable_init();
+    event BountyBalanceChanged(
+        uint256 indexed pid,
+        uint256 indexed oldAmount,
+        uint256 indexed newAmount
+    );
+
+    event PremiumBilled(
+        uint256 indexed pid,
+        uint256 indexed amount
+    );
+
+    event BountyPaid(
+        uint256 indexed time,
+        address indexed hunter,
+        address indexed token,
+        uint256 amount
+    );
+
+    event WithdrawalOrUnstakeScheduled(
+        uint256 indexed pid,
+        uint256 indexed amount
+    );
 
     event tokenWhitelistUpdated(
         address indexed token,
         bool indexed whitelisted
     );
+
+    modifier activePool(uint256 _pid) {
+        PoolInfo memory pool = poolInfo[_pid];
+        if (!pool.isActive) revert("pool not active");
+        _;
+    }
     function initialize() public initializer {
         __Ownable_init();
     }
@@ -91,6 +121,20 @@ contract Saloon is
         override
         onlyOwner
     {}
+
+    function renounceOwnership() public view override onlyOwner {
+        revert("not allowed");
+    }
+
+    function transferOwnership(address newOwner) public override onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        pendingOwner = newOwner;
+    }
+
+    function acceptOwnershipTransfer() external {
+        require(pendingOwner == msg.sender, "only pending owner can accept transfer");
+        _owner = pendingOwner;
+    }
 
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
@@ -125,29 +169,43 @@ contract Saloon is
     // Add a new bounty pool. Can only be called by the owner.
     function addNewBountyPool(
         address _token,
-        uint8 _tokenDecimals,
-        address _projectWallet
+        address _projectWallet,
+        string memory _projectName
     ) external onlyOwner returns (uint256) {
         require(tokenWhitelist[_token], "token not whitelisted");
+        // uint8 _tokenDecimals = IERC20(_token).decimals();
 
         PoolInfo memory newBounty;
         newBounty.token = IERC20(_token);
-        newBounty.tokenDecimals = _tokenDecimals;
+
+        // PLEASE FIX THIS HARDODE
+        newBounty.tokenDecimals = 18;
+        // PRETTY PLEASE
+
         newBounty.projectWallet = _projectWallet;
+        newBounty.projectName = _projectName;
         newBounty.projectDeposit = 0;
         newBounty.apy = 0;
         newBounty.poolCap = 0;
         newBounty.totalStaked = 0;
-        newBounty.initialized = false;
-        newBounty.totalPending = 0;
         newBounty.poolTimelock.timelock = 0;
         newBounty.poolTimelock.timeLimit = 0;
         newBounty.poolTimelock.withdrawalScheduledAmount = 0;
         newBounty.poolTimelock.withdrawalExecuted = false;
         newBounty.stakerList;
+        newBounty.isActive = false;
+        newBounty.freezeTime = 0;
         poolInfo.push(newBounty);
         // emit event
         return (poolInfo.length - 1);
+    }
+
+    function windDownBounty(uint256 _pid) external returns (bool) {
+        PoolInfo storage pool = poolInfo[_pid];
+        require(msg.sender == pool.projectWallet || msg.sender == _owner, "Not authorized");
+        pool.isActive = false;
+        pool.freezeTime = block.timestamp;
+        return true;
     }
 
     //todo change order of names to match inputs
@@ -158,7 +216,7 @@ contract Saloon is
         uint256 _deposit
     ) external {
         PoolInfo storage pool = poolInfo[_pid];
-        require(!pool.initialized, "Pool already initialized");
+        require(!pool.isActive, "Pool already initialized");
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
             _poolCap >= 100 * (10**pool.tokenDecimals) &&
@@ -181,7 +239,7 @@ contract Saloon is
         pool.projectDeposit += _deposit;
         pool.poolCap = _poolCap;
         pool.apy = _apy;
-        pool.initialized = true;
+        pool.isActive = true;
         pool.premiumBalance = requiredPremiumBalancePerPeriod;
         pool.requiredPremiumBalancePerPeriod = requiredPremiumBalancePerPeriod;
         pool.premiumAvailable =
@@ -192,12 +250,17 @@ contract Saloon is
     function makeProjectDeposit(uint256 _pid, uint256 _deposit) external {
         PoolInfo storage pool = poolInfo[_pid];
         require(msg.sender == pool.projectWallet, "Not authorized");
+
+        uint256 balanceBefore = pool.totalStaked + pool.projectDeposit;
         IERC20(pool.token).safeTransferFrom(
             msg.sender,
             address(this),
             _deposit
         );
         pool.projectDeposit += _deposit;
+        uint256 balanceAfter = pool.totalStaked + pool.projectDeposit;
+
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
 
     function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
@@ -211,6 +274,8 @@ contract Saloon is
         pool.poolTimelock.timeLimit = block.timestamp + PERIOD + 3 days;
         pool.poolTimelock.withdrawalScheduledAmount = _amount;
         pool.poolTimelock.withdrawalExecuted = false;
+
+        emit WithdrawalOrUnstakeScheduled(_pid, _amount);
         return true;
     }
 
@@ -229,8 +294,13 @@ contract Saloon is
             "Timelock not set or not completed in time"
         );
         pool.poolTimelock.withdrawalExecuted = true;
+
+        uint256 balanceBefore = pool.totalStaked + pool.projectDeposit;
         pool.projectDeposit -= _amount;
         IERC20(pool.token).safeTransfer(pool.projectWallet, _amount);
+        uint256 balanceAfter = pool.totalStaked + pool.projectDeposit;
+
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
         return true;
     }
 
@@ -254,11 +324,12 @@ contract Saloon is
 
         uint256 totalStaked = pool.totalStaked;
         uint256 pendingReward;
-        if (block.timestamp > user.lastRewardTime && totalStaked != 0) {
+        uint256 endTime = pool.freezeTime != 0 ? pool.freezeTime : block.timestamp;
+        if (endTime > user.lastRewardTime && totalStaked != 0) {
             // multiplier = number of seconds
             uint256 multiplier = getMultiplier(
                 user.lastRewardTime,
-                block.timestamp
+                endTime
             );
             uint256 tokenReward = (((user.amount * pool.apy) / BPS) *
                 multiplier) / YEAR;
@@ -275,11 +346,13 @@ contract Saloon is
         uint256 _pid,
         address _user,
         uint256 _amount
-    ) external nonReentrant returns (bool) {
+    ) external nonReentrant activePool(_pid) returns (bool) {
         require(_amount > 0);
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         // bool _shouldHarvest = _user == msg.sender ? true : false; note delete this line?
+        uint256 balanceBefore = pool.totalStaked + pool.projectDeposit;
+
         _updateUserReward(_pid, _user);
         if (user.amount == 0) pool.stakerList.push(_user);
         pool.token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -290,6 +363,10 @@ contract Saloon is
             "Exceeded pool limit"
         );
         emit Staked(_user, _pid, _amount);
+
+        uint256 balanceAfter = pool.totalStaked + pool.projectDeposit;
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
+
         return true;
     }
 
@@ -304,6 +381,8 @@ contract Saloon is
         user.timeLimit = block.timestamp + PERIOD + 3 days;
         user.unstakeScheduledAmount = _amount;
         user.unstakeExecuted = false;
+
+        emit WithdrawalOrUnstakeScheduled(_pid, _amount);
         return true;
     }
 
@@ -325,6 +404,9 @@ contract Saloon is
             "Timelock not set or not completed in time"
         );
         user.unstakeExecuted = true;
+
+        uint256 balanceBefore = pool.totalStaked + pool.projectDeposit;
+
         _updateUserReward(_pid, msg.sender);
         if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
@@ -346,6 +428,10 @@ contract Saloon is
             }
         }
         emit Unstaked(msg.sender, _pid, _amount);
+
+        uint256 balanceAfter = pool.totalStaked + pool.projectDeposit;
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
+
         return true;
     }
 
@@ -437,6 +523,8 @@ contract Saloon is
         // available to make premium payment ->
         pool.premiumAvailable += pendingMinusCommission;
 
+        emit PremiumBilled(_pid, billAmount);
+
         return (true, billAmount, pendingMinusCommission);
     }
 
@@ -525,6 +613,8 @@ contract Saloon is
         saloonBountyProfit[address(pool.token)] += saloonCommission;
         // transfer payout to hunter
         pool.token.safeTransfer(_hunter, hunterPayout);
+
+        emit BountyPaid(block.timestamp, _hunter, address(pool.token), _amount);
         return true;
     }
 
@@ -619,14 +709,12 @@ contract Saloon is
         external
         view
         returns (
-            uint256 totalPending,
             uint256 requiredPremiumBalancePerPeriod,
             uint256 premiumBalance
         )
     {
         PoolInfo memory pool = poolInfo[_pid];
 
-        totalPending = pool.totalPending;
         requiredPremiumBalancePerPeriod = pool.requiredPremiumBalancePerPeriod;
         premiumBalance = pool.premiumBalance;
     }
