@@ -16,6 +16,7 @@ contract SaloonTest is DSTest, Script {
     bytes data = "";
 
     ERC20 usdc;
+    ERC20 dai;
     address project = address(0xDEF1);
     address hunter = address(0xD0);
     address staker = address(0x5ad);
@@ -39,10 +40,17 @@ contract SaloonTest is DSTest, Script {
         saloon.initialize();
 
         usdc = new ERC20("USDC", "USDC");
+        saloon.updateTokenWhitelist(address(usdc), true);
 
         usdc.mint(project, 500 ether);
         usdc.mint(staker, 500 ether);
         usdc.mint(staker2, 500 ether);
+
+        dai = new ERC20("DAI", "DAI");
+
+        dai.mint(project, 500 ether);
+        dai.mint(staker, 500 ether);
+        dai.mint(staker2, 500 ether);
 
         vm.deal(project, 500 ether);
     }
@@ -54,6 +62,23 @@ contract SaloonTest is DSTest, Script {
         Saloon NewSaloon = new Saloon();
         saloon.upgradeTo(address(NewSaloon));
     }
+
+    // ============================
+    // Test addNewBountyPool with non-whitelisted token
+    // ============================
+    function testaddNewBountyPoolBadToken() external {
+        saloon.updateTokenWhitelist(address(usdc), false);
+        vm.expectRevert("token not whitelisted");
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+    }
+
+    // ============================
+    // Test updateTokenWhitelist
+    // ============================
+    function testUpdateTokenWhitelist() external {
+        saloon.updateTokenWhitelist(address(usdc), false);
+        saloon.updateTokenWhitelist(address(usdc), true);
+    } 
 
     // ============================
     // Test addNewBountyPool
@@ -144,7 +169,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, 1 ether);
     }
 
@@ -163,7 +188,7 @@ contract SaloonTest is DSTest, Script {
         usdc.approve(address(saloon), 1000 ether);
         uint256 stakeAmount = 10 * (1e18);
         saloon.stake(pid, staker, stakeAmount);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, stakeAmount);
 
         vm.warp(block.timestamp + 365 days);
@@ -186,7 +211,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, 1 ether);
 
         //schedule unstake
@@ -207,7 +232,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, 1 ether);
 
         //schedule unstake
@@ -217,12 +242,12 @@ contract SaloonTest is DSTest, Script {
         // unstake
         vm.warp(block.timestamp + 8 days);
         bool unstaked = saloon.unstake(pid, 1 ether);
-        uint256 stakeAfter = saloon.viewStake(pid);
+        uint256 stakeAfter = saloon.viewStake(pid, staker);
         assertEq(stakeAfter, 0);
 
         //test unstake fails before schedule window opens
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake2 = saloon.viewStake(pid);
+        uint256 stake2 = saloon.viewStake(pid, staker);
         assertEq(stake2, 1 ether);
         bool scheduled2 = saloon.scheduleUnstake(pid, 1 ether);
         assert(scheduled2 == true);
@@ -231,7 +256,7 @@ contract SaloonTest is DSTest, Script {
         vm.warp(block.timestamp + 6 days);
         vm.expectRevert("Timelock not set or not completed in time");
         saloon.unstake(pid, 1 ether);
-        uint256 stakeAfter2 = saloon.viewStake(pid);
+        uint256 stakeAfter2 = saloon.viewStake(pid, staker);
 
         //test unstake fails after schedule window closes
         bool scheduled3 = saloon.scheduleUnstake(pid, 1 ether);
@@ -244,7 +269,7 @@ contract SaloonTest is DSTest, Script {
     // ============================
     // Test claimPremium
     // ============================
-    function testclaimPremium() external {
+    function testClaimPremium() external {
         pid = saloon.addNewBountyPool(address(usdc), 18, project);
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
@@ -253,28 +278,34 @@ contract SaloonTest is DSTest, Script {
         //stake
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
-        saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
-        assertEq(stake, 1 ether);
+        saloon.stake(pid, staker, 10 ether);
+        uint256 stake = saloon.viewStake(pid, staker);
+        assertEq(stake, 10 ether);
 
         vm.warp(block.timestamp + 365 days);
         saloon.claimPremium(pid);
-        // mint - stake + premium -> 500 - 1 + 0.09 = 499.09 ether
+        // mint - stake + premium -> 500 - 10 + (10 * (10% * 90%)) = 409 ether
         uint256 stakerBalance = usdc.balanceOf(staker);
-        assertEq(stakerBalance, 499090000000000000000);
+        assertEq(stakerBalance, 490900000000000000000);
 
         // test staking and claiming with pre-existing stake
-        saloon.stake(pid, staker, 1 ether);
-        uint256 stake2 = saloon.viewStake(pid);
-        assertEq(stake2, 2 ether);
+        saloon.stake(pid, staker, 10 ether);
+        uint256 stake2 = saloon.viewStake(pid, staker);
+        assertEq(stake2, 20 ether);
 
         vm.warp(block.timestamp + 182 days); // 6 months
         saloon.claimPremium(pid);
-        // previous balance - stake + premium -> 499.09 - 1 + 0.09 = 498.18 ether
+        // previous balance - stake + premium -> 490.9 - 10 + (20 * (182/365 * 10% * 90%)) = 317.975342466
         uint256 stakerBalance2 = usdc.balanceOf(staker);
-        assertEq(stakerBalance2, 498180000000000000000);
+        assertEq(stakerBalance2, 481797534246575342466);
 
-        // todo test unstake and claim
+        // test unstake and claim
+        saloon.scheduleUnstake(pid, 20 ether);
+        vm.warp(block.timestamp + 1 weeks + 1 days);
+        saloon.unstake(pid, 20 ether);
+        // previous balance - stake + premium -> 481.797534246575342466 + 20 + (20 * (8/365 * 10% * 90%)) = 501.836986301
+        uint256 stakerBalance3 = usdc.balanceOf(staker);
+        assertEq(stakerBalance3, 501836986301369863014);
     }
 
     // ============================
@@ -290,7 +321,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
@@ -358,14 +389,14 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker2, 1 ether);
-        uint256 stake2 = saloon.viewStake(pid);
+        uint256 stake2 = saloon.viewStake(pid, staker);
         assertEq(stake2, 1 ether);
         vm.stopPrank();
 
@@ -420,14 +451,14 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        uint256 stake = saloon.viewStake(pid);
+        uint256 stake = saloon.viewStake(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker2, 1 ether);
-        uint256 stake2 = saloon.viewStake(pid);
+        uint256 stake2 = saloon.viewStake(pid, staker);
         assertEq(stake2, 1 ether);
         vm.stopPrank();
 
@@ -446,5 +477,80 @@ contract SaloonTest is DSTest, Script {
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
         assertEq(totalProfit, 0);
+    }
+
+    // ============================
+    // Test collectAllSaloonProfits
+    // ============================
+    function testcollectAllSaloonProfits() external {
+        pid = saloon.addNewBountyPool(address(usdc), 18, project);
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 3 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker, 1 ether);
+        uint256 stake = saloon.viewStake(pid, staker);
+        assertEq(stake, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker2, 1 ether);
+        uint256 stake2 = saloon.viewStake(pid, staker);
+        assertEq(stake2, 1 ether);
+        vm.stopPrank();
+
+        saloon.payBounty(pid, hunter, 5 ether);
+
+        // Repeat with pool with token DAI
+
+        saloon.updateTokenWhitelist(address(dai), true);
+        uint256 pid2 = saloon.addNewBountyPool(address(dai), 18, project);
+        vm.startPrank(project);
+        dai.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid2, 100 ether, 1000, 3 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        dai.approve(address(saloon), 1000 ether);
+        saloon.stake(pid2, staker, 1 ether);
+        uint256 stake3 = saloon.viewStake(pid2, staker);
+        assertEq(stake3, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        dai.approve(address(saloon), 1000 ether);
+        saloon.stake(pid2, staker2, 1 ether);
+        uint256 stake4 = saloon.viewStake(pid2, staker);
+        assertEq(stake4, 1 ether);
+        vm.stopPrank();
+
+        saloon.payBounty(pid2, hunter, 5 ether);
+
+        saloon.collectAllSaloonProfits(saloonWallet);
+
+        // test wallet has received amount
+        uint256 walletBalanceUSDC = usdc.balanceOf(saloonWallet);
+        assertEq(walletBalanceUSDC, 500000000000000000);
+        uint256 walletBalanceDAI = dai.balanceOf(saloonWallet);
+        assertEq(walletBalanceDAI, 500000000000000000);
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+
+        (
+            uint256 totalProfit2,
+            uint256 bountyProfit2,
+            uint256 premiumProfit2
+        ) = saloon.viewSaloonProfitBalance(address(dai));
+        assertEq(totalProfit2, 0);
     }
 }

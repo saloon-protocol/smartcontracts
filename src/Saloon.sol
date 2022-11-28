@@ -12,7 +12,10 @@ import "./ISaloon.sol";
 /// Ensure there is enough access control
 
 /* Implement:
-- TODO add token whitelisting
+- DONE add token whitelisting
+- TODO event emissions
+- DONE Saloon collect all profits
+- TODO Wind down (kill) bounties
 - DONE Solve stack too deep
 - DONE Add back Saloon fees and commissions
 - DONE Withdraw saloon fee and commission to somewhere else
@@ -22,6 +25,7 @@ import "./ISaloon.sol";
 - DONE Bounty payouts needing to decrement all stakers
 - DONE - Billing premium when necessary.
 - DONE (all deployments go through BPM) - add token whitelist and whitelist check in `addNewBounty`
+- DONE All necessary view functions
 
 */
 
@@ -38,7 +42,7 @@ contract Saloon is
     uint16 constant bountyFee = 1000; // 10%
     uint16 constant premiumFee = 1000; // 10%
     uint16 constant BPS = 10000;
-    uint256 constant denominator = 100 * (1e18);
+    uint256 constant PRECISION = 1e18;
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     // Info of each user.
@@ -58,6 +62,11 @@ contract Saloon is
     // Info of each user that stakes LP tokens.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
 
+    // Mapping of whitelisted tokens
+    mapping(address => bool) public tokenWhitelist;
+    // Mapping of whitelisted tokens
+    address[] public activeTokens;
+
     event Staked(address indexed user, uint256 indexed pid, uint256 amount);
     event Unstaked(address indexed user, uint256 indexed pid, uint256 amount);
 
@@ -67,6 +76,11 @@ contract Saloon is
     //     uint256 amount
     // );
     // initialize __Ownable_init();
+
+    event tokenWhitelistUpdated(
+        address indexed token,
+        bool indexed whitelisted
+    );
     function initialize() public initializer {
         __Ownable_init();
     }
@@ -82,15 +96,40 @@ contract Saloon is
         return poolInfo.length;
     }
 
+    function updateTokenWhitelist(address _token, bool _whitelisted)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(tokenWhitelist[_token] == !_whitelisted, "whitelist already set");
+        tokenWhitelist[_token] = _whitelisted;
+        emit tokenWhitelistUpdated(_token, _whitelisted);
+
+        if (_whitelisted) {
+            activeTokens.push(_token);
+        } else {
+            uint256 activeTokenLength = activeTokens.length;
+            for (uint256 i; i < activeTokenLength; ++i) {
+                address token = activeTokens[i];
+                if (token == _token) {
+                    activeTokens[i] = activeTokens[activeTokenLength - 1];
+                    activeTokens.pop();
+                    return true;
+                }
+            }
+        }
+
+        return true;
+    }
+
     // Add a new bounty pool. Can only be called by the owner.
     function addNewBountyPool(
         address _token,
         uint8 _tokenDecimals,
         address _projectWallet
     ) external onlyOwner returns (uint256) {
-        // uint256 lastRewardTime = block.timestamp > startTime
-        //     ? block.timestamp
-        //     : startTime;
+        require(tokenWhitelist[_token], "token not whitelisted");
+
         PoolInfo memory newBounty;
         newBounty.token = IERC20(_token);
         newBounty.tokenDecimals = _tokenDecimals;
@@ -377,9 +416,7 @@ contract Saloon is
         // This prevents anyone calling this 1000 times and draining the project wallet
 
         uint256 billAmount = pool.requiredPremiumBalancePerPeriod -
-            pool.premiumBalance; // NOTE bill premium now doesnt bill includiing saloon commission...
-
-        if (billAmount < _pending) billAmount += _pending; // this is not being updated correctly
+            pool.premiumBalance + _pending; // NOTE bill premium now doesnt bill includiing saloon commission...
 
         IERC20(pool.token).safeTransferFrom(
             pool.projectWallet,
@@ -504,6 +541,26 @@ contract Saloon is
         return true;
     }
 
+    function collectAllSaloonProfits(address _saloonWallet)
+        external
+        onlyOwner
+        returns (bool)
+    {   
+        uint256 activeTokenLength = activeTokens.length;
+        for (uint256 i; i < activeTokenLength; ++i) {
+            address _token = activeTokens[i];
+            uint256 amount = saloonBountyProfit[_token] +
+                saloonPremiumProfit[_token];
+
+            if (amount == 0) continue;
+
+            saloonBountyProfit[_token] = 0;
+            saloonPremiumProfit[_token] = 0;
+            IERC20(_token).safeTransfer(_saloonWallet, amount);
+        }
+        return true;
+    }
+
     // ============================
     // View Functions
     // ============================
@@ -528,19 +585,24 @@ contract Saloon is
         // note does totalStaked/project deposit take into account saloon fee?
     }
 
-    function viewStake(uint256 _pid) external view returns (uint256) {
-        UserInfo storage user = userInfo[_pid][msg.sender];
+    function viewStake(uint256 _pid, address _user) external view returns (uint256) {
+        UserInfo storage user = userInfo[_pid][_user];
         return user.amount;
     }
 
-    function viewTotalStaked(uint256 _pid) external view returns (uint256) {
+    function viewTotalStaked(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return pool.totalStaked;
     }
 
-    function viewPoolCap(uint256 _pid) external view returns (uint256) {
+    function viewPoolCap(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return pool.poolCap;
+    }
+
+    function viewPoolAPY(uint256 _pid) public view returns (uint256) {
+        PoolInfo memory pool = poolInfo[_pid];
+        return pool.apy;
     }
 
     function viewUserInfo(uint256 _pid, address _user)
@@ -582,5 +644,26 @@ contract Saloon is
         timelock = pool.poolTimelock.timelock;
         timeLimit = pool.poolTimelock.timeLimit;
         withdrawalScheduledAmount = pool.poolTimelock.withdrawalScheduledAmount;
+    }
+
+    function viewHackerPayout(uint256 _pid) public view returns (uint256) {
+        PoolInfo memory pool = poolInfo[_pid];
+        return ((pool.totalStaked + pool.projectDeposit) * bountyFee) / BPS;
+    }
+
+    function viewBountyInfo(uint256 _pid)
+        external
+        view
+        returns (
+            uint256 payout,
+            uint256 apy,
+            uint256 staked,
+            uint256 poolCap
+        )
+    {
+        payout = viewHackerPayout(_pid);
+        staked = viewTotalStaked(_pid);
+        apy = viewPoolAPY(_pid);
+        poolCap = viewPoolCap(_pid);
     }
 }
