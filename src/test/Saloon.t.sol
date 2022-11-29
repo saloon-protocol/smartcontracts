@@ -553,4 +553,11 @@ contract SaloonTest is DSTest, Script {
         ) = saloon.viewSaloonProfitBalance(address(dai));
         assertEq(totalProfit2, 0);
     }
+
+    function testDecimalsCall() external {
+        (, bytes memory _decimals) = address(usdc).staticcall(
+            abi.encodeWithSignature("decimals()")
+        );
+        uint8 decimals = abi.decode(_decimals, (uint8));
+    }
 }
