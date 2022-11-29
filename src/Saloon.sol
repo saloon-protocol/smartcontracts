@@ -5,7 +5,7 @@ import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "./lib/OwnableUpgradeable.sol";
 import "./ISaloon.sol";
 
 /// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
@@ -44,7 +44,6 @@ contract Saloon is
     uint16 constant premiumFee = 1000; // 10%
     uint16 constant BPS = 10000;
     uint256 constant PRECISION = 1e18;
-    address pendingOwner;
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     // Info of each user.
@@ -120,26 +119,6 @@ contract Saloon is
         onlyOwner
     {}
 
-    // function renounceOwnership() public view override onlyOwner {
-    //     revert("not allowed");
-    // }
-
-    // function transferOwnership(address newOwner) public override onlyOwner {
-    //     require(
-    //         newOwner != address(0),
-    //         "Ownable: new owner is the zero address"
-    //     );
-    //     pendingOwner = newOwner;
-    // }
-
-    // function acceptOwnershipTransfer() external {
-    //     require(
-    //         pendingOwner == msg.sender,
-    //         "only pending owner can accept transfer"
-    //     );
-    //     _owner = pendingOwner;
-    // }
-
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
     }
@@ -186,11 +165,7 @@ contract Saloon is
 
         PoolInfo memory newBounty;
         newBounty.token = IERC20(_token);
-
-        // PLEASE FIX THIS HARDODE
         newBounty.tokenDecimals = decimals;
-        // PRETTY PLEASE
-
         newBounty.projectWallet = _projectWallet;
         newBounty.projectName = _projectName;
         newBounty.projectDeposit = 0;

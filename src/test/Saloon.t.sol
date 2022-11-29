@@ -22,6 +22,8 @@ contract SaloonTest is DSTest, Script {
     address staker = address(0x5ad);
     address staker2 = address(0x5ad2);
     address saloonWallet = address(0x999999);
+    address deployer;
+    address newOwner = address(0x5ad3);
 
     uint256 pid;
 
@@ -32,27 +34,24 @@ contract SaloonTest is DSTest, Script {
         vm.selectFork(forkId);
 
         saloonImplementation = new Saloon();
-
         saloonProxy = new SaloonProxy(address(saloonImplementation), data);
-
         saloon = Saloon(address(saloonProxy));
-
         saloon.initialize();
 
         usdc = new ERC20("USDC", "USDC");
         saloon.updateTokenWhitelist(address(usdc), true);
-
         usdc.mint(project, 500 ether);
         usdc.mint(staker, 500 ether);
         usdc.mint(staker2, 500 ether);
 
         dai = new ERC20("DAI", "DAI");
-
         dai.mint(project, 500 ether);
         dai.mint(staker, 500 ether);
         dai.mint(staker2, 500 ether);
 
         vm.deal(project, 500 ether);
+
+        deployer = address(this);
     }
 
     // ============================
@@ -400,6 +399,10 @@ contract SaloonTest is DSTest, Script {
         assertEq(stake2, 1 ether);
         vm.stopPrank();
 
+        vm.prank(newOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        saloon.payBounty(pid, newOwner, 1 ether);
+
         saloon.payBounty(pid, hunter, 1 ether);
 
         // test hunters balance got the right amount
@@ -559,5 +562,35 @@ contract SaloonTest is DSTest, Script {
             abi.encodeWithSignature("decimals()")
         );
         uint8 decimals = abi.decode(_decimals, (uint8));
+    }
+
+    // ============================
+    // Test Ownership access and functions
+    // ============================
+    function testOwnershipFunctions() external {
+        // Test random user can not call protected functions (pay bounty protection tested in testpayBounty)
+        vm.prank(newOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        assertEq(pid, 0); 
+
+        // Test first step of ownership transfer and accept reverts for random caller
+        saloon.transferOwnership(newOwner);
+        vm.prank(staker);
+        vm.expectRevert("only pending owner can accept transfer");
+        saloon.acceptOwnershipTransfer();
+
+        // Test new owner accepts ownership and can deploy new bounty
+        vm.startPrank(newOwner);
+        saloon.acceptOwnershipTransfer();
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        assertEq(pid, 1); 
+        vm.stopPrank();
+
+        // Test original owner cannot deploy new bounty
+        vm.expectRevert("Ownable: caller is not the owner");
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
     }
 }
