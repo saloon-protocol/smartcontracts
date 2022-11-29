@@ -449,9 +449,7 @@ contract Saloon is
 
         if (totalPending > pool.premiumBalance) {
             // bill premium calculates commission
-            uint256 billAmount;
-            uint256 billAmountMinusCommission;
-            (, billAmount, billAmountMinusCommission) = _billPremium(_pid, totalPending);
+            _billPremium(_pid, totalPending);
         }
             // if billPremium is not called we need to calcualte commission here
         if (totalPending > 0) {
@@ -474,11 +472,6 @@ contract Saloon is
 
     function _billPremium(uint256 _pid, uint256 _pending)
         internal
-        returns (
-            bool,
-            uint256,
-            uint256
-        )
     {
         PoolInfo storage pool = poolInfo[_pid];
 
@@ -494,23 +487,18 @@ contract Saloon is
             address(this),
             billAmount
         );
-        // pool.totalPending = 0;
+
         // Calculate saloon fee
         uint256 saloonPremiumCommission = (billAmount * premiumFee) / BPS;
-
         pool.premiumBalance += billAmount;
-
         // update saloon claimable fee
         saloonPremiumProfit[address(pool.token)] += saloonPremiumCommission;
-
+        
         uint256 billAmountMinusCommission = billAmount - saloonPremiumCommission;
-
         // available to make premium payment ->
         pool.premiumAvailable += billAmountMinusCommission;
 
         emit PremiumBilled(_pid, billAmount);
-
-        return (true, billAmount, billAmountMinusCommission);
     }
 
     function payBounty(
