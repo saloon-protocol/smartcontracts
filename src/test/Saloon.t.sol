@@ -669,4 +669,31 @@ contract SaloonTest is DSTest, Script {
         vm.expectRevert("Ownable: caller is not the owner");
         pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
     }
+
+    function testWindDownBounty() external {
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid, 100 ether, 1000, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 ether);
+        saloon.stake(pid, staker, 1 ether);
+        (uint256 stake,) = saloon.viewUserInfo(pid, staker);
+        assertEq(stake, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(project);
+        vm.warp(block.timestamp + 7 days);
+        saloon.windDownBounty(pid);
+        vm.stopPrank();
+
+        // Even though 14 days has passed, user only receives pending up until the bounty was wound down
+        vm.warp(block.timestamp + 7 days);
+        (uint256 stake2, uint256 actualPending2) = saloon.viewUserInfo(pid, staker);
+        uint256 actualPending = actualPending2;
+        uint256 expectedPending = stake2 * 1000 / 10000 * 9000 / 10000 * 7 days / 365 days;
+        assertEq(actualPending, expectedPending);
+    }
 }
