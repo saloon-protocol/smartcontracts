@@ -15,7 +15,7 @@ import "./ISaloon.sol";
 - DONE add token whitelisting
 - TEST event emissions
 - DONE Saloon collect all profits
-- TEST Wind down (kill) bounties
+- DONE Wind down (kill) bounties
 - DONE Withdrawals with _shouldHarvest == false
 - DONE Ownership transfer
 - DONE Solve stack too deep
