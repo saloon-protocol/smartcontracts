@@ -179,15 +179,15 @@ contract SaloonTest is DSTest, Script {
         pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 ether);
-        uint256 poolCap = 100 * (1e6);
-        uint256 deposit = 1 * (1e6);
+        uint256 poolCap = 100 * (1e18);
+        uint256 deposit = 1 * (1e18);
 
         saloon.setAPYandPoolCapAndDeposit(pid, poolCap, 1000, deposit);
         vm.stopPrank();
 
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
-        uint256 stakeAmount = 10 * (1e6);
+        uint256 stakeAmount = 10 * (1e18);
         saloon.stake(pid, staker, stakeAmount);
         (uint256 stake, ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, stakeAmount);

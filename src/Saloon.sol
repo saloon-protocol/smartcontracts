@@ -559,9 +559,7 @@ contract Saloon is
                 }
             }
             // if stakers alone cannot cover payout
-        } else if (
-            _amount > totalStaked && _amount < totalStaked + pool.projectDeposit
-        ) {
+        } else if (_amount > totalStaked && _amount < poolTotal) {
             // set all staker balances to zero
             uint256 length = pool.stakerList.length;
             for (uint256 i; i < length; ) {
