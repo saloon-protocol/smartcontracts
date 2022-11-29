@@ -161,7 +161,9 @@ contract Saloon is
     ) external onlyOwner returns (uint256) {
         require(tokenWhitelist[_token], "token not whitelisted");
         // uint8 _tokenDecimals = IERC20(_token).decimals();
-        (,bytes memory _decimals) = _token.staticcall(abi.encodeWithSignature("decimals()"));
+        (, bytes memory _decimals) = _token.staticcall(
+            abi.encodeWithSignature("decimals()")
+        );
         uint8 decimals = abi.decode(_decimals, (uint8));
 
         PoolInfo memory newBounty;
@@ -305,7 +307,11 @@ contract Saloon is
     function pendingToken(uint256 _pid, address _user)
         public
         view
-        returns (uint256 totalPending, uint256 actualPending, uint256 newPending)
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        )
     {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -317,9 +323,9 @@ contract Saloon is
 
         // multiplier = number of seconds
         uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
-        newPending = (((user.amount * pool.apy) / BPS) *
-            multiplier) / YEAR;
+        newPending = (((user.amount * pool.apy) / BPS) * multiplier) / YEAR;
         totalPending = newPending + user.unclaimed;
+        // actualPending subtracts Saloon premium fee
         actualPending = (totalPending * (BPS - premiumFee)) / BPS;
 
         // note saloonPremiumProfit variable is updated in billPremium()
@@ -373,11 +379,11 @@ contract Saloon is
     }
 
     // Withdraw LP tokens from MasterChef.
-    function unstake(uint256 _pid, uint256 _amount, bool _shouldHarvest)
-        external
-        nonReentrant
-        returns (bool)
-    {
+    function unstake(
+        uint256 _pid,
+        uint256 _amount,
+        bool _shouldHarvest
+    ) external nonReentrant returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
@@ -431,7 +437,11 @@ contract Saloon is
     //     user.lastTokenPerShare = 0;
     // }
     // Update the rewards of caller, and harvests if needed
-    function _updateUserReward(uint256 _pid, address _user, bool _shouldHarvest) internal {
+    function _updateUserReward(
+        uint256 _pid,
+        address _user,
+        bool _shouldHarvest
+    ) internal {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         // updatePool(0);
@@ -439,11 +449,17 @@ contract Saloon is
             user.lastRewardTime = block.timestamp;
             return;
         }
-        (uint256 totalPending, uint256 actualPending, uint256 newPending) = pendingToken(_pid, _user);
+        (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        ) = pendingToken(_pid, _user);
         if (!_shouldHarvest) {
             user.unclaimed += newPending;
             // pool.premiumAvailable -= newPending;
-            user.lastRewardTime = pool.freezeTime != 0 ? pool.freezeTime : block.timestamp;
+            user.lastRewardTime = pool.freezeTime != 0
+                ? pool.freezeTime
+                : block.timestamp;
             return;
         }
 
@@ -451,10 +467,12 @@ contract Saloon is
             // bill premium calculates commission
             _billPremium(_pid, totalPending);
         }
-            // if billPremium is not called we need to calcualte commission here
+        // if billPremium is not called we need to calcualte commission here
         if (totalPending > 0) {
             user.unclaimed = 0;
-            user.lastRewardTime = pool.freezeTime != 0 ? pool.freezeTime : block.timestamp;
+            user.lastRewardTime = pool.freezeTime != 0
+                ? pool.freezeTime
+                : block.timestamp;
             pool.premiumBalance -= totalPending;
             pool.premiumAvailable -= actualPending;
             pool.token.safeTransfer(_user, actualPending);
@@ -470,9 +488,7 @@ contract Saloon is
         _billPremium(_pid, 0);
     }
 
-    function _billPremium(uint256 _pid, uint256 _pending)
-        internal
-    {
+    function _billPremium(uint256 _pid, uint256 _pending) internal {
         PoolInfo storage pool = poolInfo[_pid];
 
         // Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
@@ -494,7 +510,8 @@ contract Saloon is
         // update saloon claimable fee
         saloonPremiumProfit[address(pool.token)] += saloonPremiumCommission;
 
-        uint256 billAmountMinusCommission = billAmount - saloonPremiumCommission;
+        uint256 billAmountMinusCommission = billAmount -
+            saloonPremiumCommission;
         // available to make premium payment ->
         pool.premiumAvailable += billAmountMinusCommission;
 
@@ -542,7 +559,9 @@ contract Saloon is
                 }
             }
             // if stakers alone cannot cover payout
-        } else if (_amount > totalStaked && _amount < totalStaked + pool.projectDeposit) {
+        } else if (
+            _amount > totalStaked && _amount < totalStaked + pool.projectDeposit
+        ) {
             // set all staker balances to zero
             uint256 length = pool.stakerList.length;
             for (uint256 i; i < length; ) {
@@ -670,7 +689,7 @@ contract Saloon is
     {
         UserInfo storage user = userInfo[_pid][_user];
         amount = user.amount;
-        (, actualPending,) = pendingToken(_pid, _user);
+        (, actualPending, ) = pendingToken(_pid, _user);
     }
 
     function viewUserUnclaimed(uint256 _pid, address _user)
