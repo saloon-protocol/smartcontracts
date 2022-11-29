@@ -690,10 +690,25 @@ contract SaloonTest is DSTest, Script {
         vm.stopPrank();
 
         // Even though 14 days has passed, user only receives pending up until the bounty was wound down
+        vm.startPrank(staker);
         vm.warp(block.timestamp + 7 days);
         (uint256 stake2, uint256 actualPending2) = saloon.viewUserInfo(pid, staker);
         uint256 actualPending = actualPending2;
         uint256 expectedPending = stake2 * 1000 / 10000 * 9000 / 10000 * 7 days / 365 days;
         assertEq(actualPending, expectedPending);
+
+        // Staking should fail after pool is wound down
+        vm.expectRevert("pool not active");
+        saloon.stake(pid, staker, 1 ether);
+
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(pid, 1 ether);
+        assert(scheduled == true);
+
+        // Can still unstake and collect premium even if bounty is wound down
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(pid, 1 ether, true);
+        (uint256 stakeAfter,) = saloon.viewUserInfo(pid, staker);
+        assertEq(stakeAfter, 0);
     }
 }

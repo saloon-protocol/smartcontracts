@@ -443,7 +443,7 @@ contract Saloon is
         if (!_shouldHarvest) {
             user.unclaimed += newPending;
             // pool.premiumAvailable -= newPending;
-            user.lastRewardTime = block.timestamp;
+            user.lastRewardTime = pool.freezeTime != 0 ? pool.freezeTime : block.timestamp;
             return;
         }
 
@@ -454,7 +454,7 @@ contract Saloon is
             // if billPremium is not called we need to calcualte commission here
         if (totalPending > 0) {
             user.unclaimed = 0;
-            user.lastRewardTime = block.timestamp;
+            user.lastRewardTime = pool.freezeTime != 0 ? pool.freezeTime : block.timestamp;
             pool.premiumBalance -= totalPending;
             pool.premiumAvailable -= actualPending;
             pool.token.safeTransfer(_user, actualPending);
