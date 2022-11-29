@@ -16,7 +16,8 @@ import "./ISaloon.sol";
 - TEST event emissions
 - DONE Saloon collect all profits
 - TEST Wind down (kill) bounties
-- TEST Ownership transfer
+- DONE Withdrawals with _shouldHarvest == false
+- DONE Ownership transfer
 - DONE Solve stack too deep
 - DONE Add back Saloon fees and commissions
 - DONE Withdraw saloon fee and commission to somewhere else
@@ -538,13 +539,13 @@ contract Saloon is
                 pool.totalStaked = 0;
                 delete pool.stakerList;
             } else {
-                uint256 percentage = ((_amount * bountyFee) / totalStaked);
+                uint256 percentage = ((_amount * PRECISION) / totalStaked);
                 uint256 length = pool.stakerList.length;
                 for (uint256 i; i < length; ) {
                     address _user = pool.stakerList[i];
                     UserInfo storage user = userInfo[_pid][_user];
                     _updateUserReward(_pid, _user, false);
-                    uint256 userPay = (user.amount * percentage) / bountyFee;
+                    uint256 userPay = (user.amount * percentage) / PRECISION;
                     user.amount -= userPay;
                     pool.totalStaked -= userPay;
                     unchecked {
@@ -677,11 +678,11 @@ contract Saloon is
     function viewUserInfo(uint256 _pid, address _user)
         external
         view
-        returns (uint256 amount, uint256 newPending)
+        returns (uint256 amount, uint256 actualPending)
     {
         UserInfo storage user = userInfo[_pid][_user];
         amount = user.amount;
-        (, newPending,) = pendingToken(_pid, _user);
+        (, actualPending,) = pendingToken(_pid, _user);
     }
 
     function viewUserUnclaimed(uint256 _pid, address _user)
