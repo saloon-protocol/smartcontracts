@@ -84,10 +84,7 @@ contract Saloon is
         uint256 indexed newAmount
     );
 
-    event PremiumBilled(
-        uint256 indexed pid,
-        uint256 indexed amount
-    );
+    event PremiumBilled(uint256 indexed pid, uint256 indexed amount);
 
     event BountyPaid(
         uint256 indexed time,
@@ -111,6 +108,7 @@ contract Saloon is
         if (!pool.isActive) revert("pool not active");
         _;
     }
+
     function initialize() public initializer {
         __Ownable_init();
     }
@@ -122,19 +120,25 @@ contract Saloon is
         onlyOwner
     {}
 
-    function renounceOwnership() public view override onlyOwner {
-        revert("not allowed");
-    }
+    // function renounceOwnership() public view override onlyOwner {
+    //     revert("not allowed");
+    // }
 
-    function transferOwnership(address newOwner) public override onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
-        pendingOwner = newOwner;
-    }
+    // function transferOwnership(address newOwner) public override onlyOwner {
+    //     require(
+    //         newOwner != address(0),
+    //         "Ownable: new owner is the zero address"
+    //     );
+    //     pendingOwner = newOwner;
+    // }
 
-    function acceptOwnershipTransfer() external {
-        require(pendingOwner == msg.sender, "only pending owner can accept transfer");
-        _owner = pendingOwner;
-    }
+    // function acceptOwnershipTransfer() external {
+    //     require(
+    //         pendingOwner == msg.sender,
+    //         "only pending owner can accept transfer"
+    //     );
+    //     _owner = pendingOwner;
+    // }
 
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
@@ -145,7 +149,10 @@ contract Saloon is
         onlyOwner
         returns (bool)
     {
-        require(tokenWhitelist[_token] == !_whitelisted, "whitelist already set");
+        require(
+            tokenWhitelist[_token] == !_whitelisted,
+            "whitelist already set"
+        );
         tokenWhitelist[_token] = _whitelisted;
         emit tokenWhitelistUpdated(_token, _whitelisted);
 
@@ -174,12 +181,14 @@ contract Saloon is
     ) external onlyOwner returns (uint256) {
         require(tokenWhitelist[_token], "token not whitelisted");
         // uint8 _tokenDecimals = IERC20(_token).decimals();
+        (,bytes memory _decimals) = _token.staticcall(abi.encodeWithSignature("decimals()"));
+        uint8 decimals = abi.decode(_decimals, (uint8));
 
         PoolInfo memory newBounty;
         newBounty.token = IERC20(_token);
 
         // PLEASE FIX THIS HARDODE
-        newBounty.tokenDecimals = 18;
+        newBounty.tokenDecimals = decimals;
         // PRETTY PLEASE
 
         newBounty.projectWallet = _projectWallet;
@@ -202,7 +211,10 @@ contract Saloon is
 
     function windDownBounty(uint256 _pid) external returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
-        require(msg.sender == pool.projectWallet || msg.sender == _owner, "Not authorized");
+        // require(
+        //     msg.sender == pool.projectWallet || msg.sender == _owner,
+        //     "Not authorized"
+        // );
         pool.isActive = false;
         pool.freezeTime = block.timestamp;
         return true;
@@ -324,13 +336,12 @@ contract Saloon is
 
         uint256 totalStaked = pool.totalStaked;
         uint256 pendingReward;
-        uint256 endTime = pool.freezeTime != 0 ? pool.freezeTime : block.timestamp;
+        uint256 endTime = pool.freezeTime != 0
+            ? pool.freezeTime
+            : block.timestamp;
         if (endTime > user.lastRewardTime && totalStaked != 0) {
             // multiplier = number of seconds
-            uint256 multiplier = getMultiplier(
-                user.lastRewardTime,
-                endTime
-            );
+            uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
             uint256 tokenReward = (((user.amount * pool.apy) / BPS) *
                 multiplier) / YEAR;
 
@@ -502,7 +513,8 @@ contract Saloon is
         // This prevents anyone calling this 1000 times and draining the project wallet
 
         uint256 billAmount = pool.requiredPremiumBalancePerPeriod -
-            pool.premiumBalance + _pending; // NOTE bill premium now doesnt bill includiing saloon commission...
+            pool.premiumBalance +
+            _pending; // NOTE bill premium now doesnt bill includiing saloon commission...
 
         IERC20(pool.token).safeTransferFrom(
             pool.projectWallet,
@@ -635,7 +647,7 @@ contract Saloon is
         external
         onlyOwner
         returns (bool)
-    {   
+    {
         uint256 activeTokenLength = activeTokens.length;
         for (uint256 i; i < activeTokenLength; ++i) {
             address _token = activeTokens[i];
@@ -675,7 +687,11 @@ contract Saloon is
         // note does totalStaked/project deposit take into account saloon fee?
     }
 
-    function viewStake(uint256 _pid, address _user) external view returns (uint256) {
+    function viewStake(uint256 _pid, address _user)
+        external
+        view
+        returns (uint256)
+    {
         UserInfo storage user = userInfo[_pid][_user];
         return user.amount;
     }

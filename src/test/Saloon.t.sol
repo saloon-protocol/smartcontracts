@@ -78,7 +78,7 @@ contract SaloonTest is DSTest, Script {
     function testUpdateTokenWhitelist() external {
         saloon.updateTokenWhitelist(address(usdc), false);
         saloon.updateTokenWhitelist(address(usdc), true);
-    } 
+    }
 
     // ============================
     // Test addNewBountyPool
