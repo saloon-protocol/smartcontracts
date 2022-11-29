@@ -186,10 +186,10 @@ contract Saloon is
 
     function windDownBounty(uint256 _pid) external returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
-        // require(
-        //     msg.sender == pool.projectWallet || msg.sender == _owner,
-        //     "Not authorized"
-        // );
+        require(
+            msg.sender == pool.projectWallet || msg.sender == _owner,
+            "Not authorized"
+        );
         pool.isActive = false;
         pool.freezeTime = block.timestamp;
         return true;
