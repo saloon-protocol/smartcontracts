@@ -493,7 +493,7 @@ contract Saloon is
         pool.premiumBalance += billAmount;
         // update saloon claimable fee
         saloonPremiumProfit[address(pool.token)] += saloonPremiumCommission;
-        
+
         uint256 billAmountMinusCommission = billAmount - saloonPremiumCommission;
         // available to make premium payment ->
         pool.premiumAvailable += billAmountMinusCommission;
@@ -542,7 +542,7 @@ contract Saloon is
                 }
             }
             // if stakers alone cannot cover payout
-        } else if (_amount > totalStaked && _amount < pool.projectDeposit) {
+        } else if (_amount > totalStaked && _amount < totalStaked + pool.projectDeposit) {
             // set all staker balances to zero
             uint256 length = pool.stakerList.length;
             for (uint256 i; i < length; ) {
