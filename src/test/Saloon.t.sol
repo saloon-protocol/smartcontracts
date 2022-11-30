@@ -60,6 +60,19 @@ contract SaloonTest is DSTest, Script {
     function testUpdate() external {
         Saloon NewSaloon = new Saloon();
         saloon.upgradeTo(address(NewSaloon));
+
+        vm.prank(staker);
+        vm.expectRevert("Ownable: caller is not the owner");
+        saloon.upgradeTo(address(NewSaloon));
+
+        // Test first step of ownership transfer and accept reverts for random caller
+        saloon.transferOwnership(newOwner);
+
+        // Test new owner accepts ownership and can deploy new bounty
+        vm.startPrank(newOwner);
+        saloon.acceptOwnershipTransfer();
+        saloon.upgradeTo(address(NewSaloon));
+        vm.stopPrank();
     }
 
     // ============================
