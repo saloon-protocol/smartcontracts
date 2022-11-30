@@ -55,7 +55,6 @@ contract Saloon is
         uint256 timelock;
         uint256 timeLimit;
         uint256 unstakeScheduledAmount;
-        bool unstakeExecuted;
     }
 
     // Info of each pool.
@@ -342,7 +341,6 @@ contract Saloon is
         require(_amount > 0);
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
-        // bool _shouldHarvest = _user == msg.sender ? true : false; note delete this line?
         uint256 balanceBefore = pool.totalStaked + pool.projectDeposit;
 
         _updateUserReward(_pid, _user, true);
@@ -372,7 +370,6 @@ contract Saloon is
         user.timelock = block.timestamp + PERIOD;
         user.timeLimit = block.timestamp + PERIOD + 3 days;
         user.unstakeScheduledAmount = _amount;
-        user.unstakeExecuted = false;
 
         emit WithdrawalOrUnstakeScheduled(_pid, _amount);
         return true;
@@ -390,12 +387,11 @@ contract Saloon is
         require(
             user.timelock < block.timestamp &&
                 user.timeLimit > block.timestamp &&
-                user.unstakeExecuted == false &&
                 user.unstakeScheduledAmount >= _amount &&
                 user.timelock != 0,
             "Timelock not set or not completed in time"
         );
-        user.unstakeExecuted = true;
+        user.timelock = 0;
 
         uint256 balanceBefore = pool.totalStaked + pool.projectDeposit;
 
@@ -427,16 +423,6 @@ contract Saloon is
         return true;
     }
 
-    // // Withdraw without caring about rewards. EMERGENCY ONLY.
-    // function emergencyWithdraw(uint256 _pid) external nonReentrant onlyOwner {
-    //     PoolInfo storage pool = poolInfo[_pid];
-    //     UserInfo storage user = userInfo[_pid][msg.sender];
-    //     pool.token.safeTransfer(address(msg.sender), user.amount);
-    //     emit EmergencyWithdraw(msg.sender, _pid, user.amount);
-    //     user.amount = 0;
-    //     user.lastTokenPerShare = 0;
-    // }
-    // Update the rewards of caller, and harvests if needed
     function _updateUserReward(
         uint256 _pid,
         address _user,
@@ -456,7 +442,6 @@ contract Saloon is
         ) = pendingToken(_pid, _user);
         if (!_shouldHarvest) {
             user.unclaimed += newPending;
-            // pool.premiumAvailable -= newPending;
             user.lastRewardTime = pool.freezeTime != 0
                 ? pool.freezeTime
                 : block.timestamp;
@@ -526,6 +511,7 @@ contract Saloon is
         PoolInfo storage pool = poolInfo[_pid];
         uint256 totalStaked = pool.totalStaked;
         uint256 poolTotal = totalStaked + pool.projectDeposit;
+        uint256 balanceBefore = poolTotal;
 
         // if stakers can cover payout
         if (_amount <= totalStaked) {
@@ -603,8 +589,10 @@ contract Saloon is
         saloonBountyProfit[address(pool.token)] += saloonCommission;
         // transfer payout to hunter
         pool.token.safeTransfer(_hunter, hunterPayout);
+        uint256 balanceAfter = pool.totalStaked + pool.projectDeposit;
 
         emit BountyPaid(block.timestamp, _hunter, address(pool.token), _amount);
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
         return true;
     }
 
@@ -683,11 +671,18 @@ contract Saloon is
     function viewUserInfo(uint256 _pid, address _user)
         external
         view
-        returns (uint256 amount, uint256 actualPending)
+        returns (
+            uint256 amount,
+            uint256 actualPending,
+            uint256 unstakeScheduledAmount,
+            uint256 timelock
+        )
     {
         UserInfo storage user = userInfo[_pid][_user];
         amount = user.amount;
         (, actualPending, ) = pendingToken(_pid, _user);
+        unstakeScheduledAmount = user.unstakeScheduledAmount;
+        timelock = user.timelock;
     }
 
     function viewUserUnclaimed(uint256 _pid, address _user)
@@ -732,7 +727,9 @@ contract Saloon is
 
     function viewHackerPayout(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
-        return ((pool.totalStaked + pool.projectDeposit) * bountyFee) / BPS;
+        return
+            ((pool.totalStaked + pool.projectDeposit) * (BPS - bountyFee)) /
+            BPS;
     }
 
     function viewBountyInfo(uint256 _pid)
