@@ -27,7 +27,7 @@
   "methodIdentifiers": {
     "implementation()": "5c60da1b"
   },
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This is the interface that {BeaconProxy} expects of its beacon.\",\"kind\":\"dev\",\"methods\":{\"implementation()\":{\"details\":\"Must return an address that can be used as a delegate call target. {BeaconProxy} will check that this address is a contract.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol\":\"IBeacon\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":solmate/=lib/solmate/src/\"]},\"sources\":{\"lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol\":{\"keccak256\":\"0xd3effc3ce6d1c85e1aae2ba5c6f28434c2eef52e1fc48b15096a176dcfee5853\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://8203f1a5eebff83ed1c75be70af0d00acb5b1b1e54e0b8805097f8fb052e7780\",\"dweb:/ipfs/QmNzyWV5FxBGX1Djh2LJ89bpZMPfsQ2nck8DL8VaFf6UkJ\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This is the interface that {BeaconProxy} expects of its beacon.\",\"kind\":\"dev\",\"methods\":{\"implementation()\":{\"details\":\"Must return an address that can be used as a delegate call target. {BeaconProxy} will check that this address is a contract.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol\":\"IBeacon\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":solmate/=lib/solmate/src/\"]},\"sources\":{\"lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol\":{\"keccak256\":\"0xd50a3421ac379ccb1be435fa646d66a65c986b4924f0849839f08692f39dde61\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ada1e030c0231db8d143b44ce92b4d1158eedb087880cad6d8cc7bd7ebe7b354\",\"dweb:/ipfs/QmWZ2NHZweRpz1U9GF6R1h65ri76dnX7fNxLBeM2t5N5Ce\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
       "version": "0.8.17+commit.8df45f5f"
@@ -86,10 +86,10 @@
     },
     "sources": {
       "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol": {
-        "keccak256": "0xd3effc3ce6d1c85e1aae2ba5c6f28434c2eef52e1fc48b15096a176dcfee5853",
+        "keccak256": "0xd50a3421ac379ccb1be435fa646d66a65c986b4924f0849839f08692f39dde61",
         "urls": [
-          "bzz-raw://8203f1a5eebff83ed1c75be70af0d00acb5b1b1e54e0b8805097f8fb052e7780",
-          "dweb:/ipfs/QmNzyWV5FxBGX1Djh2LJ89bpZMPfsQ2nck8DL8VaFf6UkJ"
+          "bzz-raw://ada1e030c0231db8d143b44ce92b4d1158eedb087880cad6d8cc7bd7ebe7b354",
+          "dweb:/ipfs/QmWZ2NHZweRpz1U9GF6R1h65ri76dnX7fNxLBeM2t5N5Ce"
         ],
         "license": "MIT"
       }
@@ -105,12 +105,13 @@
       ]
     },
     "nodeType": "SourceUnit",
-    "src": "96:370:17",
+    "src": "93:357:17",
     "nodes": [
       {
         "id": 20748,
         "nodeType": "PragmaDirective",
-        "src": "96:23:17",
+        "src": "93:23:17",
+        "nodes": [],
         "literals": [
           "solidity",
           "^",
@@ -121,16 +122,17 @@
       {
         "id": 20756,
         "nodeType": "ContractDefinition",
-        "src": "206:258:17",
+        "src": "198:251:17",
         "nodes": [
           {
             "id": 20755,
             "nodeType": "FunctionDefinition",
-            "src": "403:58:17",
+            "src": "389:58:17",
+            "nodes": [],
             "documentation": {
               "id": 20750,
               "nodeType": "StructuredDocumentation",
-              "src": "231:166:17",
+              "src": "222:162:17",
               "text": " @dev Must return an address that can be used as a delegate call target.\n {BeaconProxy} will check that this address is a contract."
             },
             "functionSelector": "5c60da1b",
@@ -138,12 +140,12 @@
             "kind": "function",
             "modifiers": [],
             "name": "implementation",
-            "nameLocation": "412:14:17",
+            "nameLocation": "398:14:17",
             "parameters": {
               "id": 20751,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "426:2:17"
+              "src": "412:2:17"
             },
             "returnParameters": {
               "id": 20754,
@@ -157,7 +159,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 20755,
-                  "src": "452:7:17",
+                  "src": "438:7:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -168,7 +170,7 @@
                     "id": 20752,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "452:7:17",
+                    "src": "438:7:17",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -178,7 +180,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "451:9:17"
+              "src": "437:9:17"
             },
             "scope": 20756,
             "stateMutability": "view",
@@ -194,7 +196,7 @@
         "documentation": {
           "id": 20749,
           "nodeType": "StructuredDocumentation",
-          "src": "123:81:17",
+          "src": "118:79:17",
           "text": " @dev This is the interface that {BeaconProxy} expects of its beacon."
         },
         "fullyImplemented": false,
@@ -202,7 +204,7 @@
           20756
         ],
         "name": "IBeacon",
-        "nameLocation": "216:7:17",
+        "nameLocation": "208:7:17",
         "scope": 20757,
         "usedErrors": []
       }
