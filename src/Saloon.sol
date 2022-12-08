@@ -205,7 +205,7 @@ contract Saloon is
         uint256 _deposit
     ) external {
         PoolInfo storage pool = poolInfo[_pid];
-        require(!pool.isActive, "Pool already initialized");
+        require(!pool.isActive && pool.poolCap == 0, "Pool already initialized");
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
             _poolCap >= 100 * (10**pool.tokenDecimals) &&
