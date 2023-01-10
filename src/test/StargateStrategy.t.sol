@@ -33,12 +33,20 @@ contract StargateStrategyTest is DSTest, Script {
     // ============================
     // Test Implementation Update
     // ============================
-    function testAddLiquidity() external {
+    function testDeposit() external {
         uint256 USDCBalance = USDC.balanceOf(deployer);
         USDC.approve(address(stargateStrategy), USDCBalance);
-        uint256 lpBalance = stargateStrategy.despositToStrategy(1, USDCBalance);
-        int256 balanceDiff = int256(USDCBalance) - int256(lpBalance);
+        uint256 lpDepositBalance = stargateStrategy.despositToStrategy(
+            1,
+            USDCBalance
+        );
+        int256 balanceDiff = int256(USDCBalance) - int256(lpDepositBalance);
         // LP tokens aren't minted 1:1, so only checking that the returned LP is close to input.
         assert(balanceDiff < int256(USDCBalance) / 100);
+
+        vm.warp(block.timestamp + 7 days);
+        stargateStrategy.despositToStrategy(1, 0);
+        uint256 STGBalance = stargateStrategy.pendingRewardBalance();
+        assertEq(STGBalance, 5);
     }
 }

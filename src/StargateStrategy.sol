@@ -18,11 +18,15 @@ contract StargateStrategy is OwnableUpgradeable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
+    uint256 lpDepositBalance;
+
     IStargateRouter public stargateRouter;
     IStargateLPStaking public stargateLPStaking;
     IStargateLPToken public stargateLPToken;
     IERC20 public constant USDC =
         IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+    IERC20 public constant STG =
+        IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
 
     constructor() {
         stargateRouter = IStargateRouter(
@@ -46,9 +50,22 @@ contract StargateStrategy is OwnableUpgradeable {
     {
         USDC.safeTransferFrom(msg.sender, address(this), _amount);
         USDC.approve(address(stargateRouter), _amount);
+
         stargateRouter.addLiquidity(_poolId, _amount, address(this));
         uint256 lpBalance = stargateLPToken.balanceOf(address(this));
 
-        return lpBalance;
+        stargateLPToken.approve(address(stargateLPStaking), lpBalance);
+        stargateLPStaking.deposit(0, lpBalance); // PID 0 is S*USDC
+        lpDepositBalance += lpBalance;
+
+        return lpDepositBalance;
+    }
+
+    function rewardBalance() external view returns (uint256) {
+        return STG.balanceOf(address(this));
+    }
+
+    function pendingRewardBalance() external view returns (uint256) {
+        return stargateLPStaking.pendingStargate(0, address(this)); // PID 0 is S*USDC
     }
 }
