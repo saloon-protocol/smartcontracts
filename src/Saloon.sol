@@ -6,12 +6,13 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
-import "./ISaloon.sol";
+import "./interfaces/ISaloon.sol";
 
 /// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
 /// Ensure there is enough access control
 
 /* Implement:
+- TODO implement stargate strategy
 - DONE add token whitelisting
 - TEST event emissions
 - DONE Saloon collect all profits
@@ -28,7 +29,6 @@ import "./ISaloon.sol";
 - DONE - Billing premium when necessary.
 - DONE (all deployments go through BPM) - add token whitelist and whitelist check in `addNewBounty`
 - DONE All necessary view functions
-
 */
 
 contract Saloon is
@@ -205,7 +205,10 @@ contract Saloon is
         uint256 _deposit
     ) external {
         PoolInfo storage pool = poolInfo[_pid];
-        require(!pool.isActive && pool.poolCap == 0, "Pool already initialized");
+        require(
+            !pool.isActive && pool.poolCap == 0,
+            "Pool already initialized"
+        );
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
             _poolCap >= 100 * (10**pool.tokenDecimals) &&
@@ -251,6 +254,11 @@ contract Saloon is
 
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
+
+    // function depositToStrategy() external {
+    //     PoolInfo storage pool = poolInfo[_pid];
+    //     require(msg.sender == pool.projectWallet, "Not authorized");
+    // }
 
     function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
         external

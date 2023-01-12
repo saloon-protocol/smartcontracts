@@ -11,6 +11,7 @@ contract StargateStrategyTest is DSTest, Script {
 
     ERC20 USDC = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     address USDCHolder = address(0x451AbAc74B2Ef32790C20817785Dd634f9217D5a);
+    address rando = address(0x98);
 
     function setUp() external {
         string memory rpc = vm.envString("ETH_RPC_URL");
@@ -27,16 +28,51 @@ contract StargateStrategyTest is DSTest, Script {
         USDC.transfer(address(this), 100 * (10**6));
     }
 
+    function testAccessControl() external {
+        vm.startPrank(USDCHolder);
+        vm.expectRevert("Not authorized");
+        stargateStrategy.depositToStrategy(1);
+        vm.expectRevert("Not authorized");
+        stargateStrategy.withdrawFromStrategy(1, 0);
+        vm.expectRevert("Not authorized");
+        stargateStrategy.compound();
+        vm.expectRevert("Not authorized");
+        stargateStrategy.withdrawYield();
+        vm.expectRevert("Not authorized");
+        stargateStrategy.updateStargateAddresses(
+            USDCHolder,
+            USDCHolder,
+            USDCHolder
+        );
+        vm.expectRevert("Not authorized");
+        stargateStrategy.updateUniswapRouterAddress(USDCHolder);
+    }
+
+    function testOwnershipTransfer() external {
+        vm.prank(USDCHolder);
+        vm.expectRevert("Not pending owner");
+        stargateStrategy.acceptOwnershipTransfer();
+
+        stargateStrategy.setPendingOwner(rando);
+
+        vm.startPrank(USDCHolder);
+        vm.expectRevert("Not pending owner");
+        stargateStrategy.acceptOwnershipTransfer();
+        vm.stopPrank();
+
+        vm.startPrank(rando);
+        stargateStrategy.acceptOwnershipTransfer();
+        address owner = stargateStrategy.owner();
+        assertEq(owner, rando);
+    }
+
     // ============================
     // Test Implementation Update
     // ============================
     function testDeposit() external {
         uint256 USDCBalance = USDC.balanceOf(address(this));
-        USDC.approve(address(stargateStrategy), USDCBalance);
-        uint256 lpDepositBalance = stargateStrategy.despositToStrategy(
-            1,
-            USDCBalance
-        );
+        USDC.transfer(address(stargateStrategy), USDCBalance);
+        uint256 lpDepositBalance = stargateStrategy.depositToStrategy(1);
         int256 balanceDiff = int256(USDCBalance) - int256(lpDepositBalance);
         // LP tokens aren't minted 1:1, so only checking that the returned LP is close to input.
         assert(balanceDiff < int256(USDCBalance) / 100);
@@ -57,8 +93,8 @@ contract StargateStrategyTest is DSTest, Script {
 
     function testWithdraw() external {
         uint256 USDCBalance = USDC.balanceOf(address(this));
-        USDC.approve(address(stargateStrategy), USDCBalance);
-        uint256 lpAdded = stargateStrategy.despositToStrategy(1, USDCBalance);
+        USDC.transfer(address(stargateStrategy), USDCBalance);
+        uint256 lpAdded = stargateStrategy.depositToStrategy(1);
 
         vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
         uint256 amountWithdrawn = stargateStrategy.withdrawFromStrategy(
@@ -72,8 +108,8 @@ contract StargateStrategyTest is DSTest, Script {
 
     function testCompound() external {
         uint256 USDCBalance = USDC.balanceOf(address(this));
-        USDC.approve(address(stargateStrategy), USDCBalance);
-        stargateStrategy.despositToStrategy(1, USDCBalance);
+        USDC.transfer(address(stargateStrategy), USDCBalance);
+        stargateStrategy.depositToStrategy(1);
 
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
@@ -88,8 +124,8 @@ contract StargateStrategyTest is DSTest, Script {
 
     function testDepositCompoundWithdraw() external {
         uint256 USDCBalanceInitial = USDC.balanceOf(address(this));
-        USDC.approve(address(stargateStrategy), USDCBalanceInitial);
-        stargateStrategy.despositToStrategy(1, USDCBalanceInitial);
+        USDC.transfer(address(stargateStrategy), USDCBalanceInitial);
+        stargateStrategy.depositToStrategy(1);
 
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
@@ -101,5 +137,17 @@ contract StargateStrategyTest is DSTest, Script {
         stargateStrategy.withdrawFromStrategy(1, lpDepositBalanceIntermediate);
         uint256 USDCBalanceFinal = USDC.balanceOf(address(this));
         assert(USDCBalanceFinal > USDCBalanceInitial);
+    }
+
+    function testWithdrawYield() external {
+        uint256 USDCBalanceInitial = USDC.balanceOf(address(this));
+        USDC.transfer(address(stargateStrategy), USDCBalanceInitial);
+        stargateStrategy.depositToStrategy(1);
+
+        vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
+        stargateStrategy.withdrawYield();
+
+        uint256 USDCBalanceFinal = USDC.balanceOf(address(this));
+        assert(USDCBalanceFinal > 0);
     }
 }

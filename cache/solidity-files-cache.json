@@ -1373,9 +1373,9 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
-        "src/ISaloon.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
+        "src/interfaces/ISaloon.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.10",
@@ -1446,9 +1446,9 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
-        "src/ISaloon.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
+        "src/interfaces/ISaloon.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.10",
@@ -1497,209 +1497,9 @@
         }
       }
     },
-    "src/ISaloon.sol": {
-      "lastModificationDate": 1669910055430,
-      "contentHash": "0a945f0ac85edced8fb29756218f75ee",
-      "sourceName": "src/ISaloon.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ISaloon": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "ISaloon.sol/ISaloon.json"
-        }
-      }
-    },
-    "src/IStargateLPStaking.sol": {
-      "lastModificationDate": 1673459363477,
-      "contentHash": "de07266beff7c138e3dc63aeb364e399",
-      "sourceName": "src/IStargateLPStaking.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.17",
-      "artifacts": {
-        "IStargateLPStaking": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateLPStaking.sol/IStargateLPStaking.json"
-        }
-      }
-    },
-    "src/IStargateLPToken.sol": {
-      "lastModificationDate": 1673384095440,
-      "contentHash": "2e5ea582a41de839ab60e64a5c6c5b11",
-      "sourceName": "src/IStargateLPToken.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.17",
-      "artifacts": {
-        "IStargateLPToken": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateLPToken.sol/IStargateLPToken.json"
-        }
-      }
-    },
-    "src/IStargateRouter.sol": {
-      "lastModificationDate": 1673381158753,
-      "contentHash": "d8f6222b835db16d396be89319e0fc31",
-      "sourceName": "src/IStargateRouter.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.17",
-      "artifacts": {
-        "IStargateRouter": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateRouter.sol/IStargateRouter.json"
-        }
-      }
-    },
-    "src/IUniswapRouter.sol": {
-      "lastModificationDate": 1673479265445,
-      "contentHash": "76fb9de90d23baab251a5df434347956",
-      "sourceName": "src/IUniswapRouter.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": ">=0.7.5",
-      "artifacts": {
-        "IUniswapRouter": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapRouter.sol/IUniswapRouter.json"
-        },
-        "IUniswapV3SwapCallback": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapRouter.sol/IUniswapV3SwapCallback.json"
-        }
-      }
-    },
     "src/Saloon.sol": {
-      "lastModificationDate": 1669921202642,
-      "contentHash": "3c86a36b1126b42a4e1805a0a9568eec",
+      "lastModificationDate": 1673543518413,
+      "contentHash": "d2776099de78e3cf8f26850b87445041",
       "sourceName": "src/Saloon.sol",
       "solcConfig": {
         "settings": {
@@ -1743,7 +1543,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
-        "src/ISaloon.sol",
+        "src/interfaces/ISaloon.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.17",
@@ -1804,8 +1604,8 @@
       }
     },
     "src/StargateStrategy.sol": {
-      "lastModificationDate": 1673482883439,
-      "contentHash": "24f4a738201d2d0cf365e7f8c28e3854",
+      "lastModificationDate": 1673543482162,
+      "contentHash": "b04e6ff7bc6fbc105963f1204983b218",
       "sourceName": "src/StargateStrategy.sol",
       "solcConfig": {
         "settings": {
@@ -1849,16 +1649,216 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
-        "src/IStargateLPStaking.sol",
-        "src/IStargateLPToken.sol",
-        "src/IStargateRouter.sol",
-        "src/IUniswapRouter.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IUniswapRouter.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
         "StargateStrategy": {
           "0.8.17+commit.8df45f5f.Linux.gcc": "StargateStrategy.sol/StargateStrategy.json"
+        }
+      }
+    },
+    "src/interfaces/ISaloon.sol": {
+      "lastModificationDate": 1669910055430,
+      "contentHash": "0a945f0ac85edced8fb29756218f75ee",
+      "sourceName": "src/interfaces/ISaloon.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ISaloon": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "ISaloon.sol/ISaloon.json"
+        }
+      }
+    },
+    "src/interfaces/IStargateLPStaking.sol": {
+      "lastModificationDate": 1673459363477,
+      "contentHash": "de07266beff7c138e3dc63aeb364e399",
+      "sourceName": "src/interfaces/IStargateLPStaking.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "IStargateLPStaking": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateLPStaking.sol/IStargateLPStaking.json"
+        }
+      }
+    },
+    "src/interfaces/IStargateLPToken.sol": {
+      "lastModificationDate": 1673384095440,
+      "contentHash": "2e5ea582a41de839ab60e64a5c6c5b11",
+      "sourceName": "src/interfaces/IStargateLPToken.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "IStargateLPToken": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateLPToken.sol/IStargateLPToken.json"
+        }
+      }
+    },
+    "src/interfaces/IStargateRouter.sol": {
+      "lastModificationDate": 1673381158753,
+      "contentHash": "d8f6222b835db16d396be89319e0fc31",
+      "sourceName": "src/interfaces/IStargateRouter.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "IStargateRouter": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateRouter.sol/IStargateRouter.json"
+        }
+      }
+    },
+    "src/interfaces/IUniswapRouter.sol": {
+      "lastModificationDate": 1673479265445,
+      "contentHash": "76fb9de90d23baab251a5df434347956",
+      "sourceName": "src/interfaces/IUniswapRouter.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.7.5",
+      "artifacts": {
+        "IUniswapRouter": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapRouter.sol/IUniswapRouter.json"
+        },
+        "IUniswapV3SwapCallback": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapRouter.sol/IUniswapV3SwapCallback.json"
         }
       }
     },
@@ -2049,9 +2049,9 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
-        "src/ISaloon.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
+        "src/interfaces/ISaloon.sol",
         "src/lib/ERC20.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
@@ -2063,8 +2063,8 @@
       }
     },
     "src/test/StargateStrategy.t.sol": {
-      "lastModificationDate": 1673482832015,
-      "contentHash": "e159acd532824d1216f18486814c4f81",
+      "lastModificationDate": 1673543257401,
+      "contentHash": "6c355b6a23bee8556b33aebed8698731",
       "sourceName": "src/test/StargateStrategy.t.sol",
       "solcConfig": {
         "settings": {
@@ -2116,11 +2116,11 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
-        "src/IStargateLPStaking.sol",
-        "src/IStargateLPToken.sol",
-        "src/IStargateRouter.sol",
-        "src/IUniswapRouter.sol",
         "src/StargateStrategy.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IUniswapRouter.sol",
         "src/lib/ERC20.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],

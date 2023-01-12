@@ -6,19 +6,23 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
-import "./IStargateRouter.sol";
-import "./IStargateLPStaking.sol";
-import "./IStargateLPToken.sol";
-import "./IUniswapRouter.sol";
+import "./interfaces/IStargateRouter.sol";
+import "./interfaces/IStargateLPStaking.sol";
+import "./interfaces/IStargateLPToken.sol";
+import "./interfaces/IUniswapRouter.sol";
 
 /* Implement:
 - TODO add back ownable
 - TODO Slippage control
+- TODO remove unnecessary view functions
 */
 
-contract StargateStrategy is OwnableUpgradeable {
+contract StargateStrategy {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+
+    address public owner;
+    address public pendingOwner;
 
     uint256 public lpDepositBalance;
 
@@ -34,6 +38,11 @@ contract StargateStrategy is OwnableUpgradeable {
 
     uint24 public constant poolFee = 3000;
 
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not authorized");
+        _;
+    }
+
     constructor() {
         stargateRouter = IStargateRouter(
             0x8731d54E9D02c286767d56ac03e8037C07e01e98
@@ -47,22 +56,49 @@ contract StargateStrategy is OwnableUpgradeable {
         uniswapRouter = IUniswapRouter(
             0xE592427A0AEce92De3Edee1F18E0157C05861564
         );
-        // __Ownable_init();
+        owner = msg.sender;
     }
 
-    function despositToStrategy(uint256 _poolId, uint256 _amount)
-        public
-        returns (
-            // onlyOwnerOrThis
-            uint256
-        )
-    {
-        if (msg.sender != address(this)) {
-            USDC.safeTransferFrom(msg.sender, address(this), _amount);
-        }
-        USDC.approve(address(stargateRouter), _amount);
+    function setPendingOwner(address _pendingOwner) external onlyOwner {
+        pendingOwner = _pendingOwner;
+    }
 
-        stargateRouter.addLiquidity(_poolId, _amount, address(this));
+    function acceptOwnershipTransfer() external {
+        require(msg.sender == pendingOwner, "Not pending owner");
+        owner = pendingOwner;
+        pendingOwner = address(0);
+    }
+
+    function updateStargateAddresses(
+        address _stargateRouter,
+        address _stargateLPStaking,
+        address _stargateLPToken
+    ) external onlyOwner {
+        if (_stargateRouter != address(0))
+            stargateRouter = IStargateRouter(_stargateRouter);
+        if (_stargateLPStaking != address(0))
+            stargateLPStaking = IStargateLPStaking(_stargateLPStaking);
+        if (_stargateLPToken != address(0))
+            stargateLPToken = IStargateLPToken(_stargateLPToken);
+    }
+
+    function updateUniswapRouterAddress(address _uniswapRouter)
+        external
+        onlyOwner
+    {
+        if (_uniswapRouter != address(0))
+            uniswapRouter = IUniswapRouter(_uniswapRouter);
+    }
+
+    function depositToStrategy(uint256 _poolId)
+        public
+        onlyOwner
+        returns (uint256)
+    {
+        uint256 USDCBalance = USDC.balanceOf(address(this));
+        USDC.approve(address(stargateRouter), USDCBalance);
+
+        stargateRouter.addLiquidity(_poolId, USDCBalance, address(this));
         uint256 lpBalanceAdded = stargateLPToken.balanceOf(address(this));
 
         stargateLPToken.approve(address(stargateLPStaking), lpBalanceAdded);
@@ -72,9 +108,9 @@ contract StargateStrategy is OwnableUpgradeable {
         return lpBalanceAdded;
     }
 
-    // Needs onlyOwner
     function withdrawFromStrategy(uint256 _poolId, uint256 _amount)
         external
+        onlyOwner
         returns (uint256)
     {
         require(_amount <= lpDepositBalance, "Not enough lp");
@@ -86,24 +122,29 @@ contract StargateStrategy is OwnableUpgradeable {
             lpBalanceAvailable,
             address(this)
         );
-        convertReward();
+        convertReward(address(this));
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.safeTransfer(msg.sender, USDCBalance);
 
         return USDCBalance;
     }
 
-    // Needs onlyOwner
-    function compound() external returns (uint256) {
+    function compound() external onlyOwner returns (uint256) {
         stargateLPStaking.deposit(0, 0);
-        uint256 returnedAmount = convertReward();
-
-        uint256 lpAdded = this.despositToStrategy(1, returnedAmount);
+        convertReward(address(this));
+        uint256 lpAdded = depositToStrategy(1);
 
         return lpAdded;
     }
 
-    function convertReward() public returns (uint256) {
+    function withdrawYield() external onlyOwner returns (uint256) {
+        stargateLPStaking.deposit(0, 0);
+        uint256 returnedAmount = convertReward(msg.sender);
+
+        return returnedAmount;
+    }
+
+    function convertReward(address receiver) internal returns (uint256) {
         uint256 availableSTG = rewardBalance();
         if (availableSTG == 0) return 0;
         STG.approve(address(uniswapRouter), availableSTG);
@@ -117,7 +158,7 @@ contract StargateStrategy is OwnableUpgradeable {
                     poolFee,
                     address(USDC)
                 ),
-                recipient: address(this),
+                recipient: receiver,
                 deadline: block.timestamp,
                 amountIn: availableSTG,
                 amountOutMinimum: 0
