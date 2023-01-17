@@ -1313,8 +1313,8 @@
       }
     },
     "script/Deploy.s.sol": {
-      "lastModificationDate": 1669910055419,
-      "contentHash": "3e13c4026e4495241642ef728ddd604b",
+      "lastModificationDate": 1673988982881,
+      "contentHash": "22c9e1036840cdfc3903d8c8bfdc2d24",
       "sourceName": "script/Deploy.s.sol",
       "solcConfig": {
         "settings": {
@@ -1375,7 +1375,14 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapRouter.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.10",
@@ -1448,7 +1455,14 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapRouter.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.10",
@@ -1498,8 +1512,8 @@
       }
     },
     "src/Saloon.sol": {
-      "lastModificationDate": 1673543518413,
-      "contentHash": "d2776099de78e3cf8f26850b87445041",
+      "lastModificationDate": 1673988914334,
+      "contentHash": "2923deaf0f79a2130304372f8fb4ceb6",
       "sourceName": "src/Saloon.sol",
       "solcConfig": {
         "settings": {
@@ -1543,7 +1557,14 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapRouter.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
       "versionRequirement": "^0.8.17",
@@ -1604,8 +1625,8 @@
       }
     },
     "src/StargateStrategy.sol": {
-      "lastModificationDate": 1673543482162,
-      "contentHash": "b04e6ff7bc6fbc105963f1204983b218",
+      "lastModificationDate": 1673548567989,
+      "contentHash": "398675a29f33ade1789ed974cca7b3a4",
       "sourceName": "src/StargateStrategy.sol",
       "solcConfig": {
         "settings": {
@@ -1635,30 +1656,72 @@
         }
       },
       "imports": [
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
         "lib/openzeppelin-contracts/contracts/utils/Address.sol",
         "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
-        "src/interfaces/IUniswapRouter.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapRouter.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
         "StargateStrategy": {
           "0.8.17+commit.8df45f5f.Linux.gcc": "StargateStrategy.sol/StargateStrategy.json"
+        }
+      }
+    },
+    "src/StrategyFactory.sol": {
+      "lastModificationDate": 1673988247595,
+      "contentHash": "b57383db37c19c7c543caef43b1f0cc9",
+      "sourceName": "src/StrategyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "src/StargateStrategy.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapRouter.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "StrategyFactory": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "StrategyFactory.sol/StrategyFactory.json"
         }
       }
     },
@@ -1817,6 +1880,45 @@
       "artifacts": {
         "IStargateRouter": {
           "0.8.17+commit.8df45f5f.Linux.gcc": "IStargateRouter.sol/IStargateRouter.json"
+        }
+      }
+    },
+    "src/interfaces/IStrategy.sol": {
+      "lastModificationDate": 1673544678480,
+      "contentHash": "97b7e2d3aa8c789087e4c820bd053864",
+      "sourceName": "src/interfaces/IStrategy.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "IStrategy": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IStrategy.sol/IStrategy.json"
         }
       }
     },
@@ -1991,8 +2093,8 @@
       }
     },
     "src/test/Saloon.t.sol": {
-      "lastModificationDate": 1669910055488,
-      "contentHash": "a65ed8d0e72e387f74d93a54c15349e1",
+      "lastModificationDate": 1673989007648,
+      "contentHash": "3ec9ced6420df657043ddd0bf17ff028",
       "sourceName": "src/test/Saloon.t.sol",
       "solcConfig": {
         "settings": {
@@ -2051,7 +2153,14 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapRouter.sol",
         "src/lib/ERC20.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
@@ -2063,7 +2172,7 @@
       }
     },
     "src/test/StargateStrategy.t.sol": {
-      "lastModificationDate": 1673543257401,
+      "lastModificationDate": 1673548595051,
       "contentHash": "6c355b6a23bee8556b33aebed8698731",
       "sourceName": "src/test/StargateStrategy.t.sol",
       "solcConfig": {
@@ -2100,7 +2209,6 @@
         "lib/forge-std/src/Vm.sol",
         "lib/forge-std/src/console.sol",
         "lib/forge-std/src/console2.sol",
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
@@ -2108,21 +2216,13 @@
         "lib/openzeppelin-contracts/contracts/utils/Address.sol",
         "lib/openzeppelin-contracts/contracts/utils/Context.sol",
         "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
-        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
         "src/StargateStrategy.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
         "src/interfaces/IUniswapRouter.sol",
-        "src/lib/ERC20.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/lib/ERC20.sol"
       ],
       "versionRequirement": "^0.8.0",
       "artifacts": {

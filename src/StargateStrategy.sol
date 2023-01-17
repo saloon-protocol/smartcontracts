@@ -3,9 +3,7 @@ pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
-import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "./lib/OwnableUpgradeable.sol";
+import "./interfaces/IStrategy.sol";
 import "./interfaces/IStargateRouter.sol";
 import "./interfaces/IStargateLPStaking.sol";
 import "./interfaces/IStargateLPToken.sol";
@@ -17,7 +15,7 @@ import "./interfaces/IUniswapRouter.sol";
 - TODO remove unnecessary view functions
 */
 
-contract StargateStrategy {
+contract StargateStrategy is IStrategy {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -98,7 +96,7 @@ contract StargateStrategy {
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.approve(address(stargateRouter), USDCBalance);
 
-        stargateRouter.addLiquidity(_poolId, USDCBalance, address(this));
+        stargateRouter.addLiquidity(1, USDCBalance, address(this)); // 1 = Harcode for USDC LP
         uint256 lpBalanceAdded = stargateLPToken.balanceOf(address(this));
 
         stargateLPToken.approve(address(stargateLPStaking), lpBalanceAdded);

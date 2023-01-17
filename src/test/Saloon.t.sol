@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../Saloon.sol";
 import "../SaloonProxy.sol";
+import "../StrategyFactory.sol";
 import "../lib/ERC20.sol";
 import "ds-test/test.sol";
 import "forge-std/Script.sol";
@@ -28,7 +29,7 @@ contract SaloonTest is DSTest, Script {
     uint256 pid;
 
     function setUp() external {
-        string memory mumbai = vm.envString("BSC_RPC_URL");
+        string memory mumbai = vm.envString("ETH_RPC_URL");
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         uint256 forkId = vm.createFork(mumbai);
         vm.selectFork(forkId);
@@ -36,7 +37,8 @@ contract SaloonTest is DSTest, Script {
         saloonImplementation = new Saloon();
         saloonProxy = new SaloonProxy(address(saloonImplementation), data);
         saloon = Saloon(address(saloonProxy));
-        saloon.initialize();
+        StrategyFactory factory = new StrategyFactory();
+        saloon.initialize(address(factory));
 
         usdc = new ERC20("USDC", "USDC");
         saloon.updateTokenWhitelist(address(usdc), true);
@@ -181,7 +183,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
     }
 
@@ -202,7 +204,7 @@ contract SaloonTest is DSTest, Script {
         usdc.approve(address(saloon), 1000 ether);
         uint256 stakeAmount = 10 * (1e18);
         saloon.stake(pid, staker, stakeAmount);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, stakeAmount);
 
         vm.warp(block.timestamp + 365 days);
@@ -225,7 +227,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
 
         //schedule unstake
@@ -246,7 +248,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
 
         //schedule unstake
@@ -256,12 +258,12 @@ contract SaloonTest is DSTest, Script {
         // unstake
         vm.warp(block.timestamp + 8 days);
         bool unstaked = saloon.unstake(pid, 1 ether, true);
-        (uint256 stakeAfter,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stakeAfter, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stakeAfter, 0);
 
         //test unstake fails before schedule window opens
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake2,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake2, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake2, 1 ether);
         bool scheduled2 = saloon.scheduleUnstake(pid, 1 ether);
         assert(scheduled2 == true);
@@ -270,7 +272,7 @@ contract SaloonTest is DSTest, Script {
         vm.warp(block.timestamp + 6 days);
         vm.expectRevert("Timelock not set or not completed in time");
         saloon.unstake(pid, 1 ether, true);
-        (uint256 stakeAfter2,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stakeAfter2, , , ) = saloon.viewUserInfo(pid, staker);
 
         //test unstake fails after schedule window closes
         bool scheduled3 = saloon.scheduleUnstake(pid, 1 ether);
@@ -294,7 +296,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 100 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 100 ether);
 
         vm.warp(block.timestamp + 6 days);
@@ -331,7 +333,7 @@ contract SaloonTest is DSTest, Script {
 
         // Unstake again but set _shouldHarvest to false. Stored pending in user.unclaimed.
         unstaked = saloon.unstake(pid, 100 ether, false);
-        (uint256 stakeAfter, uint256 pendingAfter,,) = saloon.viewUserInfo(
+        (uint256 stakeAfter, uint256 pendingAfter, , ) = saloon.viewUserInfo(
             pid,
             staker
         );
@@ -347,7 +349,7 @@ contract SaloonTest is DSTest, Script {
         // Staker can claim their premium now
         vm.startPrank(staker);
         saloon.claimPremium(pid);
-        (stakeAfter, pendingAfter,,) = saloon.viewUserInfo(pid, staker);
+        (stakeAfter, pendingAfter, , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stakeAfter, 0);
         assertEq(pendingAfter, 0);
         vm.stopPrank();
@@ -375,7 +377,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 10 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 10 ether);
 
         vm.warp(block.timestamp + 365 days);
@@ -395,7 +397,7 @@ contract SaloonTest is DSTest, Script {
 
         // test staking and claiming with pre-existing stake
         saloon.stake(pid, staker, 10 ether);
-        (uint256 stake2,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake2, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake2, 20 ether);
 
         vm.warp(block.timestamp + 182 days); // 6 months
@@ -426,7 +428,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
@@ -513,14 +515,14 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker2, 1 ether);
-        (uint256 stake2,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake2, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake2, 1 ether);
         vm.stopPrank();
 
@@ -543,8 +545,8 @@ contract SaloonTest is DSTest, Script {
         assertEq(bountyProfit, 100000000000000000); // 0.1 usdc
 
         // test stakers balance was reduced properly
-        (uint256 stakerAmount,,, ) = saloon.viewUserInfo(pid, staker);
-        (uint256 stakerAmount2,,, ) = saloon.viewUserInfo(pid, staker2);
+        (uint256 stakerAmount, , , ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stakerAmount2, , , ) = saloon.viewUserInfo(pid, staker2);
         assertEq(stakerAmount2, stakerAmount); // balances should be 0.5 usdc both
 
         // total staked should be 1 total now. total Pool value = 4 usdc
@@ -553,8 +555,8 @@ contract SaloonTest is DSTest, Script {
 
         saloon.payBounty(pid, hunter, 4 ether);
         // test stakers balance was reduced properly
-        (uint256 stakerAmountt,,, ) = saloon.viewUserInfo(pid, staker);
-        (uint256 stakerAmountt2,,, ) = saloon.viewUserInfo(pid, staker2);
+        (uint256 stakerAmountt, , , ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stakerAmountt2, , , ) = saloon.viewUserInfo(pid, staker2);
         assertEq(stakerAmountt2, stakerAmountt); // should be zero
 
         // test saloon bountyprofit
@@ -579,14 +581,14 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker2, 1 ether);
-        (uint256 stake2,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake2, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake2, 1 ether);
         vm.stopPrank();
 
@@ -620,14 +622,14 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker2, 1 ether);
-        (uint256 stake2,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake2, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake2, 1 ether);
         vm.stopPrank();
 
@@ -645,14 +647,14 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         dai.approve(address(saloon), 1000 ether);
         saloon.stake(pid2, staker, 1 ether);
-        (uint256 stake3,,, ) = saloon.viewUserInfo(pid2, staker);
+        (uint256 stake3, , , ) = saloon.viewUserInfo(pid2, staker);
         assertEq(stake3, 1 ether);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         dai.approve(address(saloon), 1000 ether);
         saloon.stake(pid2, staker2, 1 ether);
-        (uint256 stake4,,, ) = saloon.viewUserInfo(pid2, staker);
+        (uint256 stake4, , , ) = saloon.viewUserInfo(pid2, staker);
         assertEq(stake4, 1 ether);
         vm.stopPrank();
 
@@ -729,7 +731,7 @@ contract SaloonTest is DSTest, Script {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 ether);
         saloon.stake(pid, staker, 1 ether);
-        (uint256 stake,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stake, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stake, 1 ether);
         vm.stopPrank();
 
@@ -741,7 +743,7 @@ contract SaloonTest is DSTest, Script {
         // Even though 14 days has passed, user only receives pending up until the bounty was wound down
         vm.startPrank(staker);
         vm.warp(block.timestamp + 7 days);
-        (uint256 stake2, uint256 actualPending2,,) = saloon.viewUserInfo(
+        (uint256 stake2, uint256 actualPending2, , ) = saloon.viewUserInfo(
             pid,
             staker
         );
@@ -761,7 +763,14 @@ contract SaloonTest is DSTest, Script {
         // Can still unstake and collect premium even if bounty is wound down
         vm.warp(block.timestamp + 8 days);
         bool unstaked = saloon.unstake(pid, 1 ether, true);
-        (uint256 stakeAfter,,, ) = saloon.viewUserInfo(pid, staker);
+        (uint256 stakeAfter, , , ) = saloon.viewUserInfo(pid, staker);
         assertEq(stakeAfter, 0);
+    }
+
+    ///////////////////////// Strategy Integration //////////////////////////////
+
+    function testDeployStrategy() external {
+        address deployedStrategy = saloon.deployStrategyIfNeeded(0, "Stargate");
+        assert(deployedStrategy != address(0));
     }
 }

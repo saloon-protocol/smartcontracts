@@ -7,6 +7,8 @@ import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
 import "./interfaces/ISaloon.sol";
+import "./interfaces/IStrategy.sol";
+import "./StrategyFactory.sol";
 
 /// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
 /// Ensure there is enough access control
@@ -57,11 +59,19 @@ contract Saloon is
         uint256 unstakeScheduledAmount;
     }
 
+    StrategyFactory strategyFactory;
+
     // Info of each pool.
     PoolInfo[] public poolInfo;
 
     // Info of each user that stakes LP tokens.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
+
+    // Mapping of all strategies for pid
+    mapping(uint256 => mapping(bytes32 => address)) public pidStrategies;
+
+    // Mapping of active strategy for pid
+    mapping(uint256 => bytes32) public activeStrategy;
 
     // Mapping of whitelisted tokens
     mapping(address => bool) public tokenWhitelist;
@@ -108,8 +118,9 @@ contract Saloon is
         _;
     }
 
-    function initialize() public initializer {
+    function initialize(address _strategyFactory) public initializer {
         __Ownable_init();
+        strategyFactory = StrategyFactory(_strategyFactory);
     }
 
     function _authorizeUpgrade(address _newImplementation)
@@ -150,6 +161,34 @@ contract Saloon is
         }
 
         return true;
+    }
+
+    function updateStrategyFactoryAddress(address _strategyFactory)
+        external
+        onlyOwner
+    {
+        strategyFactory = StrategyFactory(_strategyFactory);
+    }
+
+    function deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
+        public
+        onlyOwner
+        returns (address)
+    {
+        address deployedStrategy;
+        bytes32 strategyHash = keccak256(abi.encode(_strategyName));
+        address pidStrategy = pidStrategies[_pid][strategyHash];
+        if (pidStrategy == address(0)) {
+            deployedStrategy = strategyFactory.deployStrategy(_strategyName);
+        }
+
+        if (deployedStrategy == address(0)) {
+            return;
+        } else {
+            pidStrategies[_pid][strategyHash] = deployedStrategy;
+        }
+
+        return deployedStrategy;
     }
 
     // Add a new bounty pool. Can only be called by the owner.
@@ -202,7 +241,8 @@ contract Saloon is
         uint256 _pid,
         uint256 _poolCap,
         uint16 _apy,
-        uint256 _deposit
+        uint256 _deposit,
+        string memory _strategyName
     ) external {
         PoolInfo storage pool = poolInfo[_pid];
         require(
@@ -237,6 +277,17 @@ contract Saloon is
         pool.premiumAvailable =
             requiredPremiumBalancePerPeriod -
             saloonCommission;
+
+        if (bytes(_strategyName).length > 0) {
+            address deployedStrategy = deployStrategyIfNeeded(
+                _pid,
+                _strategyName
+            );
+            if (deployedStrategy != address(0)) {
+                IStrategy strategy = IStrategy(deployedStrategy);
+                strategy.depositToStrategy(_pid);
+            }
+        }
     }
 
     function makeProjectDeposit(uint256 _pid, uint256 _deposit) external {
@@ -255,9 +306,22 @@ contract Saloon is
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
 
-    // function depositToStrategy() external {
+    // function depositToStrategy(
+    //     uint256 _pid,
+    //     string memory _strategy,
+    //     uint256 _amount
+    // ) external {
     //     PoolInfo storage pool = poolInfo[_pid];
     //     require(msg.sender == pool.projectWallet, "Not authorized");
+    //     require(pool.projectDeposit >= _amount, "Not enough deposit");
+
+    //     IStrategy strategy = IStrategy(
+    //         strategies[keccak256(abi.encode(_strategy))]
+    //     );
+
+    //     pool.projectDeposit -= _amount;
+    //     IERC20(pool.token).safeTransfer(address(this), _amount);
+    //     strategy.depositToStrategy(1); // USDC Pool
     // }
 
     function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
