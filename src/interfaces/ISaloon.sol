@@ -5,15 +5,15 @@ import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 interface ISaloon {
     // Info of each pool.
     struct PoolInfo {
-        IERC20 token; // Address of LP token contract.
+        address token; // Address of token contract.
         uint8 tokenDecimals;
         uint16 apy;
         address projectWallet;
         string projectName;
-        uint256 projectDeposit;
+        uint256 projectDepositHeld;
+        uint256 projectDepositInStrategy;
         uint256 poolCap;
         uint256 totalStaked;
-        uint256 requiredPremiumBalancePerPeriod;
         uint256 premiumBalance;
         uint256 premiumAvailable;
         TimelockInfo poolTimelock;

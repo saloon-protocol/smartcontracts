@@ -13,7 +13,7 @@ contract StrategyFactory {
 
         bytes32 strategyHash = keccak256(abi.encode(_strategyName));
         if (strategyHash == keccak256(abi.encode("Stargate"))) {
-            strategy = new StargateStrategy();
+            strategy = new StargateStrategy(msg.sender);
         } else {
             return address(0);
         }

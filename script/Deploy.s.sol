@@ -39,7 +39,13 @@ contract Deploy is Script {
             projectWallet,
             "Saloon"
         );
-        saloon.setAPYandPoolCapAndDeposit(pid, 10000 ether, 4700, 0 ether);
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            10000 ether,
+            4700,
+            0 ether,
+            "Stargate"
+        );
 
         vm.stopBroadcast();
     }

@@ -11,4 +11,6 @@ interface IStrategy {
     function compound() external returns (uint256);
 
     function withdrawYield() external returns (uint256);
+
+    function lpDepositBalance() external returns (uint256);
 }

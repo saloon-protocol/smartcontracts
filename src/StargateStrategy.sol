@@ -41,7 +41,7 @@ contract StargateStrategy is IStrategy {
         _;
     }
 
-    constructor() {
+    constructor(address _owner) {
         stargateRouter = IStargateRouter(
             0x8731d54E9D02c286767d56ac03e8037C07e01e98
         );
@@ -54,7 +54,7 @@ contract StargateStrategy is IStrategy {
         uniswapRouter = IUniswapRouter(
             0xE592427A0AEce92De3Edee1F18E0157C05861564
         );
-        owner = msg.sender;
+        owner = _owner;
     }
 
     function setPendingOwner(address _pendingOwner) external onlyOwner {
@@ -121,10 +121,10 @@ contract StargateStrategy is IStrategy {
             address(this)
         );
         convertReward(address(this));
-        uint256 USDCBalance = USDC.balanceOf(address(this));
-        USDC.safeTransfer(msg.sender, USDCBalance);
+        uint256 fundsToReturn = USDC.balanceOf(address(this));
+        USDC.safeTransfer(msg.sender, fundsToReturn);
 
-        return USDCBalance;
+        return fundsToReturn;
     }
 
     function compound() external onlyOwner returns (uint256) {

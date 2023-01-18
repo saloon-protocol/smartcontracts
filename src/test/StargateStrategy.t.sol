@@ -10,7 +10,7 @@ contract StargateStrategyTest is DSTest, Script {
     StargateStrategy stargateStrategy;
 
     ERC20 USDC = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-    address USDCHolder = address(0x451AbAc74B2Ef32790C20817785Dd634f9217D5a);
+    address USDCHolder = address(0x7713974908Be4BEd47172370115e8b1219F4A5f0);
     address rando = address(0x98);
 
     function setUp() external {
@@ -18,7 +18,7 @@ contract StargateStrategyTest is DSTest, Script {
         uint256 forkId = vm.createFork(rpc);
         vm.selectFork(forkId);
 
-        stargateStrategy = new StargateStrategy();
+        stargateStrategy = new StargateStrategy(address(this));
 
         vm.deal(USDCHolder, 500 ether);
         vm.deal(address(this), 500 ether);
