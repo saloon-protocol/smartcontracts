@@ -14,8 +14,9 @@ import "./StrategyFactory.sol";
 /// Ensure there is enough access control
 
 /* Implement:
-- TODO implement stargate strategy
+- DONE implement stargate strategy
 - TODO makeProjectDeposit BountyBalanceChanged Event
+- TODO Fill in missing events
 - DONE add token whitelisting
 - TEST event emissions
 - DONE Saloon collect all profits
@@ -135,6 +136,10 @@ contract Saloon is
         return poolInfo.length;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// SALOON OWNER FUNCTIONS ///////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
     function updateTokenWhitelist(address _token, bool _whitelisted)
         external
         onlyOwner
@@ -162,92 +167,6 @@ contract Saloon is
         }
 
         return true;
-    }
-
-    function updateStrategyFactoryAddress(address _strategyFactory)
-        external
-        onlyOwner
-    {
-        strategyFactory = StrategyFactory(_strategyFactory);
-    }
-
-    function deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
-        private
-        returns (address)
-    {
-        address deployedStrategy;
-        bytes32 strategyHash = keccak256(abi.encode(_strategyName));
-        address pidStrategy = pidStrategies[_pid][strategyHash];
-        if (pidStrategy == address(0)) {
-            deployedStrategy = strategyFactory.deployStrategy(_strategyName);
-        } else {
-            return pidStrategy;
-        }
-
-        if (deployedStrategy == address(0)) {
-            return address(0);
-        } else {
-            pidStrategies[_pid][strategyHash] = deployedStrategy;
-            activeStrategies[_pid] = strategyHash;
-        }
-
-        return deployedStrategy;
-    }
-
-    function withdrawFromActiveStrategy(uint256 _pid)
-        private
-        returns (uint256)
-    {
-        PoolInfo storage pool = poolInfo[_pid];
-
-        uint256 fundsWithdrawn;
-        bytes32 activeStrategyHash = activeStrategies[_pid];
-
-        if (activeStrategyHash != bytes32(0)) {
-            IStrategy activeStrategy = IStrategy(
-                pidStrategies[_pid][activeStrategyHash]
-            );
-            uint256 activeStrategyLPDepositBalance = activeStrategy
-                .lpDepositBalance();
-            fundsWithdrawn = activeStrategy.withdrawFromStrategy(
-                1,
-                activeStrategyLPDepositBalance
-            );
-            pool.projectDepositHeld += fundsWithdrawn;
-        }
-
-        return fundsWithdrawn;
-    }
-
-    // Function to handle deploying new strategy, switching strategies, depositing to strategy
-    function handleStrategyDeposit(
-        uint256 _pid,
-        string memory _strategyName,
-        uint256 _newDeposit
-    ) private returns (uint256) {
-        PoolInfo storage pool = poolInfo[_pid];
-
-        bytes32 _strategyHash = keccak256(abi.encode(_strategyName));
-        bytes32 activeStrategyHash = activeStrategies[_pid];
-        if (activeStrategyHash != _strategyHash) {
-            uint256 fundsWithdrawn = withdrawFromActiveStrategy(_pid);
-            address deployedStrategy = deployStrategyIfNeeded(
-                _pid,
-                _strategyName
-            );
-            if (deployedStrategy != address(0)) {
-                IStrategy strategy = IStrategy(deployedStrategy);
-                pool.projectDepositHeld -= _newDeposit + fundsWithdrawn;
-                pool.projectDepositInStrategy += _newDeposit + fundsWithdrawn;
-                IERC20(pool.token).safeTransfer(
-                    deployedStrategy,
-                    _newDeposit + fundsWithdrawn
-                );
-                strategy.depositToStrategy(1); // This is stargate USDC pool hardcode
-            } else {
-                pool.projectDepositHeld += _newDeposit;
-            }
-        }
     }
 
     // Add a new bounty pool. Can only be called by the owner.
@@ -285,17 +204,231 @@ contract Saloon is
         return (poolInfo.length - 1);
     }
 
-    function windDownBounty(uint256 _pid) external returns (bool) {
+    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
+        _billPremium(_pid, 0);
+    }
+
+    function payBounty(
+        uint256 _pid,
+        address _hunter,
+        uint256 _amount
+    ) public onlyOwner returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
-        require(
-            msg.sender == pool.projectWallet || msg.sender == _owner,
-            "Not authorized"
-        );
-        require(pool.isActive, "Pool not active");
-        pool.isActive = false;
-        pool.freezeTime = block.timestamp;
+        uint256 totalStaked = pool.totalStaked;
+        uint256 poolTotal = totalStaked + viewMinProjectDeposit(_pid);
+        uint256 balanceBefore = poolTotal;
+
+        // if stakers can cover payout
+        if (_amount <= totalStaked) {
+            if (_amount == totalStaked) {
+                // set all staker balances to zero
+                uint256 length = pool.stakerList.length;
+                for (uint256 i; i < length; ) {
+                    address _user = pool.stakerList[i];
+                    UserInfo storage user = userInfo[_pid][_user];
+                    _updateUserReward(_pid, _user, false);
+                    user.amount = 0;
+                    unchecked {
+                        ++i;
+                    }
+                }
+                pool.totalStaked = 0;
+                delete pool.stakerList;
+            } else {
+                uint256 percentage = ((_amount * PRECISION) / totalStaked);
+                uint256 length = pool.stakerList.length;
+                for (uint256 i; i < length; ) {
+                    address _user = pool.stakerList[i];
+                    UserInfo storage user = userInfo[_pid][_user];
+                    _updateUserReward(_pid, _user, false);
+                    uint256 userPay = (user.amount * percentage) / PRECISION;
+                    user.amount -= userPay;
+                    pool.totalStaked -= userPay;
+                    unchecked {
+                        ++i;
+                    }
+                }
+            }
+            // if stakers alone cannot cover payout
+        } else if (_amount > totalStaked && _amount < poolTotal) {
+            // set all staker balances to zero
+            uint256 length = pool.stakerList.length;
+            for (uint256 i; i < length; ) {
+                address _user = pool.stakerList[i];
+                UserInfo storage user = userInfo[_pid][_user];
+                _updateUserReward(_pid, _user, false);
+                user.amount = 0;
+                unchecked {
+                    ++i;
+                }
+            }
+            pool.totalStaked = 0;
+            delete pool.stakerList;
+            // calculate remaining amount for project to pay
+            withdrawFromActiveStrategy(_pid);
+            uint256 projectPayout = _amount - totalStaked;
+            pool.projectDepositHeld -= projectPayout;
+        } else if (_amount == poolTotal) {
+            // set all staker balances to zero
+            uint256 length = pool.stakerList.length;
+            for (uint256 i; i < length; ) {
+                address _user = pool.stakerList[i];
+                UserInfo storage user = userInfo[_pid][_user];
+                _updateUserReward(_pid, _user, false);
+                user.amount = 0;
+                unchecked {
+                    ++i;
+                }
+            }
+            pool.totalStaked = 0;
+            delete pool.stakerList;
+            withdrawFromActiveStrategy(_pid);
+            pool.projectDepositHeld = 0;
+        } else {
+            revert("Amount too high");
+        }
+
+        // calculate saloon commission
+        uint256 saloonCommission = (_amount * bountyFee) / BPS;
+        // subtract commission from payout
+        uint256 hunterPayout = _amount - saloonCommission;
+        // update saloon Commission variable
+        saloonBountyProfit[address(pool.token)] += saloonCommission;
+        // transfer payout to hunter
+        IERC20(pool.token).safeTransfer(_hunter, hunterPayout);
+        uint256 balanceAfter = pool.totalStaked + viewMinProjectDeposit(_pid);
+
+        emit BountyPaid(block.timestamp, _hunter, address(pool.token), _amount);
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
         return true;
     }
+
+    function collectSaloonProfits(address _token, address _saloonWallet)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        uint256 amount = saloonBountyProfit[_token] +
+            saloonPremiumProfit[_token];
+        saloonBountyProfit[_token] = 0;
+        saloonPremiumProfit[_token] = 0;
+        IERC20(_token).safeTransfer(_saloonWallet, amount);
+        return true;
+    }
+
+    function collectAllSaloonProfits(address _saloonWallet)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        uint256 activeTokenLength = activeTokens.length;
+        for (uint256 i; i < activeTokenLength; ++i) {
+            address _token = activeTokens[i];
+            uint256 amount = saloonBountyProfit[_token] +
+                saloonPremiumProfit[_token];
+
+            if (amount == 0) continue;
+
+            saloonBountyProfit[_token] = 0;
+            saloonPremiumProfit[_token] = 0;
+            IERC20(_token).safeTransfer(_saloonWallet, amount);
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// STRATEGY MANAGEMENT ///////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
+    function updateStrategyFactoryAddress(address _strategyFactory)
+        external
+        onlyOwner
+    {
+        strategyFactory = StrategyFactory(_strategyFactory);
+    }
+
+    function deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
+        internal
+        returns (address)
+    {
+        address deployedStrategy;
+        bytes32 strategyHash = keccak256(abi.encode(_strategyName));
+        address pidStrategy = pidStrategies[_pid][strategyHash];
+        if (pidStrategy == address(0)) {
+            deployedStrategy = strategyFactory.deployStrategy(_strategyName);
+        } else {
+            return pidStrategy;
+        }
+
+        if (deployedStrategy == address(0)) {
+            return address(0);
+        } else {
+            pidStrategies[_pid][strategyHash] = deployedStrategy;
+            activeStrategies[_pid] = strategyHash;
+        }
+
+        return deployedStrategy;
+    }
+
+    function withdrawFromActiveStrategy(uint256 _pid)
+        internal
+        returns (uint256)
+    {
+        PoolInfo storage pool = poolInfo[_pid];
+
+        uint256 fundsWithdrawn;
+        bytes32 activeStrategyHash = activeStrategies[_pid];
+
+        if (activeStrategyHash != bytes32(0)) {
+            IStrategy activeStrategy = IStrategy(
+                pidStrategies[_pid][activeStrategyHash]
+            );
+            uint256 activeStrategyLPDepositBalance = activeStrategy
+                .lpDepositBalance();
+            fundsWithdrawn = activeStrategy.withdrawFromStrategy(
+                1,
+                activeStrategyLPDepositBalance
+            );
+            pool.projectDepositHeld += fundsWithdrawn;
+        }
+
+        return fundsWithdrawn;
+    }
+
+    // Function to handle deploying new strategy, switching strategies, depositing to strategy
+    function handleStrategyDeposit(
+        uint256 _pid,
+        string memory _strategyName,
+        uint256 _newDeposit
+    ) internal returns (uint256) {
+        PoolInfo storage pool = poolInfo[_pid];
+
+        bytes32 _strategyHash = keccak256(abi.encode(_strategyName));
+        bytes32 activeStrategyHash = activeStrategies[_pid];
+        if (activeStrategyHash != _strategyHash) {
+            uint256 fundsWithdrawn = withdrawFromActiveStrategy(_pid);
+            address deployedStrategy = deployStrategyIfNeeded(
+                _pid,
+                _strategyName
+            );
+            if (deployedStrategy != address(0)) {
+                IStrategy strategy = IStrategy(deployedStrategy);
+                pool.projectDepositHeld -= _newDeposit + fundsWithdrawn;
+                pool.projectDepositInStrategy += _newDeposit + fundsWithdrawn;
+                IERC20(pool.token).safeTransfer(
+                    deployedStrategy,
+                    _newDeposit + fundsWithdrawn
+                );
+                strategy.depositToStrategy(1); // This is stargate USDC pool hardcode
+            } else {
+                pool.projectDepositHeld += _newDeposit;
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// PROJECT OWNER FUNCTIONS ///////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     //todo change order of names to match inputs
     function setAPYandPoolCapAndDeposit(
@@ -414,44 +547,21 @@ contract Saloon is
         return true;
     }
 
-    // Return reward multiplier over the given _from to _to block.
-    function getMultiplier(uint256 _from, uint256 _to)
-        public
-        pure
-        returns (uint256)
-    {
-        return _to.sub(_from);
-    }
-
-    // make into function to view Pending yield to claim
-    function pendingToken(uint256 _pid, address _user)
-        public
-        view
-        returns (
-            uint256 totalPending,
-            uint256 actualPending,
-            uint256 newPending
-        )
-    {
+    function windDownBounty(uint256 _pid) external returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
-
-        uint256 totalStaked = pool.totalStaked;
-        uint256 endTime = pool.freezeTime != 0
-            ? pool.freezeTime
-            : block.timestamp;
-
-        // multiplier = number of seconds
-        uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
-        newPending = (((user.amount * pool.apy) / BPS) * multiplier) / YEAR;
-        totalPending = newPending + user.unclaimed;
-        // actualPending subtracts Saloon premium fee
-        actualPending = (totalPending * (BPS - premiumFee)) / BPS;
-
-        // note saloonPremiumProfit variable is updated in billPremium()
-
-        return (totalPending, actualPending, newPending);
+        require(
+            msg.sender == pool.projectWallet || msg.sender == _owner,
+            "Not authorized"
+        );
+        require(pool.isActive, "Pool not active");
+        pool.isActive = false;
+        pool.freezeTime = block.timestamp;
+        return true;
     }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// USER FUNCTIONS ////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     // Stake tokens in a Bounty pool to earn premium payments.
     function stake(
@@ -590,9 +700,9 @@ contract Saloon is
         _updateUserReward(_pid, msg.sender, true);
     }
 
-    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
-        _billPremium(_pid, 0);
-    }
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// INTERNAL FUNCTIONS ////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     function _billPremium(uint256 _pid, uint256 _pending) internal {
         PoolInfo storage pool = poolInfo[_pid];
@@ -627,137 +737,48 @@ contract Saloon is
         emit PremiumBilled(_pid, billAmount);
     }
 
-    function payBounty(
-        uint256 _pid,
-        address _hunter,
-        uint256 _amount
-    ) public onlyOwner returns (bool) {
-        PoolInfo storage pool = poolInfo[_pid];
-        uint256 totalStaked = pool.totalStaked;
-        uint256 poolTotal = totalStaked + viewMinProjectDeposit(_pid);
-        uint256 balanceBefore = poolTotal;
-
-        // if stakers can cover payout
-        if (_amount <= totalStaked) {
-            if (_amount == totalStaked) {
-                // set all staker balances to zero
-                uint256 length = pool.stakerList.length;
-                for (uint256 i; i < length; ) {
-                    address _user = pool.stakerList[i];
-                    UserInfo storage user = userInfo[_pid][_user];
-                    _updateUserReward(_pid, _user, false);
-                    user.amount = 0;
-                    unchecked {
-                        ++i;
-                    }
-                }
-                pool.totalStaked = 0;
-                delete pool.stakerList;
-            } else {
-                uint256 percentage = ((_amount * PRECISION) / totalStaked);
-                uint256 length = pool.stakerList.length;
-                for (uint256 i; i < length; ) {
-                    address _user = pool.stakerList[i];
-                    UserInfo storage user = userInfo[_pid][_user];
-                    _updateUserReward(_pid, _user, false);
-                    uint256 userPay = (user.amount * percentage) / PRECISION;
-                    user.amount -= userPay;
-                    pool.totalStaked -= userPay;
-                    unchecked {
-                        ++i;
-                    }
-                }
-            }
-            // if stakers alone cannot cover payout
-        } else if (_amount > totalStaked && _amount < poolTotal) {
-            // set all staker balances to zero
-            uint256 length = pool.stakerList.length;
-            for (uint256 i; i < length; ) {
-                address _user = pool.stakerList[i];
-                UserInfo storage user = userInfo[_pid][_user];
-                _updateUserReward(_pid, _user, false);
-                user.amount = 0;
-                unchecked {
-                    ++i;
-                }
-            }
-            pool.totalStaked = 0;
-            delete pool.stakerList;
-            // calculate remaining amount for project to pay
-            withdrawFromActiveStrategy(_pid);
-            uint256 projectPayout = _amount - totalStaked;
-            pool.projectDepositHeld -= projectPayout;
-        } else if (_amount == poolTotal) {
-            // set all staker balances to zero
-            uint256 length = pool.stakerList.length;
-            for (uint256 i; i < length; ) {
-                address _user = pool.stakerList[i];
-                UserInfo storage user = userInfo[_pid][_user];
-                _updateUserReward(_pid, _user, false);
-                user.amount = 0;
-                unchecked {
-                    ++i;
-                }
-            }
-            pool.totalStaked = 0;
-            delete pool.stakerList;
-            withdrawFromActiveStrategy(_pid);
-            pool.projectDepositHeld = 0;
-        } else {
-            revert("Amount too high");
-        }
-
-        // calculate saloon commission
-        uint256 saloonCommission = (_amount * bountyFee) / BPS;
-        // subtract commission from payout
-        uint256 hunterPayout = _amount - saloonCommission;
-        // update saloon Commission variable
-        saloonBountyProfit[address(pool.token)] += saloonCommission;
-        // transfer payout to hunter
-        IERC20(pool.token).safeTransfer(_hunter, hunterPayout);
-        uint256 balanceAfter = pool.totalStaked + viewMinProjectDeposit(_pid);
-
-        emit BountyPaid(block.timestamp, _hunter, address(pool.token), _amount);
-        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
-        return true;
-    }
-
-    function collectSaloonProfits(address _token, address _saloonWallet)
-        external
-        onlyOwner
-        returns (bool)
-    {
-        uint256 amount = saloonBountyProfit[_token] +
-            saloonPremiumProfit[_token];
-        saloonBountyProfit[_token] = 0;
-        saloonPremiumProfit[_token] = 0;
-        IERC20(_token).safeTransfer(_saloonWallet, amount);
-        return true;
-    }
-
-    function collectAllSaloonProfits(address _saloonWallet)
-        external
-        onlyOwner
-        returns (bool)
-    {
-        uint256 activeTokenLength = activeTokens.length;
-        for (uint256 i; i < activeTokenLength; ++i) {
-            address _token = activeTokens[i];
-            uint256 amount = saloonBountyProfit[_token] +
-                saloonPremiumProfit[_token];
-
-            if (amount == 0) continue;
-
-            saloonBountyProfit[_token] = 0;
-            saloonPremiumProfit[_token] = 0;
-            IERC20(_token).safeTransfer(_saloonWallet, amount);
-        }
-        return true;
-    }
-
     // ============================
     // View Functions
     // ============================
+
+    // Return reward multiplier over the given _from to _to block.
+    function getMultiplier(uint256 _from, uint256 _to)
+        public
+        pure
+        returns (uint256)
+    {
+        return _to.sub(_from);
+    }
+
+    // make into function to view Pending yield to claim
+    function pendingToken(uint256 _pid, address _user)
+        public
+        view
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        )
+    {
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][_user];
+
+        uint256 totalStaked = pool.totalStaked;
+        uint256 endTime = pool.freezeTime != 0
+            ? pool.freezeTime
+            : block.timestamp;
+
+        // multiplier = number of seconds
+        uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
+        newPending = (((user.amount * pool.apy) / BPS) * multiplier) / YEAR;
+        totalPending = newPending + user.unclaimed;
+        // actualPending subtracts Saloon premium fee
+        actualPending = (totalPending * (BPS - premiumFee)) / BPS;
+
+        // note saloonPremiumProfit variable is updated in billPremium()
+
+        return (totalPending, actualPending, newPending);
+    }
 
     function viewSaloonProfitBalance(address _token)
         external
