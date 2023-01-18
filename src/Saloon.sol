@@ -7,6 +7,7 @@ import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
 import "./ISaloon.sol";
+import "./BountyToken.sol";
 
 /// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
 /// Ensure there is enough access control
@@ -35,16 +36,16 @@ contract Saloon is
     ISaloon,
     OwnableUpgradeable,
     UUPSUpgradeable,
-    ReentrancyGuard
+    ReentrancyGuard,
+    BountyToken
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
-    uint16 constant bountyFee = 1000; // 10%
-    uint16 constant premiumFee = 1000; // 10%
-    uint16 constant BPS = 10000;
-    uint256 constant PRECISION = 1e18;
+    uint256 constant bountyFee = 1000; // 10%
+    uint256 constant premiumFee = 1000; // 10%
+
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     // Info of each user.
@@ -205,7 +206,10 @@ contract Saloon is
         uint256 _deposit
     ) external {
         PoolInfo storage pool = poolInfo[_pid];
-        require(!pool.isActive && pool.poolCap == 0, "Pool already initialized");
+        require(
+            !pool.isActive && pool.poolCap == 0,
+            "Pool already initialized"
+        );
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
             _poolCap >= 100 * (10**pool.tokenDecimals) &&
