@@ -96,54 +96,24 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         // 3(ln(20(s+k)+3) - ln(20s + 3))  / 2
         // ln(20(s+k)+3)
         // current x = s
-        uint256 s = 2.5 ether;
+        uint256 s = 2_500_000;
         // k = new staked amount
-        uint256 k = 2 ether;
-        uint256 l1 = 20 ether * (s + k) + 3 ether;
+        uint256 k = 2_000_000;
+        uint256 l1 = (20_000_000 * (s + k)) + 3_000_000;
         UD60x18 ll1 = toUD60x18(l1);
-        uint256 lll1 = fromUD60x18(ln(ll1));
+        uint256 lll1 = unwrap(ln(ll1));
 
         // ln(20s + 3)
-        uint256 l2 = 20 ether * s + 3 ether;
+        uint256 l2 = (20_000_000 * s) + 3_000_000;
+        // uint256 l2b = 6 eth;
         UD60x18 ll2 = toUD60x18(l2);
-        uint256 lll2 = fromUD60x18(ln(ll2));
-        uint256 lll3 = (lll1 - lll2) * 1e18;
+        uint256 lll2 = unwrap(ln(ll2));
+
+        uint256 lll3 = 3_000_000 * (lll1 - lll2);
         // ln(20(s+k)+3) - ln(20s + 3)
-        // UD60x18 Ln = ln(ll1)(ln(ll2));
-        uint256 result = (3 ether * lll3) / 2 ether;
-        assertEq(result, 1.5 ether);
-
-        // // current x = s
-        // uint256 sb = 2500;
-        // // k = new staked amount
-        // uint256 kb = 2000;
-        // uint256 l1b = 20_000 * (sb + kb) + 3000;
-        // UD60x18 ll1b = toUD60x18(l1b);
-        // uint256 lll1b = fromUD60x18(ln(ll1b));
-
-        // // ln(20s + 3)
-        // uint256 l2b = 20_000 * s + 3000;
-        // UD60x18 ll2b = toUD60x18(l2b);
-        // uint256 lll2b = fromUD60x18(ln(ll2) * 1e18);
-
-        // // ln(20(s+k)+3) - ln(20s + 3)
-        // // UD60x18 Ln = ln(ll1)(ln(ll2));
-        // uint256 resultb = ((3000 * (lll1b - lll2b)) * 1000) / 2000;
-        // assertEq(resultb, 1.5 ether);
-
-        // // uint256 integral = (3 ether * result) / 2 ether;
-        // // assertEq(integral, 1);
+        uint256 result = (lll3) / 2_000_000;
+        assertEq(lll2, 1);
+        // 86805086353213790696
+        // 87392873018115909706
     }
-
-    // //
-    //     UD60x18 ud = toUD60x18(200_000 * 50_000 + 30_000);
-    //     UD60x18 udd = toUD60x18(200_000 * 45_000 + 30_000);
-    //     int128 ud2 = 200_000 * 50_000 + 30_000;
-    //     // int128 z2 = ln(ud2);
-    //     UD60x18 ln = ln(udd).add(ln(ud));
-    //     // UD60x18 lala = ln(ud);
-    //     // UD60x18 lj = ln(ud);
-    //     // UD60x18 ll = (30_000 * (ln - ln2)) / 20_000;
-    //     uint256 z6 = fromUD60x18(ln);
-    //     // assertEq(z6, 1);
 }
