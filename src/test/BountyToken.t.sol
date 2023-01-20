@@ -96,17 +96,20 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         // (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
 
         // s = current pool size (x-value)
-        uint256 s = 0; // 2_000_000; ignore
+        uint256 s = 0 ether; // 2 ether; ignore
+
         // k = new staking amount in pool size (x-value)
-        uint256 k = 1000000; // 2_500_000; ignore
+        uint256 k = 1 ether; // 2.5 ether ignore
+
         // total pool size
         uint256 sk = s + k;
-        uint256 l1 = ((33 * (sk)) + 5_000_000);
-        uint256 l2 = ((33 * s) + 5_000_000);
+        uint256 l1 = ((33 * (sk)) + 5 ether);
+        uint256 l2 = ((33 * s) + 5 ether);
 
+        // lns
         UD60x18 ln1 = ln(toUD60x18(l1));
         UD60x18 ln2 = ln(toUD60x18(l2));
-        UD60x18 res = toUD60x18(50000000000000).mul(ln1.sub(ln2)).div(
+        UD60x18 res = toUD60x18(50_000_000 ether).mul(ln1.sub(ln2)).div(
             toUD60x18(33)
         );
 
