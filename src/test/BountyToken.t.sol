@@ -7,16 +7,10 @@ import "../lib/ERC20.sol";
 import "ds-test/test.sol";
 import "forge-std/Script.sol";
 import "../BountyToken.sol";
-import "solmate/utils/SignedWadMath.sol";
-import "solmate/utils/FixedPointMathLib.sol";
 import "prb-math/UD60x18.sol";
-import "../lib/ABDKMath64x64.sol";
 
 contract BountyTokenTest is BountyToken, DSTest, Script {
-    using ABDKMath64x64 for int256;
-    using FixedPointMathLib for *;
     using SafeMath for *;
-    // using SignedWadMath for *;
 
     BountyToken btt;
 
@@ -116,5 +110,16 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         uint256 result = unwrap(res);
         uint256 expected = 3072951889836796053030303030303; // 1168213166645358218181818181818; ignore
         assertEq(result, expected);
+    }
+
+    function testConvertStakeToPoolMeasurements() external {
+        // calculate pool X-axis base don USD deposit
+        uint256 deposit = 0.1 ether;
+        uint256 percentageOfPool = (deposit * 1e18) / poolSize[1]; // 10 / 10M -> 0.000001%
+        assertEq(percentageOfPool, 0.00000001 ether);
+
+        // calcualte X based on percentage
+        uint256 x = (5 * percentageOfPool);
+        assertEq(x, 0.00000005 ether);
     }
 }

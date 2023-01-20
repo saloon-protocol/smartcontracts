@@ -1512,46 +1512,6 @@
         }
       }
     },
-    "lib/solmate/src/utils/FixedPointMathLib.sol": {
-      "lastModificationDate": 1657928637976,
-      "contentHash": "7632bbc2b75ea340edf63e6fd99362a2",
-      "sourceName": "lib/solmate/src/utils/FixedPointMathLib.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": ">=0.8.0",
-      "artifacts": {
-        "FixedPointMathLib": {
-          "0.8.17+commit.8df45f5f.Darwin.appleclang": "FixedPointMathLib.sol/FixedPointMathLib.json"
-        }
-      }
-    },
     "lib/solmate/src/utils/SafeTransferLib.sol": {
       "lastModificationDate": 1657928637977,
       "contentHash": "2de39f553e7ea0899eb4c6fa167f4083",
@@ -1591,46 +1551,6 @@
       "artifacts": {
         "SafeTransferLib": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "SafeTransferLib.sol/SafeTransferLib.json"
-        }
-      }
-    },
-    "lib/solmate/src/utils/SignedWadMath.sol": {
-      "lastModificationDate": 1673855918113,
-      "contentHash": "ffa04f2d37be25eba44073d177cae8a4",
-      "sourceName": "lib/solmate/src/utils/SignedWadMath.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": ">=0.8.0",
-      "artifacts": {
-        "SignedWadMath": {
-          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SignedWadMath.sol/SignedWadMath.json"
         }
       }
     },
@@ -1715,8 +1635,8 @@
       }
     },
     "src/BountyToken.sol": {
-      "lastModificationDate": 1674045212554,
-      "contentHash": "7e56c21414368bf5f53dcccec5dc8131",
+      "lastModificationDate": 1674194166300,
+      "contentHash": "1eed34b2cd92652100f2760bd116be78",
       "sourceName": "src/BountyToken.sol",
       "solcConfig": {
         "settings": {
@@ -1747,6 +1667,7 @@
         }
       },
       "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
@@ -1754,7 +1675,8 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
         "lib/prb-math/src/Core.sol",
-        "lib/prb-math/src/UD60x18.sol"
+        "lib/prb-math/src/UD60x18.sol",
+        "src/ISaloon.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
@@ -1764,8 +1686,8 @@
       }
     },
     "src/ISaloon.sol": {
-      "lastModificationDate": 1669842725138,
-      "contentHash": "0a945f0ac85edced8fb29756218f75ee",
+      "lastModificationDate": 1674195005958,
+      "contentHash": "4c64efacc800d71358ef0c6bac632404",
       "sourceName": "src/ISaloon.sol",
       "solcConfig": {
         "settings": {
@@ -1806,8 +1728,8 @@
       }
     },
     "src/Saloon.sol": {
-      "lastModificationDate": 1673836628971,
-      "contentHash": "a3788e3acc792135ab8c56a22b3d3a0e",
+      "lastModificationDate": 1674205327179,
+      "contentHash": "d16e48087c7ebcca634b09ca2f915a54",
       "sourceName": "src/Saloon.sol",
       "solcConfig": {
         "settings": {
@@ -2131,8 +2053,8 @@
       }
     },
     "src/test/BountyToken.t.sol": {
-      "lastModificationDate": 1674191296503,
-      "contentHash": "ed50bf469a614fe32396fbc3dc5acb1e",
+      "lastModificationDate": 1674194038176,
+      "contentHash": "10f01b039ebe05ce4f139cb0a329c40e",
       "sourceName": "src/test/BountyToken.t.sol",
       "solcConfig": {
         "settings": {
@@ -2195,13 +2117,10 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
         "lib/prb-math/src/Core.sol",
         "lib/prb-math/src/UD60x18.sol",
-        "lib/solmate/src/utils/FixedPointMathLib.sol",
-        "lib/solmate/src/utils/SignedWadMath.sol",
         "src/BountyToken.sol",
         "src/ISaloon.sol",
         "src/Saloon.sol",
         "src/SaloonProxy.sol",
-        "src/lib/ABDKMath64x64.sol",
         "src/lib/ERC20.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],

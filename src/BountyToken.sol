@@ -4,7 +4,9 @@ pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "prb-math/UD60x18.sol";
+import "./ISaloon.sol";
 
+// TODO Update table below with new values
 /* 
 OBS: Max APY to average APY ratio can still be tweaked so for now
 I just put a ballpark 
@@ -52,7 +54,7 @@ which my differ from the standard 7.2
 ================================================
 */
 
-contract BountyToken is ERC20Upgradeable {
+contract BountyToken is ISaloon, ERC20Upgradeable {
     //Constants
     uint256 constant DEFAULT_APY = 1.06 ether;
     uint256 constant BPS = 10_000;
@@ -78,14 +80,13 @@ contract BountyToken is ERC20Upgradeable {
     //  maybe make it internal
     /// @param _targetAPY the advertised average APY of a bounty
     /// @param _poolID poolID that the multiplier will be assigned to
-    // todo right tests for very low and high targetAPYs
     function calculateMultiplier(uint256 _targetAPY, uint256 _poolID) public {
         uint256 m = (_targetAPY * PRECISION) / DEFAULT_APY;
         M[_poolID] = m;
     }
 
     // * Standard curve function implementation
-    //     32*0.6^(x) + 1
+    //      1/(0.66x+0.1)
     // Max Pool Size 10M
     function curveImplementation(uint256 _x) internal pure returns (uint256 y) {
         uint256 denominator = ((0.66 ether * _x) / 1e18) + 0.1 ether;
@@ -99,12 +100,20 @@ contract BountyToken is ERC20Upgradeable {
         result = curveImplementation(x);
     }
 
+    function convertStakeToPoolMeasurements(uint256 _stake, uint256 _poolID)
+        public
+        returns (uint256 x, uint256 poolPercentage)
+    {
+        poolPercentage = (_stake * PRECISION) / poolSize[_poolID]; //TODO EDIT poolSize
+        x = 5 * poolPercentage;
+    }
+
     function seeEffectiveStakingAPY() public {
         // - check how much APY you would get reward for investing Z amount of USD
     }
 
     // * Calculate effective price
-    //     - (definite integral result) * (M^(2) / x + xStakeAmount)
+    //     - (definite integral result) / precision)
     // /
 
     // * Calculate APY for staking
