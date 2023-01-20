@@ -22,8 +22,43 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         // vm.selectFork(forkId);
 
         btt = new BountyToken();
-        poolInfo[0].generalInfo.poolCap = 1000 ether;
-        poolInfo[1].generalInfo.poolCap = 10_000_000 ether;
+        PoolInfo memory pool;
+        pool.generalInfo.token = IERC20(address(0xadd));
+        pool.generalInfo.tokenDecimals = 18;
+        pool.generalInfo.projectWallet = address(0xadddd);
+        pool.generalInfo.projectName = "lele";
+        pool.generalInfo.projectDeposit = 0;
+        pool.generalInfo.apy = 0;
+        pool.generalInfo.poolCap = 1000 ether;
+        pool.generalInfo.multiplier = 0;
+        pool.generalInfo.totalStaked = 0;
+        pool.poolTimelock.timelock = 0;
+        pool.poolTimelock.timeLimit = 0;
+        pool.poolTimelock.withdrawalScheduledAmount = 0;
+        pool.poolTimelock.withdrawalExecuted = false;
+        pool.stakerList;
+        pool.isActive = false;
+        pool.freezeTime = 0;
+        poolInfo.push(pool);
+
+        PoolInfo memory pool1;
+        pool1.generalInfo.token = IERC20(address(0xadd));
+        pool1.generalInfo.tokenDecimals = 18;
+        pool1.generalInfo.projectWallet = address(0xadddd);
+        pool1.generalInfo.projectName = "lele";
+        pool1.generalInfo.projectDeposit = 0;
+        pool1.generalInfo.apy = 0;
+        pool1.generalInfo.poolCap = 1000 ether;
+        pool1.generalInfo.multiplier = 0;
+        pool1.generalInfo.totalStaked = 0;
+        pool1.poolTimelock.timelock = 0;
+        pool1.poolTimelock.timeLimit = 0;
+        pool1.poolTimelock.withdrawalScheduledAmount = 0;
+        pool1.poolTimelock.withdrawalExecuted = false;
+        pool1.stakerList;
+        pool1.isActive = false;
+        pool1.freezeTime = 0;
+        poolInfo.push(pool1);
     }
 
     function testCalculateMultiplier() external {
@@ -93,10 +128,10 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         // (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
 
         // s = current pool size (x-value)
-        uint256 s = 0 ether; // 2 ether; ignore
+        uint256 s = 2 ether; // 2 ether; ignore
 
         // k = new staking amount in pool size (x-value)
-        uint256 k = 1 ether; // 2.5 ether ignore
+        uint256 k = 0.5 ether; // 2.5 ether ignore
 
         // total pool size
         uint256 sk = s + k;
@@ -110,8 +145,8 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
             toUD60x18(33)
         );
 
-        uint256 result = unwrap(res);
-        uint256 expected = 3072951889836796053030303030303; // 1168213166645358218181818181818; ignore
+        uint256 result = unwrap(res) / 1e24;
+        uint256 expected = 0.316606 ether; //3.072951889836796051 ether; // 1168213166645358218181818181818; ignore
         assertEq(result, expected);
     }
 

@@ -103,10 +103,35 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         x = 5 * poolPercentage;
     }
 
-    function seeEffectiveStakingAPY() public {
+    function seeEffectiveStakingAPY(uint256 _stake, uint256 _poolID)
+        public
+        view
+    {
         // - check how much APY you would get reward for investing Z amount of USD
     }
 
+    /// @dev formula for calculating effective price:
+    /// (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
+    function calculateEffectivePrice(uint256 _stake, uint256 _poolID)
+        public
+        returns (uint256 toBeMinted)
+    {
+        // get current x
+        uint256 s = poolInfo[_poolID].tokenInfo.currentX;
+        uint256 sk = _stake + _poolID;
+
+        uint256 l1 = ((33 * (sk)) + 5 ether);
+        uint256 l2 = ((33 * s) + 5 ether);
+
+        // lns
+        UD60x18 ln1 = ln(toUD60x18(l1));
+        UD60x18 ln2 = ln(toUD60x18(l2));
+        UD60x18 res = toUD60x18(50_000_000 ether).mul(ln1.sub(ln2)).div(
+            toUD60x18(33)
+        );
+
+        toBeMinted = unwrap(res) / 1e24;
+    }
     // * Calculate effective price
     //     - (definite integral result) / precision)
     // /

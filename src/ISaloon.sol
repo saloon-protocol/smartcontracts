@@ -8,10 +8,10 @@ interface ISaloon {
         GeneralInfo generalInfo;
         PremiumInfo premiumInfo;
         TimelockInfo poolTimelock;
+        TokenInfo tokenInfo;
         address[] stakerList;
-        bool isActive;
         uint256 freezeTime;
-        // TokenInfo tokenInfo;
+        bool isActive;
     }
 
     struct GeneralInfo {
@@ -38,8 +38,8 @@ interface ISaloon {
         bool withdrawalExecuted;
     }
 
-    // struct TokenInfo {
-    //     uint256 maxPoolSize;
-    //     uint256 multiplier;
-    // }
+    struct TokenInfo {
+        uint256 currentX;
+        uint256 currentY;
+    }
 }
