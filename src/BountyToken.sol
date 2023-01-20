@@ -59,16 +59,9 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
     uint256 constant DEFAULT_APY = 1.06 ether;
     uint256 constant BPS = 10_000;
     uint256 constant PRECISION = 1e18;
-    // Variables:
-    // mapping of poolID to multiplier
-    // poolID -> M
-    mapping(uint256 => uint256) public M; // todo insert this in sub struct in pool struct
-    // poolID -> poolSize in USD terms
-    mapping(uint256 => uint256) public poolSize; // todo insert this in sub struct in pool struct
 
-    // // average APY offered by pool
-    // uint public targetAPY;
-    //
+    // Info of each pool.
+    PoolInfo[] public poolInfo;
 
     constructor() initializer {
         __ERC20_init("BountyToken", "BTT");
@@ -80,9 +73,9 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
     //  maybe make it internal
     /// @param _targetAPY the advertised average APY of a bounty
     /// @param _poolID poolID that the multiplier will be assigned to
-    function calculateMultiplier(uint256 _targetAPY, uint256 _poolID) public {
+    function updateMultiplier(uint256 _targetAPY, uint256 _poolID) internal {
         uint256 m = (_targetAPY * PRECISION) / DEFAULT_APY;
-        M[_poolID] = m;
+        poolInfo[_poolID].generalInfo.multiplier = m;
     }
 
     // * Standard curve function implementation
@@ -104,7 +97,9 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         public
         returns (uint256 x, uint256 poolPercentage)
     {
-        poolPercentage = (_stake * PRECISION) / poolSize[_poolID]; //TODO EDIT poolSize
+        poolPercentage =
+            (_stake * PRECISION) /
+            poolInfo[_poolID].generalInfo.poolCap;
         x = 5 * poolPercentage;
     }
 

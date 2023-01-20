@@ -38,9 +38,6 @@ contract Saloon is
         uint256 unstakeScheduledAmount;
     }
 
-    // Info of each pool.
-    PoolInfo[] public poolInfo;
-
     // Info of each user that stakes LP tokens.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
 

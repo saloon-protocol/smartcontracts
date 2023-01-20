@@ -22,29 +22,30 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         // vm.selectFork(forkId);
 
         btt = new BountyToken();
-        poolSize[0] = 1000 ether;
-        poolSize[1] = 10_000_000 ether;
+        poolInfo[0].generalInfo.poolCap = 1000 ether;
+        poolInfo[1].generalInfo.poolCap = 10_000_000 ether;
     }
 
     function testCalculateMultiplier() external {
         // Test for double APY
         uint256 doubleAPY = DEFAULT_APY * 2;
-        calculateMultiplier(doubleAPY, 0);
+        updateMultiplier(doubleAPY, 0);
 
-        assertEq(M[0], 2 ether);
+        assertEq(poolInfo[0].generalInfo.multiplier, 2 ether);
 
         // Test for half APY
         uint256 halfAPY = DEFAULT_APY / 2;
-        calculateMultiplier(halfAPY, 1);
+        updateMultiplier(halfAPY, 1);
 
-        assertEq(M[1], 0.5 ether);
+        assertEq(poolInfo[1].generalInfo.multiplier, 0.5 ether);
     }
 
     function testCurveImplementation() external {
         // Test with  $10M poolSize
         // calculate pool X-axis base don USD deposit
         uint256 deposit = 5_000_000 ether;
-        uint256 percentageOfPool = (deposit * 1e18) / poolSize[1]; // 5M / 10M -> 50%
+        uint256 percentageOfPool = (deposit * 1e18) /
+            poolInfo[1].generalInfo.poolCap; // 5M / 10M -> 50%
         assertEq(percentageOfPool, 0.5 ether);
 
         // calcualte X based on percentage
@@ -58,7 +59,8 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
 
         // Test with small pool size $1k
         uint256 deposit2 = 500 ether;
-        uint256 percentageOfPool2 = (deposit * 1e18) / poolSize[1]; // 500 / 1k-> 50%
+        uint256 percentageOfPool2 = (deposit * 1e18) /
+            poolInfo[1].generalInfo.poolCap; // 500 / 1k-> 50%
         assertEq(percentageOfPool2, 0.5 ether);
         // calcualte X based on percentage
         uint256 x2 = (5 * percentageOfPool2);
@@ -73,7 +75,8 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
         // Test with  smaller X-Values
         // calculate pool X-axis base don USD deposit
         uint256 deposit = 10 ether;
-        uint256 percentageOfPool = (deposit * 1e18) / poolSize[1]; // 10 / 10M -> 0.000001%
+        uint256 percentageOfPool = (deposit * 1e18) /
+            poolInfo[1].generalInfo.poolCap; // 10 / 10M -> 0.000001%
         assertEq(percentageOfPool, 0.000001 ether);
 
         // calcualte X based on percentage
@@ -115,7 +118,8 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
     function testConvertStakeToPoolMeasurements() external {
         // calculate pool X-axis base don USD deposit
         uint256 deposit = 0.1 ether;
-        uint256 percentageOfPool = (deposit * 1e18) / poolSize[1]; // 10 / 10M -> 0.000001%
+        uint256 percentageOfPool = (deposit * 1e18) /
+            poolInfo[1].generalInfo.poolCap; // 10 / 10M -> 0.000001%
         assertEq(percentageOfPool, 0.00000001 ether);
 
         // calcualte X based on percentage
