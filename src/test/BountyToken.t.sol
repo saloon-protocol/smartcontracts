@@ -93,27 +93,25 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
     }
 
     function testDefiniteIntegral() external {
-        // 3(ln(20(s+k)+3) - ln(20s + 3))  / 2
-        // ln(20(s+k)+3)
-        // current x = s
-        uint256 s = 2_500_000;
-        // k = new staked amount
-        uint256 k = 2_000_000;
-        uint256 l1 = (20_000_000 * (s + k)) + 3_000_000;
-        UD60x18 ll1 = toUD60x18(l1);
-        uint256 lll1 = unwrap(ln(ll1));
+        // (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
 
-        // ln(20s + 3)
-        uint256 l2 = (20_000_000 * s) + 3_000_000;
-        // uint256 l2b = 6 eth;
-        UD60x18 ll2 = toUD60x18(l2);
-        uint256 lll2 = unwrap(ln(ll2));
+        // s = current pool size (x-value)
+        uint256 s = 0; // 2_000_000; ignore
+        // k = new staking amount in pool size (x-value)
+        uint256 k = 1000000; // 2_500_000; ignore
+        // total pool size
+        uint256 sk = s + k;
+        uint256 l1 = ((33 * (sk)) + 5_000_000);
+        uint256 l2 = ((33 * s) + 5_000_000);
 
-        uint256 lll3 = 3_000_000 * (lll1 - lll2);
-        // ln(20(s+k)+3) - ln(20s + 3)
-        uint256 result = (lll3) / 2_000_000;
-        assertEq(lll2, 1);
-        // 86805086353213790696
-        // 87392873018115909706
+        UD60x18 ln1 = ln(toUD60x18(l1));
+        UD60x18 ln2 = ln(toUD60x18(l2));
+        UD60x18 res = toUD60x18(50000000000000).mul(ln1.sub(ln2)).div(
+            toUD60x18(33)
+        );
+
+        uint256 result = unwrap(res);
+        uint256 expected = 3072951889836796053030303030303; // 1168213166645358218181818181818; ignore
+        assertEq(result, expected);
     }
 }
