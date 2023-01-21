@@ -7,6 +7,7 @@ import "prb-math/UD60x18.sol";
 import "./ISaloon.sol";
 
 // TODO Update table below with new values
+
 /* 
 OBS: Max APY to average APY ratio can still be tweaked so for now
 I just put a ballpark 
@@ -20,7 +21,7 @@ Default Curve: 1/(0.66x+0.1)
 --------------------------------
 defaultAPY "average" = 1.06
 --------------------------------
-standardMaxAPY = 10
+defaultMaxAPY = 10
 --------------------------------
 max-to-standard APY ratio:
 ratio = ~4.56 = maxAPY/defaultAPY 
@@ -47,8 +48,8 @@ Scaled Definite Integral:
 
 Notes:
 Standard Curve is used to calculate the staking reward.
-Such reward is then multiplied by M to match the targetAPY offered by the project,
-which my differ from the standard 7.2
+Such reward is then multiplied by M^2 to match the targetAPY offered by the project,
+which my differ from the standard 1.06%
 ----------------------------------------------
 ================================================
 ================================================
@@ -94,31 +95,30 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
     }
 
     function convertStakeToPoolMeasurements(uint256 _stake, uint256 _poolID)
-        public
+        internal
+        view
         returns (uint256 x, uint256 poolPercentage)
     {
         poolPercentage =
             (_stake * PRECISION) /
             poolInfo[_poolID].generalInfo.poolCap;
-        x = 5 * poolPercentage;
-    }
 
-    function seeEffectiveStakingAPY(uint256 _stake, uint256 _poolID)
-        public
-        view
-    {
-        // - check how much APY you would get reward for investing Z amount of USD
+        x = 5 * poolPercentage;
     }
 
     /// @dev formula for calculating effective price:
     /// (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
-    function calculateEffectivePrice(uint256 _stake, uint256 _poolID)
+    function calculateEffectiveAPY(uint256 _stake, uint256 _poolID)
         public
+        view
         returns (uint256 toBeMinted)
     {
+        PoolInfo memory pool = poolInfo[_poolID];
         // get current x
-        uint256 s = poolInfo[_poolID].tokenInfo.currentX;
-        uint256 sk = _stake + _poolID;
+        uint256 s = pool.tokenInfo.currentX;
+        // convert stake to x-value
+        (uint256 k, ) = convertStakeToPoolMeasurements(_stake, _poolID);
+        uint256 sk = k + s;
 
         uint256 l1 = ((33 * (sk)) + 5 ether);
         uint256 l2 = ((33 * s) + 5 ether);
@@ -129,29 +129,37 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         UD60x18 res = toUD60x18(50_000_000 ether).mul(ln1.sub(ln2)).div(
             toUD60x18(33)
         );
+        // calculate effective APY
+        uint256 effectiveAPY = unwrap(res) / (k * 1e6);
 
-        toBeMinted = unwrap(res) / 1e24;
+        // get pool Multiplier
+        uint256 m = pool.generalInfo.multiplier;
+
+        // calculate effective APY according to APY offered
+        toBeMinted = (effectiveAPY * m) / PRECISION;
     }
-    // * Calculate effective price
-    //     - (definite integral result) / precision)
-    // /
-
-    // * Calculate APY for staking
-    //     - stake amount in % = USD/poolsize
-    //     - calculate % in x-value equivalent = xStakeAmount
-    //     - get current x + xStakeAmount
-    //     - get scaled definite integral
-    //     - update new x = current x + xStakeAmount
-    //     - update new y = standardCurve(newX)
-    // /
 
     // * Register when a token is transferred between accounts so seller
     //   gets the rewards he is entitled to even after sale.
-    // /
+    //  /note - this might be a function for Saloon.sol?
+    //
 
-    // * Get current APY value (y value)
-    // /
-    // * Get current pool size (x value)
+    // * update current pool size (x value)
+    function updateCurrentX(uint256 _newX) internal {
+        poolInfo[_poolID].tokenInfo.currentX = _newX;
+        return true;
+    }
+
+    ///  update unit APY value (y value)
+    /// @param _x current x-value representing total stake amount
+    /// @param _poolID ID of pool
+    function updateCurrentY(uint256 _x, uint256 _poolID)
+        internal
+        returns (uint256 newAPY)
+    {
+        newAPY = curveImplementation(_x);
+        poolInfo[_poolID].tokenInfo.currentY = newAPY;
+    }
     // /
 
     // * mint function override - make sure to include pool ID when minting

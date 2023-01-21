@@ -126,12 +126,12 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
 
     function testDefiniteIntegral() external {
         // (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
-
+        //note s (cuurent x-value) and k(stkae amount is x value) are always stored as standard, non-scaled x-values
         // s = current pool size (x-value)
         uint256 s = 2 ether; // 2 ether; ignore
 
         // k = new staking amount in pool size (x-value)
-        uint256 k = 0.5 ether; // 2.5 ether ignore
+        uint256 k = 3 ether; // 2.5 ether ignore
 
         // total pool size
         uint256 sk = s + k;
@@ -145,9 +145,20 @@ contract BountyTokenTest is BountyToken, DSTest, Script {
             toUD60x18(33)
         );
 
-        uint256 result = unwrap(res) / 1e24;
-        uint256 expected = 0.316606 ether; //3.072951889836796051 ether; // 1168213166645358218181818181818; ignore
-        assertEq(result, expected);
+        // Test area of the curve
+        // uint256 result = fromUD60x18(res) / 1e6;
+        // uint256 expected = 1.322906909104464154 ether; //3.072951889836796051 ether; // 1168213166645358218181818181818; ignore
+        // assertEq(result, expected);
+
+        // area under the curve divided by delta X
+        uint256 effAPY = unwrap(res) / (k * 1e6);
+        uint256 expectedEffAPY = 0.440968969701488051 ether;
+        assertEq(effAPY, expectedEffAPY);
+
+        // Test effective apy scaled by arbitrary multiplier (0.1x)
+        uint256 scaledAPY = (effAPY * (0.1 ether)) / PRECISION;
+        uint256 expectedScaledAPY = 0.044096896970148805 ether;
+        assertEq(scaledAPY, expectedScaledAPY);
     }
 
     function testConvertStakeToPoolMeasurements() external {
