@@ -9,8 +9,9 @@ import "./lib/OwnableUpgradeable.sol";
 import "./BountyToken.sol";
 
 /* Implement:
+- TODO Integrate keeping track of owed rewards when transferring BountyTokens between users
+- TODO Integrate minting and burning of tokens in staking and unstaking
 - TEST event emissions
-
 */
 
 contract Saloon is
@@ -29,6 +30,7 @@ contract Saloon is
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     // Info of each user.
+    //NOTE This might need to be changed because stakerBalance has been introduced in BountyToken
     struct UserInfo {
         uint256 amount; // How many tokens the user has staked.
         uint256 unclaimed; // Unclaimed premium.

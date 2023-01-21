@@ -6,51 +6,32 @@ import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeabl
 import "prb-math/UD60x18.sol";
 import "./ISaloon.sol";
 
-// TODO Update table below with new values
+//TODO Turn some magic numbers used in calculateEffectiveAPY to constants
 
 /* 
-OBS: Max APY to average APY ratio can still be tweaked so for now
-I just put a ballpark 
-
 BountyToken ERC20
-
 ================================================
     ** Default Variables **
 ================================================
 Default Curve: 1/(0.66x+0.1) 
 --------------------------------
-defaultAPY "average" = 1.06
+defaultAPY "average" ~= 1.06
 --------------------------------
-defaultMaxAPY = 10
+default MaxAPY(y-value) = 10 
+--------------------------------
+default max x-value = 5
 --------------------------------
 max-to-standard APY ratio:
-ratio = ~4.56 = maxAPY/defaultAPY 
-e.g 33/7.226490363249782 = 4.566532070370017
+ratio = ~9.43 = maxAPY/defaultAPY 
+e.g 10/1.06 ~= 9.43
 --------------------------------
 Definite Integral:
-================================================
-    ** Scaled variables **
-================================================
-Scaled Curve (Not Used): M(32 * (0.6**((1/M)x)) + 1)
------------------------------
-targetAPY = defaultAPY * M
-e.g targetAPY = 20 (%)
-M = 20/7.2 = 2.767 (%)
------------------------------
-maxAPY = targetAPY * ratio
------------------------------
-current APY
------------------------------
-Scaled Definite Integral:
-(definite integral result) * M^(2)
------------------------------
-
-
+(50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
+--------------------------------
 Notes:
-Standard Curve is used to calculate the staking reward.
-Such reward is then multiplied by M^2 to match the targetAPY offered by the project,
+Default Curve is used to calculate the staking reward.
+Such reward is then multiplied by multiplier to match the targetAPY offered by the project,
 which my differ from the standard 1.06%
-----------------------------------------------
 ================================================
 ================================================
 */
@@ -64,13 +45,14 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
     // Info of each pool.
     PoolInfo[] public poolInfo;
 
+    // staker address => poolID => staker balance
+    mapping(address => mapping(uint256 => uint256)) public stakerBalance;
+
     constructor() initializer {
         __ERC20_init("BountyToken", "BTT");
     }
 
-    // Functions:
-
-    // * function that calculates M given targetAPY
+    // * function that calculates multiplier given targetAPY
     //  maybe make it internal
     /// @param _targetAPY the advertised average APY of a bounty
     /// @param _poolID poolID that the multiplier will be assigned to
@@ -79,19 +61,24 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         poolInfo[_poolID].generalInfo.multiplier = m;
     }
 
-    // * Standard curve function implementation
+    // Default curve function implementation
     //      1/(0.66x+0.1)
-    // Max Pool Size 10M
     function curveImplementation(uint256 _x) internal pure returns (uint256 y) {
         uint256 denominator = ((0.66 ether * _x) / 1e18) + 0.1 ether;
         uint256 y = (1 ether * 1e18) / denominator;
     }
 
-    //  Get Current APY of pool (y-value)
-    function getCurrentAPY() public returns (uint256 result) {
+    //  Get Current APY of pool (y-value) scaled to target APY
+    function getCurrentAPY(uint256 _poolID)
+        public
+        returns (uint256 currentAPY)
+    {
+        PoolInfo memory pool = poolInfo[_poolID];
+
         // get current x-value
-        uint256 x;
-        result = curveImplementation(x);
+        uint256 x = pool.tokenInfo.currentX;
+        // current unit APY =  y-value * multiplier
+        currentAPY = curveImplementation(x) * pool.generalInfo.multiplier;
     }
 
     function convertStakeToPoolMeasurements(uint256 _stake, uint256 _poolID)
@@ -106,8 +93,11 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         x = 5 * poolPercentage;
     }
 
+    ///@notice calculates effective APY staker will be entitled to in exchange for amount staked
     /// @dev formula for calculating effective price:
     /// (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
+    ///@param _stake amount to be staked
+    ///@param _poolID ID of current pool
     function calculateEffectiveAPY(uint256 _stake, uint256 _poolID)
         public
         view
@@ -139,13 +129,16 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         toBeMinted = (effectiveAPY * m) / PRECISION;
     }
 
-    // * Register when a token is transferred between accounts so seller
+    // TODO * Register when a token is transferred between accounts so seller
     //   gets the rewards he is entitled to even after sale.
     //  /note - this might be a function for Saloon.sol?
     //
 
     // * update current pool size (x value)
-    function updateCurrentX(uint256 _newX) internal {
+    function updateCurrentX(uint256 _newX, uint256 _poolID)
+        internal
+        returns (bool)
+    {
         poolInfo[_poolID].tokenInfo.currentX = _newX;
         return true;
     }
@@ -160,9 +153,59 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
         newAPY = curveImplementation(_x);
         poolInfo[_poolID].tokenInfo.currentY = newAPY;
     }
-    // /
 
-    // * mint function override - make sure to include pool ID when minting
+    // * mint function that includes pool ID when minting
+    function _mint(
+        address _staker,
+        uint256 _amount,
+        uint256 _poolID
+    ) internal {
+        require(_staker != address(0), "ERC20: mint to the zero address");
 
-    // * balanceOf function override - make sure to check for pool ID
+        _beforeTokenTransfer(address(0), _staker, _amount);
+
+        poolInfo[_poolID].tokenInfo.totalSupply += _amount;
+        unchecked {
+            // Overflow not possible: balance + amount is at most totalSupply + amount, which is checked above.
+            stakerBalance[_staker][_poolID] += _amount;
+        }
+        emit Transfer(address(0), _staker, _amount);
+
+        _afterTokenTransfer(address(0), _staker, _amount);
+    }
+
+    //  balanceOf function  that checks for pool ID
+    function balanceOf(address _staker, uint256 _poolID)
+        public
+        view
+        returns (uint256)
+    {
+        return stakerBalance[_staker][_poolID];
+    }
+
+    // burn function that takes into account poolID
+    function _burn(
+        address _staker,
+        uint256 _amount,
+        uint256 _poolID
+    ) internal {
+        require(_staker != address(0), "ERC20: burn from the zero address");
+
+        _beforeTokenTransfer(_staker, address(0), _amount);
+
+        uint256 accountBalance = stakerBalance[_staker][_poolID];
+        require(
+            accountBalance >= _amount,
+            "ERC20: burn amount exceeds balance"
+        );
+        unchecked {
+            stakerBalance[_staker][_poolID] = accountBalance - _amount;
+            // Overflow not possible: amount <= accountBalance <= totalSupply.
+            poolInfo[_poolID].tokenInfo.totalSupply -= _amount;
+        }
+
+        emit Transfer(_staker, address(0), _amount);
+
+        _afterTokenTransfer(_staker, address(0), _amount);
+    }
 }

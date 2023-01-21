@@ -9,7 +9,7 @@ import "forge-std/Script.sol";
 import "../BountyToken.sol";
 import "prb-math/UD60x18.sol";
 
-contract BountyTokenTest is BountyToken, DSTest, Script {
+contract DevBountyTokenTest is BountyToken, DSTest, Script {
     using SafeMath for *;
 
     BountyToken btt;

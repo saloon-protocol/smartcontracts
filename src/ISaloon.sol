@@ -39,7 +39,13 @@ interface ISaloon {
     }
 
     struct TokenInfo {
+        // amount staked in curve X-value
         uint256 currentX;
+        // current APY
         uint256 currentY;
+        // token totalSupply for each pool
+        uint256 totalSupply;
+        // user balance
+        // mapping(address => uint256) balances;
     }
 }
