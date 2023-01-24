@@ -6,7 +6,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
-import "./BountyToken.sol";
+import "./BountyTokenNFT.sol";
 import "./StrategyFactory.sol";
 
 /* Implement:
@@ -46,7 +46,7 @@ contract Saloon is
     OwnableUpgradeable,
     UUPSUpgradeable,
     ReentrancyGuard,
-    BountyToken
+    BountyTokenNFT
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -483,32 +483,35 @@ contract Saloon is
     ///////////////////////////////////////////////////////////////////////////////
 
     // Stake tokens in a Bounty pool to earn premium payments.
-    function stake(
-        uint256 _pid,
-        address _user,
-        uint256 _amount
-    ) external nonReentrant activePool(_pid) returns (bool) {
+    function stake(uint256 _pid, uint256 _amount)
+        external
+        nonReentrant
+        activePool(_pid)
+        returns (bool)
+    {
         require(_amount > 0);
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        UserInfo storage user = userInfo[_pid][msg.sender];
         uint256 balanceBefore = pool.generalInfo.totalStaked +
             pool.depositInfo.projectDepositHeld;
 
-        _updateUserReward(_pid, _user, true);
-        if (user.amount == 0) pool.stakerList.push(_user);
+        _updateUserReward(_pid, msg.sender, true);
+        if (user.amount == 0) pool.stakerList.push(msg.sender);
         pool.generalInfo.token.safeTransferFrom(
             msg.sender,
             address(this),
             _amount
         );
-        user.amount += _amount;
+
+        _mint(_pid, msg.sender, _amount);
+
         pool.generalInfo.totalStaked += _amount;
         require(
             pool.generalInfo.poolCap > 0 &&
                 pool.generalInfo.totalStaked <= pool.generalInfo.poolCap,
             "Exceeded pool limit"
         );
-        emit Staked(_user, _pid, _amount);
+        emit Staked(msg.sender, _pid, _amount);
 
         uint256 balanceAfter = pool.generalInfo.totalStaked +
             pool.depositInfo.projectDepositHeld;
@@ -518,67 +521,58 @@ contract Saloon is
     }
 
     /// Schedule unstake with specific amount
-    function scheduleUnstake(uint256 _pid, uint256 _amount)
-        external
-        returns (bool)
-    {
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        require(user.amount >= _amount, "Amount bigger than deposit");
-        user.timelock = block.timestamp + PERIOD;
-        user.timeLimit = block.timestamp + PERIOD + 3 days;
-        user.unstakeScheduledAmount = _amount;
+    function scheduleUnstake(uint256 _tokenId) external returns (bool) {
+        require(ownerOf(_tokenId) == msg.sender, "sender is not owner");
 
-        emit WithdrawalOrUnstakeScheduled(_pid, _amount);
+        uint256 _pid = nftToPid[_tokenId];
+        NFTInfo storage token = nftInfo[_pid][_tokenId];
+        token.timelock = block.timestamp + PERIOD;
+        token.timelimit = block.timestamp + PERIOD + 3 days;
+
+        uint256 withdrawableAmount = token.amount;
+
+        emit WithdrawalOrUnstakeScheduled(_pid, withdrawableAmount);
         return true;
     }
 
     // Withdraw LP tokens from MasterChef.
-    function unstake(
-        uint256 _pid,
-        uint256 _amount,
-        bool _shouldHarvest
-    ) external nonReentrant returns (bool) {
+    function unstake(uint256 _tokenId, bool _shouldHarvest)
+        external
+        nonReentrant
+        returns (bool)
+    {
+        require(ownerOf(_tokenId) == msg.sender, "sender is not owner");
+
+        uint256 _pid = nftToPid[_tokenId];
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        require(user.amount >= _amount, "withdraw: not good");
+        NFTInfo memory token = nftInfo[_pid][_tokenId];
+
+        uint256 amount = token.amount;
+
         require(
-            user.timelock < block.timestamp &&
-                user.timeLimit > block.timestamp &&
-                user.unstakeScheduledAmount >= _amount &&
-                user.timelock != 0,
-            "Timelock not set or not completed in time"
+            token.timelock < block.timestamp &&
+                token.timelimit > block.timestamp &&
+                "Timelock not set or not completed in time"
         );
-        user.timelock = 0;
+        token.timelock = 0;
+        token.timelimit = 0;
+        nftInfo[_pid][_tokenId] = token;
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.depositInfo.projectDepositHeld;
+            viewMinProjectDeposit(_pid);
 
         _updateUserReward(_pid, msg.sender, _shouldHarvest);
-        if (_amount > 0) {
-            user.amount = user.amount.sub(_amount);
+        if (amount > 0) {
             pool.generalInfo.totalStaked = pool.generalInfo.totalStaked.sub(
-                _amount
+                amount
             );
-            pool.generalInfo.token.safeTransfer(msg.sender, _amount);
+            pool.generalInfo.token.safeTransfer(msg.sender, amount);
         }
-        if (user.amount == 0) {
-            uint256 length = pool.stakerList.length;
-            for (uint256 i; i < length; ) {
-                if (pool.stakerList[i] == msg.sender) {
-                    address lastAddress = pool.stakerList[length - 1];
-                    pool.stakerList[i] = lastAddress;
-                    pool.stakerList.pop();
-                    break;
-                }
-                unchecked {
-                    ++i;
-                }
-            }
-        }
-        emit Unstaked(msg.sender, _pid, _amount);
+
+        emit Unstaked(msg.sender, _pid, amount);
 
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.depositInfo.projectDepositHeld;
+            viewMinProjectDeposit(_pid);
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
 
         return true;
