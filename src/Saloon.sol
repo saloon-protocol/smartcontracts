@@ -7,11 +7,39 @@ import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
 import "./BountyToken.sol";
+import "./StrategyFactory.sol";
 
 /* Implement:
 - TODO Integrate keeping track of owed rewards when transferring BountyTokens between users
 - TODO Integrate minting and burning of tokens in staking and unstaking
 - TEST event emissions
+import "./interfaces/ISaloon.sol";
+import "./interfaces/IStrategy.sol";
+import "./StrategyFactory.sol";
+
+/// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
+/// Ensure there is enough access control
+
+/* Implement:
+- DONE implement stargate strategy
+- TODO makeProjectDeposit BountyBalanceChanged Event
+- TODO Fill in missing events
+- DONE add token whitelisting
+- TEST event emissions
+- DONE Saloon collect all profits
+- DONE Wind down (kill) bounties
+- DONE Withdrawals with _shouldHarvest == false
+- DONE Ownership transfer
+- DONE Solve stack too deep
+- DONE Add back Saloon fees and commissions
+- DONE Withdraw saloon fee and commission to somewhere else
+- DONE Make it upgradeable
+- DONE Scheduled for withdrawals and unstaking
+- DONE Project deposits
+- DONE Bounty payouts needing to decrement all stakers
+- DONE - Billing premium when necessary.
+- DONE (all deployments go through BPM) - add token whitelist and whitelist check in `addNewBounty`
+- DONE All necessary view functions
 */
 
 contract Saloon is
@@ -42,6 +70,14 @@ contract Saloon is
 
     // Info of each user that stakes LP tokens.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
+
+    StrategyFactory strategyFactory;
+
+    // Mapping of all strategies for pid
+    mapping(uint256 => mapping(bytes32 => address)) public pidStrategies;
+
+    // Mapping of active strategy for pid
+    mapping(uint256 => bytes32) public activeStrategies;
 
     // Mapping of whitelisted tokens
     mapping(address => bool) public tokenWhitelist;
@@ -88,8 +124,9 @@ contract Saloon is
         _;
     }
 
-    function initialize() public initializer {
+    function initialize(address _strategyFactory) public initializer {
         __Ownable_init();
+        strategyFactory = StrategyFactory(_strategyFactory);
     }
 
     function _authorizeUpgrade(address _newImplementation)
@@ -102,6 +139,10 @@ contract Saloon is
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
     }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// SALOON OWNER FUNCTIONS ///////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     function updateTokenWhitelist(address _token, bool _whitelisted)
         external
@@ -150,11 +191,11 @@ contract Saloon is
         newBounty.generalInfo.tokenDecimals = decimals;
         newBounty.generalInfo.projectWallet = _projectWallet;
         newBounty.generalInfo.projectName = _projectName;
-        newBounty.generalInfo.projectDeposit = 0;
         newBounty.generalInfo.apy = 0;
         newBounty.generalInfo.poolCap = 0;
         newBounty.generalInfo.multiplier = 0;
         newBounty.generalInfo.totalStaked = 0;
+        newBounty.depositInfo.projectDepositHeld = 0;
         newBounty.poolTimelock.timelock = 0;
         newBounty.poolTimelock.timeLimit = 0;
         newBounty.poolTimelock.withdrawalScheduledAmount = 0;
@@ -167,24 +208,148 @@ contract Saloon is
         return (poolInfo.length - 1);
     }
 
-    function windDownBounty(uint256 _pid) external returns (bool) {
-        PoolInfo storage pool = poolInfo[_pid];
-        require(
-            msg.sender == pool.generalInfo.projectWallet ||
-                msg.sender == _owner,
-            "Not authorized"
-        );
-        pool.isActive = false;
-        pool.freezeTime = block.timestamp;
+    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
+        _billPremium(_pid, 0);
+    }
+
+    function collectSaloonProfits(address _token, address _saloonWallet)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        uint256 amount = saloonBountyProfit[_token] +
+            saloonPremiumProfit[_token];
+        saloonBountyProfit[_token] = 0;
+        saloonPremiumProfit[_token] = 0;
+        IERC20(_token).safeTransfer(_saloonWallet, amount);
         return true;
     }
+
+    function collectAllSaloonProfits(address _saloonWallet)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        uint256 activeTokenLength = activeTokens.length;
+        for (uint256 i; i < activeTokenLength; ++i) {
+            address _token = activeTokens[i];
+            uint256 amount = saloonBountyProfit[_token] +
+                saloonPremiumProfit[_token];
+
+            if (amount == 0) continue;
+
+            saloonBountyProfit[_token] = 0;
+            saloonPremiumProfit[_token] = 0;
+            IERC20(_token).safeTransfer(_saloonWallet, amount);
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// STRATEGY MANAGEMENT ///////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
+    function updateStrategyFactoryAddress(address _strategyFactory)
+        external
+        onlyOwner
+    {
+        strategyFactory = StrategyFactory(_strategyFactory);
+    }
+
+    function deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
+        internal
+        returns (address)
+    {
+        address deployedStrategy;
+        bytes32 strategyHash = keccak256(abi.encode(_strategyName));
+        address pidStrategy = pidStrategies[_pid][strategyHash];
+        if (pidStrategy == address(0)) {
+            deployedStrategy = strategyFactory.deployStrategy(_strategyName);
+        } else {
+            return pidStrategy;
+        }
+
+        if (deployedStrategy == address(0)) {
+            return address(0);
+        } else {
+            pidStrategies[_pid][strategyHash] = deployedStrategy;
+            activeStrategies[_pid] = strategyHash;
+        }
+
+        return deployedStrategy;
+    }
+
+    function withdrawFromActiveStrategy(uint256 _pid)
+        internal
+        returns (uint256)
+    {
+        PoolInfo storage pool = poolInfo[_pid];
+
+        uint256 fundsWithdrawn;
+        bytes32 activeStrategyHash = activeStrategies[_pid];
+
+        if (activeStrategyHash != bytes32(0)) {
+            IStrategy activeStrategy = IStrategy(
+                pidStrategies[_pid][activeStrategyHash]
+            );
+            uint256 activeStrategyLPDepositBalance = activeStrategy
+                .lpDepositBalance();
+            fundsWithdrawn = activeStrategy.withdrawFromStrategy(
+                1,
+                activeStrategyLPDepositBalance
+            );
+            pool.depositInfo.projectDepositHeld += fundsWithdrawn;
+        }
+
+        return fundsWithdrawn;
+    }
+
+    // Function to handle deploying new strategy, switching strategies, depositing to strategy
+    function handleStrategyDeposit(
+        uint256 _pid,
+        string memory _strategyName,
+        uint256 _newDeposit
+    ) internal returns (uint256) {
+        PoolInfo storage pool = poolInfo[_pid];
+
+        bytes32 _strategyHash = keccak256(abi.encode(_strategyName));
+        bytes32 activeStrategyHash = activeStrategies[_pid];
+        if (activeStrategyHash != _strategyHash) {
+            uint256 fundsWithdrawn = withdrawFromActiveStrategy(_pid);
+            address deployedStrategy = deployStrategyIfNeeded(
+                _pid,
+                _strategyName
+            );
+            if (deployedStrategy != address(0)) {
+                IStrategy strategy = IStrategy(deployedStrategy);
+                pool.depositInfo.projectDepositHeld -=
+                    _newDeposit +
+                    fundsWithdrawn;
+                pool.depositInfo.projectDepositInStrategy +=
+                    _newDeposit +
+                    fundsWithdrawn;
+                IERC20(pool.generalInfo.token).safeTransfer(
+                    deployedStrategy,
+                    _newDeposit + fundsWithdrawn
+                );
+                strategy.depositToStrategy(1); // This is stargate USDC pool hardcode
+            } else {
+                pool.depositInfo.projectDepositHeld += _newDeposit;
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// PROJECT OWNER FUNCTIONS ///////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     //todo change order of names to match inputs
     function setAPYandPoolCapAndDeposit(
         uint256 _pid,
         uint256 _poolCap,
         uint16 _apy,
-        uint256 _deposit
+        uint256 _deposit,
+        string memory _strategyName
     ) external {
         PoolInfo storage pool = poolInfo[_pid];
         require(
@@ -199,8 +364,10 @@ contract Saloon is
         );
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
         // requiredPremiumBalancePerPeriod includes Saloons commission
-        uint256 requiredPremiumBalancePerPeriod = (((_poolCap * _apy * PERIOD) /
-            BPS) / YEAR);
+        uint256 requiredPremiumBalancePerPeriod = calcRequiredPremiumBalancePerPeriod(
+                _poolCap,
+                _apy
+            );
 
         uint256 saloonCommission = (requiredPremiumBalancePerPeriod * //note could make this a pool.variable
             premiumFee) / BPS;
@@ -210,35 +377,40 @@ contract Saloon is
             address(this),
             _deposit + requiredPremiumBalancePerPeriod
         );
-        pool.generalInfo.projectDeposit += _deposit;
+        pool.depositInfo.projectDepositHeld += _deposit;
         pool.generalInfo.poolCap = _poolCap;
         pool.generalInfo.apy = _apy;
         pool.isActive = true;
         pool.premiumInfo.premiumBalance = requiredPremiumBalancePerPeriod;
-        pool
-            .premiumInfo
-            .requiredPremiumBalancePerPeriod = requiredPremiumBalancePerPeriod;
         pool.premiumInfo.premiumAvailable =
             requiredPremiumBalancePerPeriod -
             saloonCommission;
+
+        if (bytes(_strategyName).length > 0) {
+            handleStrategyDeposit(_pid, _strategyName, _deposit);
+        }
     }
 
-    function makeProjectDeposit(uint256 _pid, uint256 _deposit) external {
+    function makeProjectDeposit(
+        uint256 _pid,
+        uint256 _deposit,
+        string memory _strategyName
+    ) external {
         PoolInfo storage pool = poolInfo[_pid];
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            pool.depositInfo.projectDepositHeld;
         IERC20(pool.generalInfo.token).safeTransferFrom(
             msg.sender,
             address(this),
             _deposit
         );
-        pool.generalInfo.projectDeposit += _deposit;
+        pool.depositInfo.projectDepositHeld += _deposit;
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            pool.depositInfo.projectDepositHeld;
 
-        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
+        handleStrategyDeposit(_pid, _strategyName, _deposit);
     }
 
     function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
@@ -247,7 +419,7 @@ contract Saloon is
     {
         PoolInfo storage pool = poolInfo[_pid];
         require(
-            pool.generalInfo.projectDeposit >= _amount,
+            viewMinProjectDeposit(_pid) >= _amount,
             "Amount bigger than deposit"
         );
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
@@ -276,60 +448,39 @@ contract Saloon is
         );
         pool.poolTimelock.withdrawalExecuted = true;
 
+        if (pool.depositInfo.projectDepositHeld < _amount)
+            withdrawFromActiveStrategy(_pid);
+
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
-        pool.generalInfo.projectDeposit -= _amount;
+            viewMinProjectDeposit(_pid);
+        pool.depositInfo.projectDepositHeld -= _amount;
         IERC20(pool.generalInfo.token).safeTransfer(
             pool.generalInfo.projectWallet,
             _amount
         );
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            viewMinProjectDeposit(_pid);
 
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
         return true;
     }
 
-    // Return reward multiplier over the given _from to _to block.
-    function getMultiplier(uint256 _from, uint256 _to)
-        public
-        pure
-        returns (uint256)
-    {
-        return _to.sub(_from);
-    }
-
-    // make into function to view Pending yield to claim
-    function pendingToken(uint256 _pid, address _user)
-        public
-        view
-        returns (
-            uint256 totalPending,
-            uint256 actualPending,
-            uint256 newPending
-        )
-    {
+    function windDownBounty(uint256 _pid) external returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
-
-        uint256 totalStaked = pool.generalInfo.totalStaked;
-        uint256 endTime = pool.freezeTime != 0
-            ? pool.freezeTime
-            : block.timestamp;
-
-        // multiplier = number of seconds
-        uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
-        newPending =
-            (((user.amount * pool.generalInfo.apy) / BPS) * multiplier) /
-            YEAR;
-        totalPending = newPending + user.unclaimed;
-        // actualPending subtracts Saloon premium fee
-        actualPending = (totalPending * (BPS - premiumFee)) / BPS;
-
-        // note saloonPremiumProfit variable is updated in billPremium()
-
-        return (totalPending, actualPending, newPending);
+        require(
+            msg.sender == pool.generalInfo.projectWallet ||
+                msg.sender == _owner,
+            "Not authorized"
+        );
+        require(pool.isActive, "Pool not active");
+        pool.isActive = false;
+        pool.freezeTime = block.timestamp;
+        return true;
     }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// USER FUNCTIONS ////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     // Stake tokens in a Bounty pool to earn premium payments.
     function stake(
@@ -341,7 +492,7 @@ contract Saloon is
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            pool.depositInfo.projectDepositHeld;
 
         _updateUserReward(_pid, _user, true);
         if (user.amount == 0) pool.stakerList.push(_user);
@@ -360,7 +511,7 @@ contract Saloon is
         emit Staked(_user, _pid, _amount);
 
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            pool.depositInfo.projectDepositHeld;
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
 
         return true;
@@ -400,7 +551,7 @@ contract Saloon is
         user.timelock = 0;
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            pool.depositInfo.projectDepositHeld;
 
         _updateUserReward(_pid, msg.sender, _shouldHarvest);
         if (_amount > 0) {
@@ -427,7 +578,7 @@ contract Saloon is
         emit Unstaked(msg.sender, _pid, _amount);
 
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            pool.depositInfo.projectDepositHeld;
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
 
         return true;
@@ -479,9 +630,9 @@ contract Saloon is
         _updateUserReward(_pid, msg.sender, true);
     }
 
-    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
-        _billPremium(_pid, 0);
-    }
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// INTERNAL FUNCTIONS ////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     function _billPremium(uint256 _pid, uint256 _pending) internal {
         PoolInfo storage pool = poolInfo[_pid];
@@ -489,7 +640,10 @@ contract Saloon is
         // Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
         // This prevents anyone calling this 1000 times and draining the project wallet
 
-        uint256 billAmount = pool.premiumInfo.requiredPremiumBalancePerPeriod -
+        uint256 billAmount = calcRequiredPremiumBalancePerPeriod(
+            pool.generalInfo.poolCap,
+            pool.generalInfo.apy
+        ) -
             pool.premiumInfo.premiumBalance +
             _pending; // NOTE bill premium now doesnt bill includiing saloon commission...
 
@@ -522,7 +676,7 @@ contract Saloon is
     ) public onlyOwner returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 totalStaked = pool.generalInfo.totalStaked;
-        uint256 poolTotal = totalStaked + pool.generalInfo.projectDeposit;
+        uint256 poolTotal = totalStaked + viewMinProjectDeposit(_pid);
         uint256 balanceBefore = poolTotal;
 
         // if stakers can cover payout
@@ -572,8 +726,9 @@ contract Saloon is
             pool.generalInfo.totalStaked = 0;
             delete pool.stakerList;
             // calculate remaining amount for project to pay
-            uint256 projectPayout = poolTotal - totalStaked;
-            pool.generalInfo.projectDeposit -= projectPayout;
+            withdrawFromActiveStrategy(_pid);
+            uint256 projectPayout = _amount - totalStaked;
+            pool.depositInfo.projectDepositHeld -= projectPayout;
         } else if (_amount == poolTotal) {
             // set all staker balances to zero
             uint256 length = pool.stakerList.length;
@@ -588,7 +743,8 @@ contract Saloon is
             }
             pool.generalInfo.totalStaked = 0;
             delete pool.stakerList;
-            pool.generalInfo.projectDeposit = 0;
+            withdrawFromActiveStrategy(_pid);
+            pool.depositInfo.projectDepositHeld = 0;
         } else {
             revert("Amount too high");
         }
@@ -599,10 +755,10 @@ contract Saloon is
         uint256 hunterPayout = _amount - saloonCommission;
         // update saloon Commission variable
         saloonBountyProfit[address(pool.generalInfo.token)] += saloonCommission;
-        // transfer payout to hunter
-        pool.generalInfo.token.safeTransfer(_hunter, hunterPayout);
+        // transfer payout to hunteI
+        IERC20(pool.generalInfo.token).safeTransfer(_hunter, hunterPayout);
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.generalInfo.projectDeposit;
+            viewMinProjectDeposit(_pid);
 
         emit BountyPaid(
             block.timestamp,
@@ -614,42 +770,46 @@ contract Saloon is
         return true;
     }
 
-    function collectSaloonProfits(address _token, address _saloonWallet)
-        external
-        onlyOwner
-        returns (bool)
+    // Return reward multiplier over the given _from to _to block.
+    function getMultiplier(uint256 _from, uint256 _to)
+        public
+        pure
+        returns (uint256)
     {
-        uint256 amount = saloonBountyProfit[_token] +
-            saloonPremiumProfit[_token];
-        saloonBountyProfit[_token] = 0;
-        saloonPremiumProfit[_token] = 0;
-        IERC20(_token).safeTransfer(_saloonWallet, amount);
-        return true;
+        return _to.sub(_from);
     }
 
-    function collectAllSaloonProfits(address _saloonWallet)
-        external
-        onlyOwner
-        returns (bool)
+    // make into function to view Pending yield to claim
+    function pendingToken(uint256 _pid, address _user)
+        public
+        view
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        )
     {
-        uint256 activeTokenLength = activeTokens.length;
-        for (uint256 i; i < activeTokenLength; ++i) {
-            address _token = activeTokens[i];
-            uint256 amount = saloonBountyProfit[_token] +
-                saloonPremiumProfit[_token];
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][_user];
 
-            if (amount == 0) continue;
+        uint256 totalStaked = pool.generalInfo.totalStaked;
+        uint256 endTime = pool.freezeTime != 0
+            ? pool.freezeTime
+            : block.timestamp;
 
-            saloonBountyProfit[_token] = 0;
-            saloonPremiumProfit[_token] = 0;
-            IERC20(_token).safeTransfer(_saloonWallet, amount);
-        }
-        return true;
+        // multiplier = number of seconds
+        uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
+        newPending =
+            (((user.amount * pool.generalInfo.apy) / BPS) * multiplier) /
+            YEAR;
+        totalPending = newPending + user.unclaimed;
+        // actualPending subtracts Saloon premium fee
+        actualPending = (totalPending * (BPS - premiumFee)) / BPS;
+
+        // note saloonPremiumProfit variable is updated in billPremium()
+
+        return (totalPending, actualPending, newPending);
     }
-
-    // ============================
-    // View Functions
-    // ============================
 
     function viewSaloonProfitBalance(address _token)
         external
@@ -667,8 +827,14 @@ contract Saloon is
 
     function viewBountyBalance(uint256 _pid) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
-        return (pool.generalInfo.totalStaked + pool.generalInfo.projectDeposit);
+        return (pool.generalInfo.totalStaked + viewMinProjectDeposit(_pid));
         // note does totalStaked/project deposit take into account saloon fee?
+    }
+
+    function viewMinProjectDeposit(uint256 _pid) public view returns (uint256) {
+        PoolInfo memory pool = poolInfo[_pid];
+        return (pool.depositInfo.projectDepositHeld +
+            pool.depositInfo.projectDepositInStrategy);
     }
 
     function viewTotalStaked(uint256 _pid) public view returns (uint256) {
@@ -723,9 +889,10 @@ contract Saloon is
     {
         PoolInfo memory pool = poolInfo[_pid];
 
-        requiredPremiumBalancePerPeriod = pool
-            .premiumInfo
-            .requiredPremiumBalancePerPeriod;
+        requiredPremiumBalancePerPeriod = calcRequiredPremiumBalancePerPeriod(
+            pool.generalInfo.poolCap,
+            pool.generalInfo.apy
+        );
         premiumBalance = pool.premiumInfo.premiumBalance;
         premiumAvailable = pool.premiumInfo.premiumAvailable;
     }
@@ -748,8 +915,8 @@ contract Saloon is
     function viewHackerPayout(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return
-            ((pool.generalInfo.totalStaked + pool.generalInfo.projectDeposit) *
-                (BPS - bountyFee)) / BPS;
+            ((pool.generalInfo.totalStaked +
+                pool.depositInfo.projectDepositHeld) * (BPS - bountyFee)) / BPS;
     }
 
     function viewBountyInfo(uint256 _pid)
@@ -766,5 +933,13 @@ contract Saloon is
         staked = viewTotalStaked(_pid);
         apy = viewPoolAPY(_pid);
         poolCap = viewPoolCap(_pid);
+    }
+
+    function calcRequiredPremiumBalancePerPeriod(uint256 _poolCap, uint256 _apy)
+        public
+        pure
+        returns (uint256 requiredPremiumBalance)
+    {
+        return (((_poolCap * _apy * PERIOD) / BPS) / YEAR);
     }
 }
