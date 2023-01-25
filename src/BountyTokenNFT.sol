@@ -53,12 +53,15 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     struct NFTInfo {
         uint256 amount;
         uint256 apy;
+        uint256 unclaimed;
+        uint256 lastClaimedTime;
         uint256 timelock;
         uint256 timelimit;
     }
 
     mapping(uint256 => uint256) public nftToPid;
-    mapping(uint256 => mapping(uint256 => NFTInfo)) public nftInfo;
+    mapping(uint256 => NFTInfo) public nftInfo; // tokenId => NFTInfo
+    mapping(uint256 => uint256[]) public pidNFTList; // pid => tokenIds
 
     constructor() initializer {
         __ERC721_init("BountyToken", "BTT");
@@ -166,6 +169,29 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         poolInfo[_poolID].tokenInfo.currentY = newAPY;
     }
 
+    function removeNFTFromPidList(uint256 _tokenId) internal {
+        uint256 pid = nftToPid[_tokenId];
+
+        uint256[] memory cachedList = pidNFTList[pid];
+        uint256 length = cachedList.length;
+        uint256 pos;
+
+        for (uint256 i = 0; i < length; ++i) {
+            if (cachedList[i] == _tokenId) {
+                pos = i;
+                break;
+            }
+        }
+
+        if (pos >= length) revert("Token not found in array");
+
+        for (uint256 i = pos; i < length - 1; ++i) {
+            cachedList[i] = cachedList[i + 1];
+        }
+        pidNFTList[pid] = cachedList;
+        pidNFTList[pid].pop(); // Can't pop from array in memory, so pop after writing to storage
+    }
+
     // * mint function that includes pool ID when minting
     function _mint(
         uint256 _pid,
@@ -178,13 +204,14 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
         uint256 tokenId = super._mint(_staker);
 
-        nftToPid[tokenId] = _pid;
-
         NFTInfo memory token;
         token.amount = _amount;
         token.apy = apy;
+        token.lastClaimedTime = block.timestamp;
 
-        nftInfo[_pid][tokenId] = token;
+        nftInfo[tokenId] = token;
+        pidNFTList[_pid].push(tokenId);
+        nftToPid[tokenId] = _pid;
 
         poolInfo[_pid].tokenInfo.totalSupply += _amount;
         updateCurrentX(poolInfo[_pid].tokenInfo.totalSupply, _pid);
@@ -214,11 +241,13 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     // burn function that takes into account poolID
     function _burn(uint256 _tokenId) internal override {
         uint256 pid = nftToPid[_tokenId];
-        NFTInfo memory token = nftInfo[pid][_tokenId];
+        NFTInfo memory token = nftInfo[_tokenId];
 
         // _beforeTokenTransfer(_staker, address(0), _amount);
 
         super._burn(_tokenId);
+
+        removeNFTFromPidList(_tokenId);
 
         poolInfo[pid].tokenInfo.totalSupply -= token.amount;
 

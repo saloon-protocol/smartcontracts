@@ -59,17 +59,9 @@ contract Saloon is
     mapping(address => uint256) public saloonPremiumProfit;
     // Info of each user.
     //NOTE This might need to be changed because stakerBalance has been introduced in BountyToken
-    struct UserInfo {
-        uint256 amount; // How many tokens the user has staked.
-        uint256 unclaimed; // Unclaimed premium.
-        uint256 lastRewardTime; // Reward debt. See explanation below.
-        uint256 timelock;
-        uint256 timeLimit;
-        uint256 unstakeScheduledAmount;
-    }
 
     // Info of each user that stakes LP tokens.
-    mapping(uint256 => mapping(address => UserInfo)) public userInfo;
+    mapping(uint256 => mapping(address => NFTInfo)) public nFTInfo;
 
     StrategyFactory strategyFactory;
 
@@ -487,23 +479,21 @@ contract Saloon is
         external
         nonReentrant
         activePool(_pid)
-        returns (bool)
+        returns (uint256)
     {
         require(_amount > 0);
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
+
         uint256 balanceBefore = pool.generalInfo.totalStaked +
             pool.depositInfo.projectDepositHeld;
 
-        _updateUserReward(_pid, msg.sender, true);
-        if (user.amount == 0) pool.stakerList.push(msg.sender);
         pool.generalInfo.token.safeTransferFrom(
             msg.sender,
             address(this),
             _amount
         );
 
-        _mint(_pid, msg.sender, _amount);
+        uint256 tokenId = _mint(_pid, msg.sender, _amount);
 
         pool.generalInfo.totalStaked += _amount;
         require(
@@ -517,7 +507,7 @@ contract Saloon is
             pool.depositInfo.projectDepositHeld;
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
 
-        return true;
+        return tokenId;
     }
 
     /// Schedule unstake with specific amount
@@ -525,7 +515,7 @@ contract Saloon is
         require(ownerOf(_tokenId) == msg.sender, "sender is not owner");
 
         uint256 _pid = nftToPid[_tokenId];
-        NFTInfo storage token = nftInfo[_pid][_tokenId];
+        NFTInfo storage token = nftInfo[_tokenId];
         token.timelock = block.timestamp + PERIOD;
         token.timelimit = block.timestamp + PERIOD + 3 days;
 
@@ -545,23 +535,30 @@ contract Saloon is
 
         uint256 _pid = nftToPid[_tokenId];
         PoolInfo storage pool = poolInfo[_pid];
-        NFTInfo memory token = nftInfo[_pid][_tokenId];
+        NFTInfo memory token = nftInfo[_tokenId];
 
         uint256 amount = token.amount;
 
         require(
             token.timelock < block.timestamp &&
-                token.timelimit > block.timestamp &&
-                "Timelock not set or not completed in time"
+                token.timelimit > block.timestamp,
+            "Timelock not set or not completed in time"
         );
+        token.amount = 0;
         token.timelock = 0;
         token.timelimit = 0;
-        nftInfo[_pid][_tokenId] = token;
+        nftInfo[_tokenId] = token;
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
             viewMinProjectDeposit(_pid);
 
-        _updateUserReward(_pid, msg.sender, _shouldHarvest);
+        _updateTokenReward(_tokenId, _shouldHarvest);
+        // If user is claiming premium while unstaking, burn the NFT position.
+        // We only allow the user to not claim premium to ensure that they can
+        // unstake even if premium can't be pulled from project.
+        // We burn the position if both token.amount and token.unclaimed are 0.
+        if (_shouldHarvest) _burn(_tokenId);
+
         if (amount > 0) {
             pool.generalInfo.totalStaked = pool.generalInfo.totalStaked.sub(
                 amount
@@ -578,26 +575,26 @@ contract Saloon is
         return true;
     }
 
-    function _updateUserReward(
-        uint256 _pid,
-        address _user,
-        bool _shouldHarvest
-    ) internal {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+    function _updateTokenReward(uint256 _tokenId, bool _shouldHarvest)
+        internal
+    {
+        uint256 pid = nftToPid[_tokenId];
+        PoolInfo memory pool = poolInfo[pid];
+        NFTInfo storage token = nftInfo[_tokenId];
+
         // updatePool(0);
-        if (user.amount == 0 && user.unclaimed == 0) {
-            user.lastRewardTime = block.timestamp;
+        if (token.amount == 0 && token.unclaimed == 0) {
+            token.lastClaimedTime = block.timestamp;
             return;
         }
         (
             uint256 totalPending,
             uint256 actualPending,
             uint256 newPending
-        ) = pendingToken(_pid, _user);
+        ) = pendingPremium(_tokenId);
         if (!_shouldHarvest) {
-            user.unclaimed += newPending;
-            user.lastRewardTime = pool.freezeTime != 0
+            token.unclaimed += newPending;
+            token.lastClaimedTime = pool.freezeTime != 0
                 ? pool.freezeTime
                 : block.timestamp;
             return;
@@ -605,23 +602,27 @@ contract Saloon is
 
         if (totalPending > pool.premiumInfo.premiumBalance) {
             // bill premium calculates commission
-            _billPremium(_pid, totalPending);
+            _billPremium(pid, totalPending);
         }
         // if billPremium is not called we need to calcualte commission here
         if (totalPending > 0) {
-            user.unclaimed = 0;
-            user.lastRewardTime = pool.freezeTime != 0
+            token.unclaimed = 0;
+            token.lastClaimedTime = pool.freezeTime != 0
                 ? pool.freezeTime
                 : block.timestamp;
             pool.premiumInfo.premiumBalance -= totalPending;
             pool.premiumInfo.premiumAvailable -= actualPending;
-            pool.generalInfo.token.safeTransfer(_user, actualPending);
+            pool.generalInfo.token.safeTransfer(
+                ownerOf(_tokenId),
+                actualPending
+            );
         }
     }
 
     // Harvest one pool
-    function claimPremium(uint256 _pid) external nonReentrant {
-        _updateUserReward(_pid, msg.sender, true);
+    function claimPremium(uint256 _tokenId) external nonReentrant {
+        // Intentionally allow non-owners to claim for token
+        _updateTokenReward(_tokenId, true);
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -676,13 +677,13 @@ contract Saloon is
         // if stakers can cover payout
         if (_amount <= totalStaked) {
             if (_amount == totalStaked) {
-                // set all staker balances to zero
-                uint256 length = pool.stakerList.length;
+                // set all token balances to zero
+                uint256 length = pidNFTList[_pid].length;
                 for (uint256 i; i < length; ) {
-                    address _user = pool.stakerList[i];
-                    UserInfo storage user = userInfo[_pid][_user];
-                    _updateUserReward(_pid, _user, false);
-                    user.amount = 0;
+                    uint256 tokenId = pidNFTList[_pid][i];
+                    NFTInfo storage token = nftInfo[tokenId];
+                    _updateTokenReward(tokenId, false);
+                    token.amount = 0;
                     unchecked {
                         ++i;
                     }
@@ -691,13 +692,13 @@ contract Saloon is
                 delete pool.stakerList;
             } else {
                 uint256 percentage = ((_amount * PRECISION) / totalStaked);
-                uint256 length = pool.stakerList.length;
+                uint256 length = pidNFTList[_pid].length;
                 for (uint256 i; i < length; ) {
-                    address _user = pool.stakerList[i];
-                    UserInfo storage user = userInfo[_pid][_user];
-                    _updateUserReward(_pid, _user, false);
-                    uint256 userPay = (user.amount * percentage) / PRECISION;
-                    user.amount -= userPay;
+                    uint256 tokenId = pidNFTList[_pid][i];
+                    NFTInfo storage token = nftInfo[tokenId];
+                    _updateTokenReward(tokenId, false);
+                    uint256 userPay = (token.amount * percentage) / PRECISION;
+                    token.amount -= userPay;
                     pool.generalInfo.totalStaked -= userPay;
                     unchecked {
                         ++i;
@@ -706,13 +707,13 @@ contract Saloon is
             }
             // if stakers alone cannot cover payout
         } else if (_amount > totalStaked && _amount < poolTotal) {
-            // set all staker balances to zero
-            uint256 length = pool.stakerList.length;
+            // set all token balances to zero
+            uint256 length = pidNFTList[_pid].length;
             for (uint256 i; i < length; ) {
-                address _user = pool.stakerList[i];
-                UserInfo storage user = userInfo[_pid][_user];
-                _updateUserReward(_pid, _user, false);
-                user.amount = 0;
+                uint256 tokenId = pidNFTList[_pid][i];
+                NFTInfo storage token = nftInfo[tokenId];
+                _updateTokenReward(tokenId, false);
+                token.amount = 0;
                 unchecked {
                     ++i;
                 }
@@ -723,22 +724,25 @@ contract Saloon is
             withdrawFromActiveStrategy(_pid);
             uint256 projectPayout = _amount - totalStaked;
             pool.depositInfo.projectDepositHeld -= projectPayout;
-        } else if (_amount == poolTotal) {
-            // set all staker balances to zero
-            uint256 length = pool.stakerList.length;
-            for (uint256 i; i < length; ) {
-                address _user = pool.stakerList[i];
-                UserInfo storage user = userInfo[_pid][_user];
-                _updateUserReward(_pid, _user, false);
-                user.amount = 0;
-                unchecked {
-                    ++i;
-                }
-            }
-            pool.generalInfo.totalStaked = 0;
-            delete pool.stakerList;
-            withdrawFromActiveStrategy(_pid);
-            pool.depositInfo.projectDepositHeld = 0;
+
+            // I believe the following condition is unnecessary
+            //
+            // } else if (_amount == poolTotal) {
+            //     // set all staker balances to zero
+            //     uint256 length = pool.stakerList.length;
+            //     for (uint256 i; i < length; ) {
+            //         address _user = pool.stakerList[i];
+            //         NFTInfo storage user = nftInfo[_user];
+            //         _updateTokenReward(_tokenId, false);
+            //         user.amount = 0;
+            //         unchecked {
+            //             ++i;
+            //         }
+            //     }
+            //     pool.generalInfo.totalStaked = 0;
+            //     delete pool.stakerList;
+            //     withdrawFromActiveStrategy(_pid);
+            //     pool.depositInfo.projectDepositHeld = 0;
         } else {
             revert("Amount too high");
         }
@@ -774,7 +778,7 @@ contract Saloon is
     }
 
     // make into function to view Pending yield to claim
-    function pendingToken(uint256 _pid, address _user)
+    function pendingPremium(uint256 _tokenId)
         public
         view
         returns (
@@ -783,20 +787,20 @@ contract Saloon is
             uint256 newPending
         )
     {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_user];
+        uint256 pid = nftToPid[_tokenId];
+        PoolInfo memory pool = poolInfo[pid];
+        NFTInfo memory token = nftInfo[_tokenId];
 
-        uint256 totalStaked = pool.generalInfo.totalStaked;
         uint256 endTime = pool.freezeTime != 0
             ? pool.freezeTime
             : block.timestamp;
 
         // multiplier = number of seconds
-        uint256 multiplier = getMultiplier(user.lastRewardTime, endTime);
+        uint256 multiplier = getMultiplier(token.lastClaimedTime, endTime);
         newPending =
-            (((user.amount * pool.generalInfo.apy) / BPS) * multiplier) /
+            (((token.amount * pool.generalInfo.apy) / BPS) * multiplier) /
             YEAR;
-        totalPending = newPending + user.unclaimed;
+        totalPending = newPending + token.unclaimed;
         // actualPending subtracts Saloon premium fee
         actualPending = (totalPending * (BPS - premiumFee)) / BPS;
 
@@ -846,30 +850,31 @@ contract Saloon is
         return pool.generalInfo.apy;
     }
 
-    function viewUserInfo(uint256 _pid, address _user)
+    function viewTokenInfo(uint256 _tokenId)
         external
         view
         returns (
             uint256 amount,
+            uint256 apy,
             uint256 actualPending,
-            uint256 unstakeScheduledAmount,
             uint256 timelock
         )
     {
-        UserInfo storage user = userInfo[_pid][_user];
-        amount = user.amount;
-        (, actualPending, ) = pendingToken(_pid, _user);
-        unstakeScheduledAmount = user.unstakeScheduledAmount;
-        timelock = user.timelock;
+        uint256 pid = nftToPid[_tokenId];
+        NFTInfo storage token = nftInfo[_tokenId];
+        amount = token.amount;
+        apy = token.apy;
+        (, actualPending, ) = pendingPremium(_tokenId);
+        timelock = token.timelock;
     }
 
-    function viewUserUnclaimed(uint256 _pid, address _user)
+    function viewUserUnclaimed(uint256 _tokenId)
         external
         view
         returns (uint256 unclaimed)
     {
-        UserInfo storage user = userInfo[_pid][_user];
-        unclaimed = user.unclaimed;
+        NFTInfo storage token = nftInfo[_tokenId];
+        unclaimed = token.unclaimed;
     }
 
     function viewPoolPremiumInfo(uint256 _pid)
