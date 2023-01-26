@@ -200,7 +200,8 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     ) internal returns (uint256) {
         require(_staker != address(0), "ERC20: mint to the zero address");
 
-        uint256 apy = calculateEffectiveAPY(_amount, _pid);
+        // uint256 apy = calculateEffectiveAPY(_amount, _pid);
+        uint256 apy = poolInfo[_pid].generalInfo.apy;
 
         uint256 tokenId = super._mint(_staker);
 
@@ -208,8 +209,8 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         token.amount = _amount;
         token.apy = apy;
         token.lastClaimedTime = block.timestamp;
-
         nftInfo[tokenId] = token;
+
         pidNFTList[_pid].push(tokenId);
         nftToPid[tokenId] = _pid;
 

@@ -535,24 +535,25 @@ contract Saloon is
 
         uint256 _pid = nftToPid[_tokenId];
         PoolInfo storage pool = poolInfo[_pid];
-        NFTInfo memory token = nftInfo[_tokenId];
-
-        uint256 amount = token.amount;
+        NFTInfo storage token = nftInfo[_tokenId];
 
         require(
             token.timelock < block.timestamp &&
                 token.timelimit > block.timestamp,
             "Timelock not set or not completed in time"
         );
+
+        _updateTokenReward(_tokenId, _shouldHarvest);
+
+        uint256 amount = token.amount;
+
         token.amount = 0;
         token.timelock = 0;
         token.timelimit = 0;
-        nftInfo[_tokenId] = token;
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
             viewMinProjectDeposit(_pid);
 
-        _updateTokenReward(_tokenId, _shouldHarvest);
         // If user is claiming premium while unstaking, burn the NFT position.
         // We only allow the user to not claim premium to ensure that they can
         // unstake even if premium can't be pulled from project.
@@ -579,24 +580,24 @@ contract Saloon is
         internal
     {
         uint256 pid = nftToPid[_tokenId];
-        PoolInfo memory pool = poolInfo[pid];
+        PoolInfo storage pool = poolInfo[pid];
         NFTInfo storage token = nftInfo[_tokenId];
 
-        // updatePool(0);
-        if (token.amount == 0 && token.unclaimed == 0) {
-            token.lastClaimedTime = block.timestamp;
-            return;
-        }
+        // if (token.amount == 0 && token.unclaimed == 0) {
+        //     token.lastClaimedTime = block.timestamp;
+        //     return;
+        // }
         (
             uint256 totalPending,
             uint256 actualPending,
             uint256 newPending
         ) = pendingPremium(_tokenId);
+
         if (!_shouldHarvest) {
-            token.unclaimed += newPending;
             token.lastClaimedTime = pool.freezeTime != 0
                 ? pool.freezeTime
                 : block.timestamp;
+            token.unclaimed += newPending;
             return;
         }
 
@@ -706,7 +707,7 @@ contract Saloon is
                 }
             }
             // if stakers alone cannot cover payout
-        } else if (_amount > totalStaked && _amount < poolTotal) {
+        } else if (_amount > totalStaked && _amount <= poolTotal) {
             // set all token balances to zero
             uint256 length = pidNFTList[_pid].length;
             for (uint256 i; i < length; ) {
@@ -857,14 +858,16 @@ contract Saloon is
             uint256 amount,
             uint256 apy,
             uint256 actualPending,
+            uint256 unclaimed,
             uint256 timelock
         )
     {
         uint256 pid = nftToPid[_tokenId];
-        NFTInfo storage token = nftInfo[_tokenId];
+        NFTInfo memory token = nftInfo[_tokenId];
         amount = token.amount;
         apy = token.apy;
         (, actualPending, ) = pendingPremium(_tokenId);
+        unclaimed = token.unclaimed;
         timelock = token.timelock;
     }
 
