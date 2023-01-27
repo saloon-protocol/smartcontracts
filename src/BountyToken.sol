@@ -84,7 +84,10 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
     function convertStakeToPoolMeasurements(uint256 _stake, uint256 _poolID)
         internal
         view
-        returns (uint256 x, uint256 poolPercentage)
+        returns (
+            uint256 x,
+            uint256 poolPercentage // is returning poolPercentage necessary?
+        )
     {
         poolPercentage =
             (_stake * PRECISION) /
