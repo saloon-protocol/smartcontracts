@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "prb-math/UD60x18.sol";
-import "./ISaloon.sol";
+import "./interfaces/ISaloon.sol";
 
 //TODO Turn some magic numbers used in calculateEffectiveAPY to constants
 

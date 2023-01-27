@@ -6,6 +6,7 @@ interface ISaloon {
     // Info of each pool.
     struct PoolInfo {
         GeneralInfo generalInfo;
+        DepositInfo depositInfo;
         PremiumInfo premiumInfo;
         TimelockInfo poolTimelock;
         TokenInfo tokenInfo;
@@ -20,13 +21,17 @@ interface ISaloon {
         uint16 apy;
         address projectWallet;
         string projectName;
-        uint256 projectDeposit;
         uint256 poolCap;
         uint256 totalStaked;
         uint256 multiplier;
     }
+
+    struct DepositInfo {
+        uint256 projectDepositHeld;
+        uint256 projectDepositInStrategy;
+    }
+
     struct PremiumInfo {
-        uint256 requiredPremiumBalancePerPeriod;
         uint256 premiumBalance;
         uint256 premiumAvailable;
     }
