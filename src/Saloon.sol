@@ -620,6 +620,13 @@ contract Saloon is
         }
     }
 
+    // CONSOLIDATION
+    function consolidate() external {
+        // loop through the unstakes (where are the gaps)
+        //      calcualte what is the new x-axis positions and shift all to the left. Repeat until no more gaps
+        // calculate how much APY NFTs should have according to their new position in x-axis
+    }
+
     // Harvest one pool
     function claimPremium(uint256 _tokenId) external nonReentrant {
         // Intentionally allow non-owners to claim for token
