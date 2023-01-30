@@ -32,7 +32,7 @@ contract Deploy is Script {
         // ERC20PresetFixedSupply USDC = new ERC20PresetFixedSupply("Saloon USDC", "SUSDC", 10000000 ether, projectWallet);
         // // END TESTNET
 
-        saloon.updateTokenWhitelist(address(USDC), true);
+        saloon.updateTokenWhitelist(address(USDC), true, 10 * 10**6);
         USDC.approve(address(saloonProxy), 1000 ether);
         uint256 pid = saloon.addNewBountyPool(
             address(USDC),

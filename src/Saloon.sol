@@ -76,6 +76,8 @@ contract Saloon is
     // Mapping of whitelisted tokens
     address[] public activeTokens;
 
+    mapping(address => uint256) public minTokenStakeAmount;
+
     event NewBountyDeployed(
         uint256 indexed pid,
         address indexed token,
@@ -136,13 +138,13 @@ contract Saloon is
     /////////////////////////// SALOON OWNER FUNCTIONS ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
-    function updateTokenWhitelist(address _token, bool _whitelisted)
-        external
-        onlyOwner
-        returns (bool)
-    {
+    function updateTokenWhitelist(
+        address _token,
+        bool _whitelisted,
+        uint256 _minStakeAmount
+    ) external onlyOwner returns (bool) {
         require(
-            tokenWhitelist[_token] == !_whitelisted,
+            tokenWhitelist[_token] == !_whitelisted || _whitelisted == false,
             "whitelist already set"
         );
         tokenWhitelist[_token] = _whitelisted;
@@ -150,6 +152,7 @@ contract Saloon is
 
         if (_whitelisted) {
             activeTokens.push(_token);
+            minTokenStakeAmount[_token] = _minStakeAmount;
         } else {
             uint256 activeTokenLength = activeTokens.length;
             for (uint256 i; i < activeTokenLength; ++i) {
@@ -378,6 +381,8 @@ contract Saloon is
             requiredPremiumBalancePerPeriod -
             saloonCommission;
 
+        updateMultiplier(_pid, _apy);
+
         if (bytes(_strategyName).length > 0) {
             handleStrategyDeposit(_pid, _strategyName, _deposit);
         }
@@ -481,8 +486,11 @@ contract Saloon is
         activePool(_pid)
         returns (uint256)
     {
-        require(_amount > 0);
         PoolInfo storage pool = poolInfo[_pid];
+        require(
+            _amount >= minTokenStakeAmount[address(pool.generalInfo.token)],
+            "Min stake not met"
+        );
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
             pool.depositInfo.projectDepositHeld;
@@ -810,9 +818,7 @@ contract Saloon is
 
         // multiplier = number of seconds
         uint256 multiplier = getMultiplier(token.lastClaimedTime, endTime);
-        newPending =
-            (((token.amount * pool.generalInfo.apy) / BPS) * multiplier) /
-            YEAR;
+        newPending = (((token.amount * token.apy) / BPS) * multiplier) / YEAR;
         totalPending = newPending + token.unclaimed;
         // actualPending subtracts Saloon premium fee
         actualPending = (totalPending * (BPS - premiumFee)) / BPS;
