@@ -622,9 +622,14 @@ contract Saloon is
 
     // CONSOLIDATION
     function consolidate() external {
-        // loop through the unstakes (where are the gaps)
+        // loop through the unstakes (where are the gaps).
+        //              How do we get the unstakes (most recently burnt nfts)?
+        //              - Have array with burnt tokenIds, sort it out from lowest to biggest.
         //      calcualte what is the new x-axis positions and shift all to the left. Repeat until no more gaps
         // calculate how much APY NFTs should have according to their new position in x-axis
+        // empty burnt tokens array
+        //  OR
+        // When unstake occurs all positions are moved to the left and consolidate() only calculates their new APY
     }
 
     // Harvest one pool
