@@ -215,7 +215,10 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         pidNFTList[_pid].push(tokenId);
         nftToPid[tokenId] = _pid;
 
-        poolInfo[_pid].tokenInfo.totalSupply += _amount;
+        poolInfo[_pid].tokenInfo.totalSupply += 5 ether;
+        // poolInfo[_pid].tokenInfo.totalSupply +=
+        //     (_amount * PRECISION) /
+        //     poolInfo[_pid].generalInfo.tokenDecimals;
         updateCurrentX(_pid, poolInfo[_pid].tokenInfo.totalSupply);
 
         // _afterTokenTransfer(address(0), _staker, _amount);
@@ -273,7 +276,10 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
             NFTInfo storage token = nftInfo[tokenId];
             uint256 stakeAmount = token.amount;
             token.apy = calculateEffectiveAPY(_pid, stakeAmount);
-            updateCurrentX(_pid, stakeAmount);
+            updateCurrentX(
+                _pid,
+                poolInfo[_pid].tokenInfo.totalSupply + stakeAmount
+            );
         }
     }
 
