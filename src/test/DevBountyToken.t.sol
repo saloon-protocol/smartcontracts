@@ -118,8 +118,15 @@ contract DevBountyTokenTest is BountyToken, DSTest, Script {
 
         uint256 denominator = ((0.66 ether * (x)) / 1e18) + 0.1 ether;
         assertEq(denominator, 0.133 ether);
-        // uint256 y = (1 ether * 1e18) / denominator;
-        // assertEq(y, 9.999670010889640641 ether);
+        uint256 y = (1 ether * 1e18) / denominator;
+        assertEq(y, 7.518796992481203007 ether);
+
+        // Test for zero x
+        uint256 x0 = 0.00 ether;
+
+        uint256 currentApy = curveImplementation(x0);
+
+        assertEq(currentApy, 10 ether);
     }
 
     function testDefiniteIntegral() external {

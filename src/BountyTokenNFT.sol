@@ -80,7 +80,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     //      1/(0.66x+0.1)
     function curveImplementation(uint256 _x) internal pure returns (uint256 y) {
         uint256 denominator = ((0.66 ether * _x) / 1e18) + 0.1 ether;
-        uint256 y = (1 ether * 1e18) / denominator;
+        y = (1 ether * 1e18) / denominator;
     }
 
     //  Get Current APY of pool (y-value) scaled to target APY
