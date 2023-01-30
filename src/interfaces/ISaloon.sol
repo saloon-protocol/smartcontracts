@@ -52,5 +52,6 @@ interface ISaloon {
         uint256 totalSupply;
         // user balance
         // mapping(address => uint256) balances;
+        bool needsConsolidation;
     }
 }

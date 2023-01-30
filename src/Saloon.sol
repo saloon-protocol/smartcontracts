@@ -60,9 +60,6 @@ contract Saloon is
     // Info of each user.
     //NOTE This might need to be changed because stakerBalance has been introduced in BountyToken
 
-    // Info of each user that stakes LP tokens.
-    mapping(uint256 => mapping(address => NFTInfo)) public nFTInfo;
-
     StrategyFactory strategyFactory;
 
     // Mapping of all strategies for pid
@@ -580,6 +577,10 @@ contract Saloon is
         uint256 balanceAfter = pool.generalInfo.totalStaked +
             viewMinProjectDeposit(_pid);
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
+
+        // If any unstake occurs, pool needs consolidation. Even if the last token in the pid array unstakes, the pool X value needs
+        // to be reset to the proper location
+        pool.tokenInfo.needsConsolidation = true;
 
         return true;
     }

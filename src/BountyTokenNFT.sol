@@ -257,4 +257,30 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
         // _afterTokenTransfer(_staker, address(0), _amount);
     }
+
+    function consolidate(uint256 _pid) public {
+        PoolInfo memory pool = poolInfo[_pid];
+
+        // NEED TO CHECK IF POOL IS ACTIVE/WOUND DOWN?? Any malicious project actions due to check?
+        if (!pool.tokenInfo.needsConsolidation || !pool.isActive) return; // No unstakes have occured, no need to consolidate
+
+        uint256[] memory tokenArray = pidNFTList[_pid];
+        uint256 length = tokenArray.length;
+        updateCurrentX(_pid, 0);
+
+        for (uint256 i = 0; i < length; ++i) {
+            uint256 tokenId = tokenArray[i];
+            NFTInfo storage token = nftInfo[tokenId];
+            uint256 stakeAmount = token.amount;
+            token.apy = calculateEffectiveAPY(_pid, stakeAmount);
+            updateCurrentX(_pid, stakeAmount);
+        }
+    }
+
+    function consolidateAll() public {
+        uint256 arrayLength = poolInfo.length;
+        for (uint256 i = 0; i < arrayLength; ++i) {
+            consolidate(i);
+        }
+    }
 }

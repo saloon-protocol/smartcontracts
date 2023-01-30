@@ -264,6 +264,67 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assert(tokenAPY2 < tokenAPY1);
     }
 
+    function testConsolidate() external {
+        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        uint256 poolCap = 100 * 10**6;
+        uint16 apy = 1000;
+        uint256 deposit = 1 * 10**6;
+
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            poolCap,
+            apy,
+            deposit,
+            "Stargate"
+        );
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        uint256 stakeAmount = 10 * 10**6;
+        uint256 tokenId = saloon.stake(pid, stakeAmount);
+        (uint256 tokenAmount1, uint256 tokenAPY1, , , ) = saloon.viewTokenInfo(
+            tokenId
+        );
+        assertEq(tokenAmount1, stakeAmount);
+
+        uint256 tokenId2 = saloon.stake(pid, stakeAmount);
+        (uint256 tokenAmount2, uint256 tokenAPY2, , , ) = saloon.viewTokenInfo(
+            tokenId2
+        );
+        assertEq(tokenAmount2, stakeAmount);
+        // 2nd token must have lower APY than 1st token due to nature of dynamic APY curve
+        assert(tokenAPY2 < tokenAPY1);
+
+        uint256 tokenId3 = saloon.stake(pid, stakeAmount);
+        (uint256 tokenAmount3, uint256 tokenAPY3, , , ) = saloon.viewTokenInfo(
+            tokenId3
+        );
+        assertEq(tokenAmount3, stakeAmount);
+        // 2nd token must have lower APY than 1st token due to nature of dynamic APY curve
+        assert(tokenAPY3 < tokenAPY2);
+
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(tokenId);
+        assert(scheduled == true);
+
+        // unstake
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(tokenId, true);
+        (uint256 stakeAfter, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stakeAfter, 0);
+
+        // Consolidate pool. Should increase APY for token2 and token3.
+        saloon.consolidate(pid);
+
+        (, uint256 tokenAPY2New, , , ) = saloon.viewTokenInfo(tokenId2);
+        (, uint256 tokenAPY3New, , , ) = saloon.viewTokenInfo(tokenId3);
+        assertEq(tokenAPY2New, tokenAPY1);
+        assertEq(tokenAPY3New, tokenAPY2);
+    }
+
     // ============================
     // Test scheduleUnstake
     // ============================
