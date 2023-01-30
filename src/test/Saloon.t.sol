@@ -244,19 +244,24 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 stakeAmount = 10 * 10**6;
         uint256 tokenId = saloon.stake(pid, stakeAmount);
-        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-        assertEq(stake, stakeAmount);
+        (uint256 tokenAmount1, uint256 tokenAPY1, , , ) = saloon.viewTokenInfo(
+            tokenId
+        );
+        assertEq(tokenAmount1, stakeAmount);
 
         vm.warp(block.timestamp + 365 days);
         (uint256 pending, , ) = saloon.pendingPremium(tokenId);
 
-        (uint256 tokenAmount, uint256 tokenAPY, , , , ) = saloon.nftInfo(
-            tokenId
-        );
-        assertEq(pending, (tokenAmount * tokenAPY) / 10000); // 10% APY over 365 days
+        assertEq(pending, (tokenAmount1 * tokenAPY1) / 10000); // 10% APY over 365 days
         assertEq(pending, 4168000); // 10e6 stake => 10% of pool = 41.68% APY on 10% avg APY, for 1 year = 4.168e6 USDC
 
-        // test with 6 decimals - done by changing decimals in src/lib/ERC20.sol
+        uint256 tokenId2 = saloon.stake(pid, stakeAmount);
+        (uint256 tokenAmount2, uint256 tokenAPY2, , , ) = saloon.viewTokenInfo(
+            tokenId2
+        );
+        assertEq(tokenAmount2, stakeAmount);
+        // 2nd token must have lower APY than 1st token due to nature of dynamic APY curve
+        assert(tokenAPY2 < tokenAPY1);
     }
 
     // ============================
