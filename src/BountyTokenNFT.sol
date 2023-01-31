@@ -52,6 +52,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
     struct NFTInfo {
         uint256 amount;
+        uint256 xDelta;
         uint256 apy;
         uint256 unclaimed;
         uint256 lastClaimedTime;
@@ -97,7 +98,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         currentAPY = curveImplementation(x) * pool.generalInfo.multiplier;
     }
 
-    function convertStakeToPoolMeasurements(uint256 _stake, uint256 _pid)
+    function convertStakeToPoolMeasurements(uint256 _pid, uint256 _stake)
         internal
         view
         returns (uint256 x, uint256 poolPercentage)
@@ -123,7 +124,38 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         // get current x
         uint256 s = pool.tokenInfo.currentX;
         // convert stake to x-value
-        (uint256 k, ) = convertStakeToPoolMeasurements(_stake, _pid);
+        (uint256 k, ) = convertStakeToPoolMeasurements(_pid, _stake);
+        uint256 sk = k + s;
+
+        uint256 l1 = ((33 * (sk)) + 5 ether);
+        uint256 l2 = ((33 * s) + 5 ether);
+
+        // lns
+        UD60x18 ln1 = ln(toUD60x18(l1));
+        UD60x18 ln2 = ln(toUD60x18(l2));
+        UD60x18 res = toUD60x18(50_000_000 ether).mul(ln1.sub(ln2)).div(
+            toUD60x18(33)
+        );
+        // calculate effective APY
+        uint256 effectiveAPY = unwrap(res) / (k * 1e6);
+
+        // get pool Multiplier
+        uint256 m = pool.generalInfo.multiplier;
+
+        // calculate effective APY according to APY offered
+        scaledAPY = (effectiveAPY * m) / PRECISION;
+    }
+
+    function calculateEffectiveAPYConsolidate(
+        uint256 _pid,
+        uint256 _stake,
+        uint256 _memX
+    ) public view returns (uint256 scaledAPY) {
+        PoolInfo memory pool = poolInfo[_pid];
+        // get current x
+        uint256 s = _memX;
+        // convert stake to x-value
+        (uint256 k, ) = convertStakeToPoolMeasurements(_pid, _stake);
         uint256 sk = k + s;
 
         uint256 l1 = ((33 * (sk)) + 5 ether);
@@ -207,7 +239,17 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         uint256 tokenId = super._mint(_staker);
 
         NFTInfo memory token;
+
+        // Convert _amount to _xAmount
         token.amount = _amount;
+        (uint256 xDelta, ) = convertStakeToPoolMeasurements(_pid, _amount);
+
+        require(
+            poolInfo[_pid].tokenInfo.totalSupply + xDelta <= 5 ether,
+            "X boundary violated"
+        );
+
+        token.xDelta = xDelta;
         token.apy = apy;
         token.lastClaimedTime = block.timestamp;
         nftInfo[tokenId] = token;
@@ -215,10 +257,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         pidNFTList[_pid].push(tokenId);
         nftToPid[tokenId] = _pid;
 
-        poolInfo[_pid].tokenInfo.totalSupply += 5 ether;
-        // poolInfo[_pid].tokenInfo.totalSupply +=
-        //     (_amount * PRECISION) /
-        //     poolInfo[_pid].generalInfo.tokenDecimals;
+        poolInfo[_pid].tokenInfo.totalSupply += xDelta;
         updateCurrentX(_pid, poolInfo[_pid].tokenInfo.totalSupply);
 
         // _afterTokenTransfer(address(0), _staker, _amount);
@@ -252,7 +291,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
         super._burn(_tokenId);
 
-        removeNFTFromPidList(_tokenId);
+        removeNFTFromPidList(_tokenId); // [1,2,3,4,5] => [1,2,    4,5]
 
         poolInfo[pid].tokenInfo.totalSupply -= token.amount;
 
@@ -269,18 +308,26 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
         uint256[] memory tokenArray = pidNFTList[_pid];
         uint256 length = tokenArray.length;
-        updateCurrentX(_pid, 0);
+        uint256 memX;
+        // updateCurrentX(_pid, 0);
 
         for (uint256 i = 0; i < length; ++i) {
             uint256 tokenId = tokenArray[i];
             NFTInfo storage token = nftInfo[tokenId];
             uint256 stakeAmount = token.amount;
-            token.apy = calculateEffectiveAPY(_pid, stakeAmount);
-            updateCurrentX(
+            token.apy = calculateEffectiveAPYConsolidate(
                 _pid,
-                poolInfo[_pid].tokenInfo.totalSupply + stakeAmount
+                stakeAmount,
+                memX
             );
+            memX += token.xDelta;
+            // updateCurrentX(
+            //     _pid,
+            //     poolInfo[_pid].tokenInfo.totalSupply + stakeAmount
+            // );
         }
+
+        poolInfo[_pid].tokenInfo.totalSupply = memX;
     }
 
     function consolidateAll() public {

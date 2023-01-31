@@ -5,10 +5,9 @@ import "./interfaces/IStrategy.sol";
 import "./StargateStrategy.sol";
 
 contract StrategyFactory {
-    function deployStrategy(string memory _strategyName)
-        public
-        returns (address)
-    {
+    function deployStrategy(
+        string memory _strategyName //"Stargate"
+    ) public returns (address) {
         IStrategy strategy;
 
         bytes32 strategyHash = keccak256(abi.encode(_strategyName));

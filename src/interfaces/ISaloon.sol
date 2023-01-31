@@ -43,6 +43,7 @@ interface ISaloon {
         bool withdrawalExecuted;
     }
 
+    // Change this to "CurveInfo"
     struct TokenInfo {
         // amount staked in curve X-value
         uint256 currentX;
@@ -50,6 +51,7 @@ interface ISaloon {
         uint256 currentY;
         // token totalSupply for each pool
         uint256 totalSupply;
+        uint256[] unstakedTokens;
         // user balance
         // mapping(address => uint256) balances;
         bool needsConsolidation;
