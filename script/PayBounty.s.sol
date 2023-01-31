@@ -19,7 +19,7 @@ contract PayBounty is Script {
 
         saloonProxy.payBounty(
             0,
-            0x76C4B19F4dC2442BC9D2fee41B52999B5f9Ab9d6,
+            0xC77dDf4A215874D0Ee52dC2207bf72b468De6651,
             1112 ether
         );
 

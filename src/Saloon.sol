@@ -580,7 +580,7 @@ contract Saloon is
 
         // If any unstake occurs, pool needs consolidation. Even if the last token in the pid array unstakes, the pool X value needs
         // to be reset to the proper location
-        pool.tokenInfo.needsConsolidation = true;
+        pool.tokenInfo.unstakedTokens.push(_tokenId);
 
         return true;
     }

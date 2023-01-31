@@ -54,6 +54,5 @@ interface ISaloon {
         uint256[] unstakedTokens;
         // user balance
         // mapping(address => uint256) balances;
-        bool needsConsolidation;
     }
 }

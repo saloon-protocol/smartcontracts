@@ -291,10 +291,6 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
         super._burn(_tokenId);
 
-        removeNFTFromPidList(_tokenId); // [1,2,3,4,5] => [1,2,    4,5]
-
-        poolInfo[pid].tokenInfo.totalSupply -= token.amount;
-
         // emit Transfer(_staker, address(0), _amount);
 
         // _afterTokenTransfer(_staker, address(0), _amount);
@@ -302,9 +298,15 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
     function consolidate(uint256 _pid) public {
         PoolInfo memory pool = poolInfo[_pid];
+        uint256[] memory unstakedTokens = pool.tokenInfo.unstakedTokens;
+        uint256 unstakeLength = unstakedTokens.length;
 
         // NEED TO CHECK IF POOL IS ACTIVE/WOUND DOWN?? Any malicious project actions due to check?
-        if (!pool.tokenInfo.needsConsolidation || !pool.isActive) return; // No unstakes have occured, no need to consolidate
+        if (unstakeLength == 0 || !pool.isActive) return; // No unstakes have occured, no need to consolidate
+
+        for (uint256 i = 0; i < unstakeLength; ++i) {
+            removeNFTFromPidList(unstakedTokens[i]);
+        }
 
         uint256[] memory tokenArray = pidNFTList[_pid];
         uint256 length = tokenArray.length;
