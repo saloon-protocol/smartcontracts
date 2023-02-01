@@ -10,7 +10,6 @@ import "./BountyTokenNFT.sol";
 import "./StrategyFactory.sol";
 
 /* Implement:
-- TODO makeProjectDeposit BountyBalanceChanged Event
 - TODO Fill in missing events
 */
 
