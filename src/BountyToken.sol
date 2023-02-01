@@ -211,4 +211,9 @@ contract BountyToken is ISaloon, ERC20Upgradeable {
 
         _afterTokenTransfer(_staker, address(0), _amount);
     }
+
+    function receiveStrategyYield(address _token, uint256 _amount)
+        external
+        virtual
+    {}
 }

@@ -715,6 +715,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (
             uint256 totalProfit,
             uint256 bountyProfit,
+            uint256 strategyProfit,
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
         assertEq(bountyProfit, 1 * 10**6); // 0.1 usdc
@@ -738,6 +739,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (
             uint256 totalProfit2,
             uint256 bountyProfit2,
+            uint256 strategyProfit2,
             uint256 premiumProfit2
         ) = saloon.viewSaloonProfitBalance(address(usdc));
         assertEq(bountyProfit2, 5 * 10**6 - 1); // subtracting 1 wei due to precision loss from stargate staking
@@ -770,6 +772,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (
             uint256 totalProfit,
             uint256 bountyProfit,
+            uint256 strategyProfit,
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
         assertEq(bountyProfit, 1 * 10**5); // 0.1 usdc
@@ -817,6 +820,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (
             uint256 totalProfit,
             uint256 bountyProfit,
+            uint256 strategyProfit,
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
         assertEq(totalProfit, 0);
@@ -891,6 +895,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (
             uint256 totalProfit,
             uint256 bountyProfit,
+            uint256 strategyProfit,
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
         assertEq(totalProfit, 0);
@@ -898,6 +903,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (
             uint256 totalProfit2,
             uint256 bountyProfit2,
+            uint256 strategyProfit2,
             uint256 premiumProfit2
         ) = saloon.viewSaloonProfitBalance(address(dai));
         assertEq(totalProfit2, 0);

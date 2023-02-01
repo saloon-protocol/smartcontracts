@@ -10,36 +10,8 @@ import "./BountyTokenNFT.sol";
 import "./StrategyFactory.sol";
 
 /* Implement:
-- TODO Integrate keeping track of owed rewards when transferring BountyTokens between users
-- TODO Integrate minting and burning of tokens in staking and unstaking
-- TEST event emissions
-import "./interfaces/ISaloon.sol";
-import "./interfaces/IStrategy.sol";
-import "./StrategyFactory.sol";
-
-/// Make sure accounting references deposits and stakings separately and never uses address(this) as reference
-/// Ensure there is enough access control
-
-/* Implement:
-- DONE implement stargate strategy
 - TODO makeProjectDeposit BountyBalanceChanged Event
 - TODO Fill in missing events
-- DONE add token whitelisting
-- TEST event emissions
-- DONE Saloon collect all profits
-- DONE Wind down (kill) bounties
-- DONE Withdrawals with _shouldHarvest == false
-- DONE Ownership transfer
-- DONE Solve stack too deep
-- DONE Add back Saloon fees and commissions
-- DONE Withdraw saloon fee and commission to somewhere else
-- DONE Make it upgradeable
-- DONE Scheduled for withdrawals and unstaking
-- DONE Project deposits
-- DONE Bounty payouts needing to decrement all stakers
-- DONE - Billing premium when necessary.
-- DONE (all deployments go through BPM) - add token whitelist and whitelist check in `addNewBounty`
-- DONE All necessary view functions
 */
 
 contract Saloon is
@@ -57,12 +29,13 @@ contract Saloon is
 
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
-    // Info of each user.
-    //NOTE This might need to be changed because stakerBalance has been introduced in BountyToken
+    mapping(address => uint256) public saloonStrategyProfit;
 
+    // Strategy factory to deploy unique strategies for each pid. No co-mingling.
     StrategyFactory strategyFactory;
 
     // Mapping of all strategies for pid
+    // pid => keccak256(abi.encode(strategyName)) => strategy address
     mapping(uint256 => mapping(bytes32 => address)) public pidStrategies;
 
     // Mapping of active strategy for pid
@@ -70,9 +43,11 @@ contract Saloon is
 
     // Mapping of whitelisted tokens
     mapping(address => bool) public tokenWhitelist;
+
     // Mapping of whitelisted tokens
     address[] public activeTokens;
 
+    // Minimum stake amounts per token.
     mapping(address => uint256) public minTokenStakeAmount;
 
     event NewBountyDeployed(
@@ -141,8 +116,8 @@ contract Saloon is
         uint256 _minStakeAmount
     ) external onlyOwner returns (bool) {
         require(
-            tokenWhitelist[_token] == !_whitelisted || _whitelisted == false,
-            "whitelist already set"
+            tokenWhitelist[_token] == !_whitelisted || _minStakeAmount > 0,
+            "no change to whitelist"
         );
         tokenWhitelist[_token] = _whitelisted;
         emit tokenWhitelistUpdated(_token, _whitelisted);
@@ -177,24 +152,13 @@ contract Saloon is
             abi.encodeWithSignature("decimals()")
         );
         uint8 decimals = abi.decode(_decimals, (uint8));
+        require(decimals >= 6, "Invalid decimal return");
 
         PoolInfo memory newBounty;
         newBounty.generalInfo.token = IERC20(_token);
         newBounty.generalInfo.tokenDecimals = decimals;
         newBounty.generalInfo.projectWallet = _projectWallet;
         newBounty.generalInfo.projectName = _projectName;
-        newBounty.generalInfo.apy = 0;
-        newBounty.generalInfo.poolCap = 0;
-        newBounty.generalInfo.multiplier = 0;
-        newBounty.generalInfo.totalStaked = 0;
-        newBounty.depositInfo.projectDepositHeld = 0;
-        newBounty.poolTimelock.timelock = 0;
-        newBounty.poolTimelock.timeLimit = 0;
-        newBounty.poolTimelock.withdrawalScheduledAmount = 0;
-        newBounty.poolTimelock.withdrawalExecuted = false;
-        newBounty.stakerList;
-        newBounty.isActive = false;
-        newBounty.freezeTime = 0;
         poolInfo.push(newBounty);
         // emit event
         return (poolInfo.length - 1);
@@ -202,17 +166,20 @@ contract Saloon is
 
     function billPremium(uint256 _pid) public onlyOwner returns (bool) {
         _billPremium(_pid, 0);
+        return true;
     }
 
     function collectSaloonProfits(address _token, address _saloonWallet)
-        external
+        public
         onlyOwner
         returns (bool)
     {
         uint256 amount = saloonBountyProfit[_token] +
-            saloonPremiumProfit[_token];
+            saloonPremiumProfit[_token] +
+            saloonStrategyProfit[_token];
         saloonBountyProfit[_token] = 0;
         saloonPremiumProfit[_token] = 0;
+        saloonStrategyProfit[_token] = 0;
         IERC20(_token).safeTransfer(_saloonWallet, amount);
         return true;
     }
@@ -225,14 +192,7 @@ contract Saloon is
         uint256 activeTokenLength = activeTokens.length;
         for (uint256 i; i < activeTokenLength; ++i) {
             address _token = activeTokens[i];
-            uint256 amount = saloonBountyProfit[_token] +
-                saloonPremiumProfit[_token];
-
-            if (amount == 0) continue;
-
-            saloonBountyProfit[_token] = 0;
-            saloonPremiumProfit[_token] = 0;
-            IERC20(_token).safeTransfer(_saloonWallet, amount);
+            collectSaloonProfits(_token, _saloonWallet);
         }
         return true;
     }
@@ -331,6 +291,32 @@ contract Saloon is
         }
     }
 
+    // Callback function from strategies upon converting yield to underlying
+    // Anyone can call this but will result in lost funds for non-strategies.
+    // Tokens are sent from msg.sender to this contract and saloonStrategyProfit is incremented.
+    function receiveStrategyYield(address _token, uint256 _amount)
+        external
+        override
+    {
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        saloonStrategyProfit[_token] += _amount;
+    }
+
+    function compoundYieldForPid(uint256 _pid) public {
+        bytes32 strategyHash = activeStrategies[_pid];
+        IStrategy deployedStrategy = IStrategy(
+            pidStrategies[_pid][strategyHash]
+        );
+        deployedStrategy.compound();
+    }
+
+    function compoundYieldForAll() external {
+        uint256 arrayLength = poolInfo.length;
+        for (uint256 i = 0; i < arrayLength; ++i) {
+            compoundYieldForPid(i);
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////////
     /////////////////////////// PROJECT OWNER FUNCTIONS ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
@@ -394,7 +380,7 @@ contract Saloon is
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.depositInfo.projectDepositHeld;
+            viewMinProjectDeposit(_pid);
         IERC20(pool.generalInfo.token).safeTransferFrom(
             msg.sender,
             address(this),
@@ -402,9 +388,11 @@ contract Saloon is
         );
         pool.depositInfo.projectDepositHeld += _deposit;
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.depositInfo.projectDepositHeld;
+            viewMinProjectDeposit(_pid);
 
         handleStrategyDeposit(_pid, _strategyName, _deposit);
+
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
 
     function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
@@ -490,7 +478,7 @@ contract Saloon is
         );
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
-            pool.depositInfo.projectDepositHeld;
+            viewMinProjectDeposit(_pid);
 
         pool.generalInfo.token.safeTransferFrom(
             msg.sender,
@@ -509,7 +497,7 @@ contract Saloon is
         emit Staked(msg.sender, _pid, _amount);
 
         uint256 balanceAfter = pool.generalInfo.totalStaked +
-            pool.depositInfo.projectDepositHeld;
+            viewMinProjectDeposit(_pid);
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
 
         return tokenId;
@@ -629,19 +617,6 @@ contract Saloon is
         }
     }
 
-    // CONSOLIDATION
-    function consolidate() external {
-        // loop through the unstakes (where are the gaps).
-        //              How do we get the unstakes (most recently burnt nfts)?
-        //              - Have array with burnt tokenIds, sort it out from lowest to biggest.
-        //      calcualte what is the new x-axis positions and shift all to the left. Repeat until no more gaps
-        // calculate how much APY NFTs should have according to their new position in x-axis
-        // empty burnt tokens array
-        //  OR
-        // When unstake occurs all positions are moved to the left and consolidate() only calculates their new APY
-    }
-
-    // Harvest one pool
     function claimPremium(uint256 _tokenId) external nonReentrant {
         // Intentionally allow non-owners to claim for token
         _updateTokenReward(_tokenId, true);
@@ -835,12 +810,14 @@ contract Saloon is
         returns (
             uint256 totalProfit,
             uint256 bountyProfit,
+            uint256 strategyProfit,
             uint256 premiumProfit
         )
     {
         bountyProfit = saloonBountyProfit[_token];
         premiumProfit = saloonPremiumProfit[_token];
-        totalProfit = premiumProfit + bountyProfit;
+        strategyProfit = saloonStrategyProfit[_token];
+        totalProfit = premiumProfit + bountyProfit + strategyProfit;
     }
 
     function viewBountyBalance(uint256 _pid) external view returns (uint256) {

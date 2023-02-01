@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./interfaces/ISaloon.sol";
 import "./interfaces/IStrategy.sol";
 import "./interfaces/IStargateRouter.sol";
 import "./interfaces/IStargateLPStaking.sol";
@@ -19,10 +20,13 @@ contract StargateStrategy is IStrategy {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    address public owner;
+    ISaloon public saloon;
     address public pendingOwner;
 
     uint256 public lpDepositBalance;
+
+    uint256 FEE = 1000; //10% fee on all yield
+    uint256 BPS = 10000;
 
     IStargateRouter public stargateRouter;
     IStargateLPStaking public stargateLPStaking;
@@ -37,7 +41,7 @@ contract StargateStrategy is IStrategy {
     uint24 public constant poolFee = 3000;
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Not authorized");
+        require(msg.sender == address(saloon), "Not authorized");
         _;
     }
 
@@ -54,7 +58,9 @@ contract StargateStrategy is IStrategy {
         uniswapRouter = IUniswapRouter(
             0xE592427A0AEce92De3Edee1F18E0157C05861564
         );
-        owner = _owner;
+
+        USDC.approve(_owner, type(uint256).max);
+        saloon = ISaloon(_owner);
     }
 
     function setPendingOwner(address _pendingOwner) external onlyOwner {
@@ -63,7 +69,7 @@ contract StargateStrategy is IStrategy {
 
     function acceptOwnershipTransfer() external {
         require(msg.sender == pendingOwner, "Not pending owner");
-        owner = pendingOwner;
+        saloon = ISaloon(pendingOwner);
         pendingOwner = address(0);
     }
 
@@ -142,7 +148,7 @@ contract StargateStrategy is IStrategy {
         return returnedAmount;
     }
 
-    function convertReward(address receiver) internal returns (uint256) {
+    function convertReward(address _receiver) internal returns (uint256) {
         uint256 availableSTG = rewardBalance();
         if (availableSTG == 0) return 0;
         STG.approve(address(uniswapRouter), availableSTG);
@@ -156,12 +162,22 @@ contract StargateStrategy is IStrategy {
                     poolFee,
                     address(USDC)
                 ),
-                recipient: receiver,
+                recipient: address(this),
                 deadline: block.timestamp,
                 amountIn: availableSTG,
                 amountOutMinimum: 0
             });
+
         uint256 returnedAmount = uniswapRouter.exactInput(params);
+        uint256 saloonFee = (returnedAmount * FEE) / BPS;
+        uint256 amountMinusFee = returnedAmount - saloonFee;
+
+        saloon.receiveStrategyYield(address(USDC), saloonFee);
+
+        // Only transfer if receiver is not this contract. Otherwise, keep underlying here for compound.
+        if (_receiver != address(this)) {
+            USDC.safeTransfer(_receiver, amountMinusFee);
+        }
 
         return returnedAmount;
     }

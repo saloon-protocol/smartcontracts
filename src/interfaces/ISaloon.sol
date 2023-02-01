@@ -55,4 +55,6 @@ interface ISaloon {
         // user balance
         // mapping(address => uint256) balances;
     }
+
+    function receiveStrategyYield(address _token, uint256 _amount) external;
 }

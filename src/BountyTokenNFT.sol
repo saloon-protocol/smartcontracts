@@ -338,4 +338,9 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
             consolidate(i);
         }
     }
+
+    function receiveStrategyYield(address _token, uint256 _amount)
+        external
+        virtual
+    {}
 }

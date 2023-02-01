@@ -13,6 +13,10 @@ contract StargateStrategyTest is DSTest, Script {
     address USDCHolder = address(0x7713974908Be4BEd47172370115e8b1219F4A5f0);
     address rando = address(0x98);
 
+    function receiveStrategyYield(address _token, uint256 _amount) external {
+        ERC20(_token).transferFrom(msg.sender, address(this), _amount); // Roughly mimic action in Saloon.sol
+    }
+
     function setUp() external {
         string memory rpc = vm.envString("ETH_RPC_URL");
         uint256 forkId = vm.createFork(rpc);
@@ -62,7 +66,7 @@ contract StargateStrategyTest is DSTest, Script {
 
         vm.startPrank(rando);
         stargateStrategy.acceptOwnershipTransfer();
-        address owner = stargateStrategy.owner();
+        address owner = address(stargateStrategy.saloon());
         assertEq(owner, rando);
     }
 
