@@ -63,10 +63,12 @@ contract StargateStrategy is IStrategy {
         saloon = ISaloon(_owner);
     }
 
+    // Currently unreachable from Saloon.sol
     function setPendingOwner(address _pendingOwner) external onlyOwner {
         pendingOwner = _pendingOwner;
     }
 
+    // Currently unreachable from Saloon.sol
     function acceptOwnershipTransfer() external {
         require(msg.sender == pendingOwner, "Not pending owner");
         saloon = ISaloon(pendingOwner);
@@ -188,32 +190,5 @@ contract StargateStrategy is IStrategy {
 
     function pendingRewardBalance() external view returns (uint256) {
         return stargateLPStaking.pendingStargate(0, address(this)); // PID 0 is S*USDC
-    }
-
-    function userInfo() external view returns (uint256, uint256) {
-        (uint256 amount, uint256 rewardDebt) = stargateLPStaking.userInfo(
-            0,
-            address(this)
-        );
-        return (amount, rewardDebt);
-    }
-
-    function poolInfo()
-        external
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        (
-            uint256 lpToken,
-            uint256 allocPoint,
-            uint256 lastRewardBlock,
-            uint256 accStargatePerShare
-        ) = stargateLPStaking.poolInfo(0);
-        return (lpToken, allocPoint, lastRewardBlock, accStargatePerShare);
     }
 }

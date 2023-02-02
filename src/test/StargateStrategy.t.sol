@@ -81,15 +81,6 @@ contract StargateStrategyTest is DSTest, Script {
         // LP tokens aren't minted 1:1, so only checking that the returned LP is close to input.
         assert(balanceDiff < int256(USDCBalance) / 100);
 
-        (uint256 amount, uint256 rewardDebt) = stargateStrategy.userInfo();
-        (
-            uint256 lpToken,
-            uint256 allocPoint,
-            uint256 lastRewardBlock,
-            uint256 accStargatePerShare
-        ) = stargateStrategy.poolInfo();
-        assertEq(lastRewardBlock, block.number);
-
         vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
         uint256 pendingRewards = stargateStrategy.pendingRewardBalance();
         assert(pendingRewards > 0);
