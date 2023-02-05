@@ -109,6 +109,11 @@ contract Saloon is
     /////////////////////////// SALOON OWNER FUNCTIONS ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
+    ///@notice Updates the list of ERC20 tokens allow to be used in bounty pools
+    ///@dev Only one token is allowed per pool
+    ///@param _token ERC20 to add or remove from whitelist
+    ///@param _whitelisted bool to select if a token will be added or removed
+    ///@param _minStakeAmount The minimum amount for staking for pools pools using such token
     function updateTokenWhitelist(
         address _token,
         bool _whitelisted,
@@ -139,7 +144,11 @@ contract Saloon is
         return true;
     }
 
-    // Add a new bounty pool. Can only be called by the owner.
+    ///@notice Adds a new bounty pool
+    ///@dev Can only be called by the owner.
+    ///@param _token Token to be used by bounty pool
+    ///@param _projectWallet Address that will be able to deposit funds, set APY and poolCap for the pool
+    ///@param _projectName Name of the project that is hosting the bounty
     function addNewBountyPool(
         address _token,
         address _projectWallet,
