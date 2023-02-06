@@ -56,5 +56,39 @@ interface ISaloon {
         // mapping(address => uint256) balances;
     }
 
+    event NewBountyDeployed(
+        uint256 indexed pid,
+        address indexed token,
+        uint256 indexed tokenDecimals
+    );
+
+    event Staked(address indexed user, uint256 indexed pid, uint256 amount);
+    event Unstaked(address indexed user, uint256 indexed pid, uint256 amount);
+
+    event BountyBalanceChanged(
+        uint256 indexed pid,
+        uint256 indexed oldAmount,
+        uint256 indexed newAmount
+    );
+
+    event PremiumBilled(uint256 indexed pid, uint256 indexed amount);
+
+    event BountyPaid(
+        uint256 indexed time,
+        address indexed hunter,
+        address indexed token,
+        uint256 amount
+    );
+
+    event WithdrawalOrUnstakeScheduled(
+        uint256 indexed pid,
+        uint256 indexed amount
+    );
+
+    event tokenWhitelistUpdated(
+        address indexed token,
+        bool indexed whitelisted
+    );
+
     function receiveStrategyYield(address _token, uint256 _amount) external;
 }
