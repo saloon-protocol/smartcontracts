@@ -20,7 +20,9 @@ contract Deploy is Script {
         uint256 pid = saloonProxy.addNewBountyPool(
             address(USDC),
             0x1B7FE02Da6c7a7175a33D109397492c2872c6A5e,
-            "DUMMY2"
+            "DUMMY2",
+            address(0),
+            0
         );
 
         // USDC.approve(saloon, 0 ether);

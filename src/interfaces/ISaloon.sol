@@ -10,6 +10,7 @@ interface ISaloon {
         PremiumInfo premiumInfo;
         TimelockInfo poolTimelock;
         TokenInfo tokenInfo;
+        ReferralInfo referralInfo;
         address[] stakerList;
         uint256 freezeTime;
         bool isActive;
@@ -56,10 +57,15 @@ interface ISaloon {
         // mapping(address => uint256) balances;
     }
 
+    struct ReferralInfo {
+        address referrer;
+        uint256 referralFee; // in BPS (10000)
+    }
+
     event NewBountyDeployed(
         uint256 indexed pid,
         address indexed token,
-        uint256 indexed tokenDecimals
+        uint256 tokenDecimals
     );
 
     event Staked(address indexed user, uint256 indexed pid, uint256 amount);
@@ -67,28 +73,26 @@ interface ISaloon {
 
     event BountyBalanceChanged(
         uint256 indexed pid,
-        uint256 indexed oldAmount,
-        uint256 indexed newAmount
+        uint256 oldAmount,
+        uint256 newAmount
     );
 
-    event PremiumBilled(uint256 indexed pid, uint256 indexed amount);
+    event PremiumBilled(uint256 indexed pid, uint256 amount);
 
     event BountyPaid(
-        uint256 indexed time,
         address indexed hunter,
         address indexed token,
         uint256 amount
     );
 
-    event WithdrawalOrUnstakeScheduled(
-        uint256 indexed pid,
-        uint256 indexed amount
-    );
+    event WithdrawalOrUnstakeScheduled(uint256 indexed pid, uint256 amount);
 
     event tokenWhitelistUpdated(
         address indexed token,
         bool indexed whitelisted
     );
+
+    event referralPaid(address indexed referrer, uint256 amount);
 
     function receiveStrategyYield(address _token, uint256 _amount) external;
 }

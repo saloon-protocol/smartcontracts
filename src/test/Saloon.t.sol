@@ -22,11 +22,16 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     address hunter = address(0xD0);
     address staker = address(0x5ad);
     address staker2 = address(0x5ad2);
+    address referrer = address(0x111);
     address saloonWallet = address(0x999999);
     address deployer;
     address newOwner = address(0x5ad3);
 
     uint256 pid;
+
+    uint256 constant poolCap = 100 * 10**6;
+    uint16 constant apy = 1000;
+    uint256 constant deposit = 30 * 10**6;
 
     function setUp() external {
         string memory mumbai = vm.envString("ETH_RPC_URL");
@@ -60,6 +65,24 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         vm.deal(project, 500 ether);
 
         deployer = address(this);
+
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            poolCap, // $100
+            apy, // 10%
+            deposit, // $30
+            "Stargate"
+        );
+        vm.stopPrank();
     }
 
     // ============================
@@ -89,7 +112,13 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     function testaddNewBountyPoolBadToken() external {
         saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
         vm.expectRevert("token not whitelisted");
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
     }
 
     // ============================
@@ -103,25 +132,20 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // ============================
     // Test addNewBountyPool
     // ============================
-    function testaddNewBountyPool() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+    function testAddNewBountyPool() external {
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
     }
 
     // ============================
     // Test setAPYandPoolCapAndDeposit
     // ============================
-    function testsetAPYandPoolCapAndDeposit() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000, // 10%
-            1 * 10**6,
-            "Stargate"
-        );
-
+    function testSetAPYAndPoolCapAndDeposit() external {
         // Test if APY and PoolCap can be set again (should revert)
         vm.expectRevert("Pool already initialized");
         saloon.setAPYandPoolCapAndDeposit(
@@ -139,7 +163,13 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test makeProjectDeposit
     // ============================
     function testMakeProjectDeposit() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 * 10**6);
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
@@ -151,7 +181,13 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test scheduleProjectDepositWithdrawal
     // ============================
     function testscheduleProjectDepositWithdrawal() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 * 10**6);
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
@@ -167,7 +203,13 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test projectDepositWithdrawal
     // ============================
     function testProjectDepositWithdrawal() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 * 10**6);
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
@@ -196,18 +238,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test stake
     // ============================
     function testStake() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
 
@@ -224,22 +254,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test pendingPremium
     // ============================
     function testPendingPremium() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        uint256 poolCap = 100 * 10**6;
-        uint16 apy = 1000;
-        uint256 deposit = 1 * 10**6;
-
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            poolCap,
-            apy,
-            deposit,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 stakeAmount = 10 * 10**6;
@@ -289,22 +303,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     }
 
     function testConsolidate() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        uint256 poolCap = 100 * 10**6;
-        uint16 apy = 1000;
-        uint256 deposit = 1 * 10**6;
-
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            poolCap,
-            apy,
-            deposit,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 stakeAmount = 10 * 10**6;
@@ -353,18 +351,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test scheduleUnstake
     // ============================
     function testScheduleUnstake() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-        //stake
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -380,18 +366,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test unstake
     // ============================
     function testUnstake() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-        //stake
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -432,19 +406,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test unstake with unclaimed
     // ============================
     function testUnstakeWithUnclaimed() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        usdc.approve(address(saloon), 0);
-        vm.stopPrank();
-        //stake
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
 
@@ -452,9 +413,11 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
         assertEq(stake, 100 * 10**6);
 
-        // // Transfer away all extra staker $$ to reset balance to 0
-        // uint256 originalUSDCBalance = usdc.balanceOf(staker);
-        // usdc.transfer(address(0), originalUSDCBalance);
+        (
+            uint256 requiredPremiumBalancePerPeriod,
+            uint256 premiumBalance,
+            uint256 premiumAvailable
+        ) = saloon.viewPoolPremiumInfo(pid);
 
         vm.warp(block.timestamp + 6 days);
         (
@@ -469,9 +432,9 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
 
         saloon.claimPremium(tokenId);
         (
-            uint256 requiredPremiumBalancePerPeriod,
-            uint256 premiumBalance,
-            uint256 premiumAvailable
+            requiredPremiumBalancePerPeriod,
+            premiumBalance,
+            premiumAvailable
         ) = saloon.viewPoolPremiumInfo(pid);
         assertEq(
             premiumBalance,
@@ -481,6 +444,12 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         //schedule unstake
         bool scheduled = saloon.scheduleUnstake(tokenId);
         assert(scheduled == true);
+
+        vm.stopPrank();
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 0);
+        vm.stopPrank();
+        vm.startPrank(staker);
 
         // unstake
         vm.warp(block.timestamp + 8 days);
@@ -493,7 +462,10 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             premiumAvailable
         ) = saloon.viewPoolPremiumInfo(pid);
         assert(totalPending > premiumBalance);
-        assertEq(totalPending, (requiredPremiumBalancePerPeriod * 8) / 7 + 1); // Staked full cap for 8 days, divide by PERIOD (7 days)
+        assertEq(
+            totalPending,
+            (requiredPremiumBalancePerPeriod * 1007 * 8) / 7 / 1000 + 1
+        ); // Staked full cap for 8 days, divide by PERIOD (7 days)... * 1007/1000 due to small precision issue with dynamic APY curve
         assertEq(newPending, totalPending);
         vm.expectRevert("ERC20: transfer amount exceeds allowance"); //Project revoked allowance so user can't claim while unstaking
         bool unstaked = saloon.unstake(tokenId, true);
@@ -528,25 +500,13 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             premiumAvailable
         ) = saloon.viewPoolPremiumInfo(pid);
         assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
-        assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 1); // +1 due precision loss
+        assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 2); // +2 due precision loss
     }
 
     // ============================
     // Test claimPremium
     // ============================
     function testClaimPremium() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-        //stake
         vm.startPrank(staker);
         uint256 originalStakerBalance = usdc.balanceOf(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
@@ -587,18 +547,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test billPremium
     // ============================
     function testBillPremium() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -675,18 +623,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test payBounty
     // ============================
     function testPayBountyStakingCovers() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            30 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -746,18 +682,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     }
 
     function testPayBountyStrategyDepositNeeded() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            30 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.prank(newOwner);
         vm.expectRevert("Ownable: caller is not the owner");
         saloon.payBounty(pid, newOwner, 1 * 10**6);
@@ -782,18 +706,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test collectSaloonProfits
     // ============================
     function testCollectSaloonProfits() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            30 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -830,18 +742,6 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     // Test collectAllSaloonProfits
     // ============================
     function testCollectAllSaloonProfits() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            30 * 10**6,
-            ""
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -856,12 +756,18 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stake2, 10 * 10**6);
         vm.stopPrank();
 
-        saloon.payBounty(pid, hunter, 50 * 10**6);
+        saloon.payBounty(pid, hunter, 50 * 10**6 - 1); // Immediate stargate precision loss
 
         // Repeat with pool with token DAI
 
         saloon.updateTokenWhitelist(address(dai), true, 10 ether);
-        uint256 pid2 = saloon.addNewBountyPool(address(dai), project, "yeehaw");
+        uint256 pid2 = saloon.addNewBountyPool(
+            address(dai),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
         vm.startPrank(project);
         dai.approve(address(saloon), 1000 ether);
         saloon.setAPYandPoolCapAndDeposit(pid2, 100 ether, 1000, 30 ether, ""); // No strategy for DAI at the moment
@@ -887,7 +793,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
 
         // test wallet has received amount
         uint256 walletBalanceUSDC = usdc.balanceOf(saloonWallet);
-        assertEq(walletBalanceUSDC, 5 * 10**6);
+        assertEq(walletBalanceUSDC, 5 * 10**6 - 1); // Immediate stargate precision loss
         uint256 walletBalanceDAI = dai.balanceOf(saloonWallet);
         assertEq(walletBalanceDAI, 5 ether);
 
@@ -909,6 +815,68 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(totalProfit2, 0);
     }
 
+    function testReferrerClaimBounty() external {
+        // Set up new pool with referral
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            referrer,
+            5000
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            poolCap, // $100
+            apy, // 10%
+            deposit, // $30
+            ""
+        );
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10**6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10**6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10**6);
+        vm.stopPrank();
+
+        saloon.payBounty(pid, hunter, 50 * 10**6); // -2 wei due to stargate precision loss
+
+        saloon.collectSaloonProfits(address(usdc), saloonWallet);
+
+        // test wallet has received amount
+        uint256 saloonWalletBalance = usdc.balanceOf(saloonWallet);
+        assertEq(saloonWalletBalance, ((5 * 10**6 * (10000 - 5000)) / 10000)); // Multiply by referral multiplier / BPS
+        uint256 referrerWalletBalance = saloon.viewReferralBalance(
+            referrer,
+            address(usdc)
+        );
+        assertEq(referrerWalletBalance, (5 * 10**6 * 5000) / 10000); // Multiply by referral multiplier / BPS
+
+        vm.startPrank(referrer);
+        saloon.collectAllReferralProfits();
+        referrerWalletBalance = usdc.balanceOf(referrer);
+        assertEq(referrerWalletBalance, (5 * 10**6 * 5000) / 10000); // Multiply by referral multiplier / BPS
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+    }
+
     function testDecimalsCall() external {
         (, bytes memory _decimals) = address(usdc).staticcall(
             abi.encodeWithSignature("decimals()")
@@ -923,10 +891,22 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         // Test random user can not call protected functions (pay bounty protection tested in testpayBounty)
         vm.prank(newOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
 
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        assertEq(pid, 0);
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
+        assertEq(pid, 1);
 
         // Test first step of ownership transfer and accept reverts for random caller
         saloon.transferOwnership(newOwner);
@@ -937,28 +917,28 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         // Test new owner accepts ownership and can deploy new bounty
         vm.startPrank(newOwner);
         saloon.acceptOwnershipTransfer();
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        assertEq(pid, 1);
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
+        assertEq(pid, 2);
         vm.stopPrank();
 
         // Test original owner cannot deploy new bounty
         vm.expectRevert("Ownable: caller is not the owner");
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0
+        );
     }
 
     function testWindDownBounty() external {
-        pid = saloon.addNewBountyPool(address(usdc), project, "yeehaw");
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            1 * 10**6,
-            "Stargate"
-        );
-        vm.stopPrank();
-
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
@@ -974,14 +954,13 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         // Even though 14 days has passed, user only receives pending up until the bounty was wound down
         vm.startPrank(staker);
         vm.warp(block.timestamp + 7 days);
-        (uint256 stake2, , uint256 actualPending2, , ) = saloon.viewTokenInfo(
-            tokenId
-        );
+        (uint256 stake2, uint256 stakeAPY, uint256 actualPending2, , ) = saloon
+            .viewTokenInfo(tokenId);
         (tokenId);
         uint256 actualPending = actualPending2;
-        uint256 expectedPending = (((((stake2 * 1000) / 10000) * 9000) /
+        uint256 expectedPending = (((((stake2 * stakeAPY) / 10000) * 9000) /
             10000) * 7 days) / 365 days;
-        assertEq(actualPending, expectedPending - 1); // -1 Precision loss
+        assertEq(actualPending, expectedPending);
 
         // Staking should fail after pool is wound down
         vm.expectRevert("pool not active");

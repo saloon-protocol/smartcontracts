@@ -37,7 +37,9 @@ contract Deploy is Script {
         uint256 pid = saloon.addNewBountyPool(
             address(USDC),
             projectWallet,
-            "Saloon"
+            "Saloon",
+            address(0),
+            0
         );
         saloon.setAPYandPoolCapAndDeposit(
             pid,

@@ -11,6 +11,7 @@ import "./StrategyFactory.sol";
 
 /* Implement:
 - TODO Fill in missing events
+- TODO Referral profit tests (Bounty/Premium/Yield)
 */
 
 contract Saloon is
@@ -29,6 +30,7 @@ contract Saloon is
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     mapping(address => uint256) public saloonStrategyProfit;
+    mapping(address => mapping(address => uint256)) public referralBalances; // referrer => token => amount
 
     // Strategy factory to deploy unique strategies for each pid. No co-mingling.
     StrategyFactory strategyFactory;
@@ -39,6 +41,9 @@ contract Saloon is
 
     // Mapping of active strategy for pid
     mapping(uint256 => bytes32) public activeStrategies;
+
+    // Reverse mapping of strategy to pid for easy lookup
+    mapping(address => uint256) public strategyAddressToPid;
 
     // Mapping of whitelisted tokens
     mapping(address => bool) public tokenWhitelist;
@@ -118,9 +123,12 @@ contract Saloon is
     function addNewBountyPool(
         address _token,
         address _projectWallet,
-        string memory _projectName
+        string memory _projectName,
+        address _referrer,
+        uint256 _referralFee
     ) external onlyOwner returns (uint256) {
         require(tokenWhitelist[_token], "token not whitelisted");
+        require(_referralFee <= 10000, "referral fee too high");
         // uint8 _tokenDecimals = IERC20(_token).decimals();
         (, bytes memory _decimals) = _token.staticcall(
             abi.encodeWithSignature("decimals()")
@@ -133,6 +141,8 @@ contract Saloon is
         newBounty.generalInfo.tokenDecimals = decimals;
         newBounty.generalInfo.projectWallet = _projectWallet;
         newBounty.generalInfo.projectName = _projectName;
+        newBounty.referralInfo.referrer = _referrer;
+        newBounty.referralInfo.referralFee = _referralFee;
         poolInfo.push(newBounty);
         // emit event
         return (poolInfo.length - 1);
@@ -148,9 +158,7 @@ contract Saloon is
         onlyOwner
         returns (bool)
     {
-        uint256 amount = saloonBountyProfit[_token] +
-            saloonPremiumProfit[_token] +
-            saloonStrategyProfit[_token];
+        (uint256 amount, , , ) = viewSaloonProfitBalance(_token);
         saloonBountyProfit[_token] = 0;
         saloonPremiumProfit[_token] = 0;
         saloonStrategyProfit[_token] = 0;
@@ -172,6 +180,27 @@ contract Saloon is
     }
 
     ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// REFERRAL CLAIMING /////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
+    function collectReferralProfit(address _token) public returns (bool) {
+        uint256 amount = viewReferralBalance(msg.sender, _token);
+        referralBalances[msg.sender][_token] = 0;
+        IERC20(_token).safeTransfer(msg.sender, amount);
+        emit referralPaid(msg.sender, amount);
+        return true;
+    }
+
+    function collectAllReferralProfits() external returns (bool) {
+        uint256 activeTokenLength = activeTokens.length;
+        for (uint256 i; i < activeTokenLength; ++i) {
+            address _token = activeTokens[i];
+            collectReferralProfit(_token);
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
     /////////////////////////// STRATEGY MANAGEMENT ///////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +211,7 @@ contract Saloon is
         strategyFactory = StrategyFactory(_strategyFactory);
     }
 
-    function deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
+    function _deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
         internal
         returns (address)
     {
@@ -200,6 +229,7 @@ contract Saloon is
         } else {
             pidStrategies[_pid][strategyHash] = deployedStrategy;
             activeStrategies[_pid] = strategyHash;
+            strategyAddressToPid[deployedStrategy] = _pid;
         }
 
         return deployedStrategy;
@@ -242,7 +272,7 @@ contract Saloon is
         bytes32 activeStrategyHash = activeStrategies[_pid];
         if (activeStrategyHash != _strategyHash) {
             uint256 fundsWithdrawn = withdrawFromActiveStrategy(_pid);
-            address deployedStrategy = deployStrategyIfNeeded(
+            address deployedStrategy = _deployStrategyIfNeeded(
                 _pid,
                 _strategyName
             );
@@ -267,13 +297,24 @@ contract Saloon is
 
     // Callback function from strategies upon converting yield to underlying
     // Anyone can call this but will result in lost funds for non-strategies.
-    // Tokens are sent from msg.sender to this contract and saloonStrategyProfit is incremented.
+    // Tokens are transferred from msg.sender to this contract and saloonStrategyProfit and/or referralBalances are incremented.
     function receiveStrategyYield(address _token, uint256 _amount)
         external
         override
     {
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        saloonStrategyProfit[_token] += _amount;
+        uint256 pid = strategyAddressToPid[msg.sender];
+        if (pid == 0) {
+            saloonStrategyProfit[_token] += _amount;
+        } else {
+            (
+                uint256 saloonAmount,
+                uint256 referralAmount,
+                address referrer
+            ) = calcReferralSplit(pid, _amount);
+            _increaseReferralBalance(referrer, _token, referralAmount);
+            saloonStrategyProfit[_token] += saloonAmount;
+        }
     }
 
     function compoundYieldForPid(uint256 _pid) public {
@@ -619,13 +660,19 @@ contract Saloon is
             billAmount
         );
 
-        // Calculate saloon fee
+        // Calculate fee taken from premium payments. 10% taken from project upon billing.
+        // Of that 10%, some % might go to referrer of bounty.The rest goes to The Saloon.
         uint256 saloonPremiumCommission = (billAmount * premiumFee) / BPS;
         pool.premiumInfo.premiumBalance += billAmount;
-        // update saloon claimable fee
-        saloonPremiumProfit[
-            address(pool.generalInfo.token)
-        ] += saloonPremiumCommission;
+
+        (
+            uint256 saloonAmount,
+            uint256 referralAmount,
+            address referrer
+        ) = calcReferralSplit(_pid, saloonPremiumCommission);
+        address token = address(pool.generalInfo.token);
+        _increaseReferralBalance(referrer, token, referralAmount);
+        saloonPremiumProfit[token] += saloonAmount;
 
         uint256 billAmountMinusCommission = billAmount -
             saloonPremiumCommission;
@@ -633,6 +680,16 @@ contract Saloon is
         pool.premiumInfo.premiumAvailable += billAmountMinusCommission;
 
         emit PremiumBilled(_pid, billAmount);
+    }
+
+    function _increaseReferralBalance(
+        address _referrer,
+        address _token,
+        uint256 _amount
+    ) internal {
+        if (_referrer != address(0)) {
+            referralBalances[_referrer][_token] += _amount;
+        }
     }
 
     function payBounty(
@@ -722,19 +779,24 @@ contract Saloon is
         uint256 saloonCommission = (_amount * bountyFee) / BPS;
         // subtract commission from payout
         uint256 hunterPayout = _amount - saloonCommission;
-        // update saloon Commission variable
-        saloonBountyProfit[address(pool.generalInfo.token)] += saloonCommission;
+
+        // Calculate fee taken from bounty payments. 10% taken from total payment upon payout.
+        // Of that 10%, some % might go to referrer of bounty. The rest goes to The Saloon.
+        (
+            uint256 saloonAmount,
+            uint256 referralAmount,
+            address referrer
+        ) = calcReferralSplit(_pid, saloonCommission);
+        address token = address(pool.generalInfo.token);
+        _increaseReferralBalance(referrer, token, referralAmount);
+        saloonBountyProfit[token] += saloonAmount;
+
         // transfer payout to hunteI
         IERC20(pool.generalInfo.token).safeTransfer(_hunter, hunterPayout);
         uint256 balanceAfter = pool.generalInfo.totalStaked +
             viewMinProjectDeposit(_pid);
 
-        emit BountyPaid(
-            block.timestamp,
-            _hunter,
-            address(pool.generalInfo.token),
-            _amount
-        );
+        emit BountyPaid(_hunter, address(pool.generalInfo.token), _amount);
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
         return true;
     }
@@ -779,7 +841,7 @@ contract Saloon is
     }
 
     function viewSaloonProfitBalance(address _token)
-        external
+        public
         view
         returns (
             uint256 totalProfit,
@@ -792,6 +854,14 @@ contract Saloon is
         premiumProfit = saloonPremiumProfit[_token];
         strategyProfit = saloonStrategyProfit[_token];
         totalProfit = premiumProfit + bountyProfit + strategyProfit;
+    }
+
+    function viewReferralBalance(address _referrer, address _token)
+        public
+        view
+        returns (uint256 referralBalance)
+    {
+        referralBalance = referralBalances[_referrer][_token];
     }
 
     function viewBountyBalance(uint256 _pid) external view returns (uint256) {
@@ -913,5 +983,26 @@ contract Saloon is
         returns (uint256 requiredPremiumBalance)
     {
         return (((_poolCap * _apy * PERIOD) / BPS) / YEAR);
+    }
+
+    function calcReferralSplit(uint256 _pid, uint256 _totalAmount)
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            address
+        )
+    {
+        PoolInfo memory pool = poolInfo[_pid];
+        address referrer = pool.referralInfo.referrer;
+        if (referrer == address(0)) {
+            return (_totalAmount, 0, referrer);
+        } else {
+            uint256 referralAmount = (_totalAmount *
+                pool.referralInfo.referralFee) / BPS;
+            uint256 saloonAmount = _totalAmount - referralAmount;
+            return (saloonAmount, referralAmount, referrer);
+        }
     }
 }
