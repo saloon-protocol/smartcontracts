@@ -9,7 +9,7 @@ import "./interfaces/ISaloon.sol";
 //TODO Turn some magic numbers used in calculateEffectiveAPY to constants
 
 /* 
-BountyToken ERC20
+BountyToken ERC721
 ================================================
     ** Default Variables **
 ================================================
@@ -25,7 +25,7 @@ max-to-standard APY ratio:
 ratio = ~9.43 = maxAPY/defaultAPY 
 e.g 10/1.06 ~= 9.43
 --------------------------------
-Definite Integral:
+Definite Integral to calculate effective APY:
 (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
 --------------------------------
 Notes:
