@@ -23,6 +23,10 @@ contract StargateStrategy is IStrategy {
     ISaloon public saloon;
     address public pendingOwner;
 
+    address public depositToken;
+    uint256 public depositPoolId;
+    uint256 public stakingPoolId;
+
     uint256 public lpDepositBalance;
 
     uint256 FEE = 1000; //10% fee on all yield
@@ -34,6 +38,8 @@ contract StargateStrategy is IStrategy {
     IUniswapRouter public uniswapRouter;
     IERC20 public constant USDC =
         IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+    IERC20 public constant DAI =
+        IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
     IERC20 public constant STG =
         IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
     address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -49,7 +55,10 @@ contract StargateStrategy is IStrategy {
     /// @dev Initiated by Saloon._deployStrategyIfNeeded() => StrategyFactory.deployStrategy()
     /// @dev Includes Saloon commission + hunter payout
     /// @param _owner Owner of this contract. Contracts deployed through pipeline will be owned by Saloon.sol
-    constructor(address _owner) {
+    constructor(address _owner, address _depositToken) {
+        require(_owner != address(0), "invalid owner");
+        require(_depositToken != address(0), "invalid deposit token");
+
         stargateRouter = IStargateRouter(
             0x8731d54E9D02c286767d56ac03e8037C07e01e98
         );
@@ -63,8 +72,17 @@ contract StargateStrategy is IStrategy {
             0xE592427A0AEce92De3Edee1F18E0157C05861564
         );
 
-        USDC.approve(_owner, type(uint256).max);
         saloon = ISaloon(_owner);
+        depositToken = _depositToken;
+        IERC20(depositToken).approve(_owner, type(uint256).max);
+
+        if (depositToken == address(USDC)) {
+            depositPoolId = 1;
+            stakingPoolId = 0;
+        } else if (depositToken == address(DAI)) {
+            depositPoolId = 1;
+            stakingPoolId = 0;
+        }
     }
 
     /// @notice Update any or all of the necessary stargate addresses.
@@ -100,11 +118,11 @@ contract StargateStrategy is IStrategy {
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.approve(address(stargateRouter), USDCBalance);
 
-        stargateRouter.addLiquidity(1, USDCBalance, address(this)); // 1 = Harcode for USDC LP
+        stargateRouter.addLiquidity(depositPoolId, USDCBalance, address(this)); // 1 = Harcode for USDC LP
         uint256 lpBalanceAdded = stargateLPToken.balanceOf(address(this));
 
         stargateLPToken.approve(address(stargateLPStaking), lpBalanceAdded);
-        stargateLPStaking.deposit(0, lpBalanceAdded); // PID 0 is S*USDC
+        stargateLPStaking.deposit(stakingPoolId, lpBalanceAdded); // PID 0 is S*USDC
         lpDepositBalance += lpBalanceAdded;
 
         return lpBalanceAdded;
@@ -120,10 +138,10 @@ contract StargateStrategy is IStrategy {
     {
         require(_amount <= lpDepositBalance, "Not enough lp");
         lpDepositBalance -= _amount;
-        stargateLPStaking.withdraw(0, _amount);
+        stargateLPStaking.withdraw(stakingPoolId, _amount);
         uint256 lpBalanceAvailable = stargateLPToken.balanceOf(address(this));
         uint256 amountReturned = stargateRouter.instantRedeemLocal(
-            1,
+            uint16(depositPoolId),
             lpBalanceAvailable,
             address(this)
         );

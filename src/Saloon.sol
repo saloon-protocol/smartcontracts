@@ -248,7 +248,10 @@ contract Saloon is
         bytes32 strategyHash = keccak256(abi.encode(_strategyName));
         address pidStrategy = pidStrategies[_pid][strategyHash];
         if (pidStrategy == address(0)) {
-            deployedStrategy = strategyFactory.deployStrategy(_strategyName);
+            deployedStrategy = strategyFactory.deployStrategy(
+                _strategyName,
+                address(poolInfo[_pid].generalInfo.token)
+            );
         } else {
             return pidStrategy;
         }

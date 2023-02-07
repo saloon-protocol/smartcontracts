@@ -22,7 +22,7 @@ contract StargateStrategyTest is DSTest, Script {
         uint256 forkId = vm.createFork(rpc);
         vm.selectFork(forkId);
 
-        stargateStrategy = new StargateStrategy(address(this));
+        stargateStrategy = new StargateStrategy(address(this), address(USDC));
 
         vm.deal(USDCHolder, 500 ether);
         vm.deal(address(this), 500 ether);
