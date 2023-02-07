@@ -68,8 +68,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         __ERC721_init("BountyToken", "BTT");
     }
 
-    // * function that calculates multiplier given targetAPY
-    //  maybe make it internal
+    /// @notice Calculates multiplier given targetAPY
     /// @param _targetAPY the advertised average APY of a bounty
     /// @param _pid poolID that the multiplier will be assigned to
     function updateMultiplier(uint256 _pid, uint256 _targetAPY) internal {
@@ -110,11 +109,11 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         x = 5 * poolPercentage;
     }
 
-    ///@notice calculates effective APY staker will be entitled to in exchange for amount staked
+    /// @notice calculates effective APY staker will be entitled to in exchange for amount staked
     /// @dev formula for calculating effective price:
     /// (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
-    ///@param _stake amount to be staked
-    ///@param _pid ID of current pool
+    /// @param _stake amount to be staked
+    /// @param _pid ID of current pool
     function calculateEffectiveAPY(uint256 _pid, uint256 _stake)
         public
         view

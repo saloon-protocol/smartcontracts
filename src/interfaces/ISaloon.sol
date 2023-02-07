@@ -44,7 +44,7 @@ interface ISaloon {
         bool withdrawalExecuted;
     }
 
-    // Change this to "CurveInfo"
+    // TODO Change this to "CurveInfo"
     struct TokenInfo {
         // amount staked in curve X-value
         uint256 currentX;

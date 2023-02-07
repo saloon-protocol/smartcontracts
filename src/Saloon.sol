@@ -80,11 +80,11 @@ contract Saloon is
     /////////////////////////// SALOON OWNER FUNCTIONS ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
-    ///@notice Updates the list of ERC20 tokens allow to be used in bounty pools
-    ///@dev Only one token is allowed per pool
-    ///@param _token ERC20 to add or remove from whitelist
-    ///@param _whitelisted bool to select if a token will be added or removed
-    ///@param _minStakeAmount The minimum amount for staking for pools pools using such token
+    /// @notice Updates the list of ERC20 tokens allow to be used in bounty pools
+    /// @dev Only one token is allowed per pool
+    /// @param _token ERC20 to add or remove from whitelist
+    /// @param _whitelisted bool to select if a token will be added or removed
+    /// @param _minStakeAmount The minimum amount for staking for pools pools using such token
     function updateTokenWhitelist(
         address _token,
         bool _whitelisted,
@@ -115,11 +115,11 @@ contract Saloon is
         return true;
     }
 
-    ///@notice Adds a new bounty pool
-    ///@dev Can only be called by the owner.
-    ///@param _token Token to be used by bounty pool
-    ///@param _projectWallet Address that will be able to deposit funds, set APY and poolCap for the pool
-    ///@param _projectName Name of the project that is hosting the bounty
+    /// @notice Adds a new bounty pool
+    /// @dev Can only be called by the owner.
+    /// @param _token Token to be used by bounty pool
+    /// @param _projectWallet Address that will be able to deposit funds, set APY and poolCap for the pool
+    /// @param _projectName Name of the project that is hosting the bounty
     function addNewBountyPool(
         address _token,
         address _projectWallet,
@@ -153,6 +153,9 @@ contract Saloon is
         return true;
     }
 
+    /// @notice Transfer Saloon profits for a specific token from premiums and bounties collected
+    /// @param _token Token address to be transferred
+    /// @param _saloonWallet Address where the funds will go to
     function collectSaloonProfits(address _token, address _saloonWallet)
         public
         onlyOwner
@@ -166,6 +169,8 @@ contract Saloon is
         return true;
     }
 
+    /// @notice Transfer Saloon profits for all tokens from premiums and bounties collected
+    /// @param _saloonWallet Address where the funds will go to
     function collectAllSaloonProfits(address _saloonWallet)
         external
         onlyOwner
@@ -183,6 +188,8 @@ contract Saloon is
     /////////////////////////// REFERRAL CLAIMING /////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Allows referres to collect their profit from all bounties using the same token
+    /// @param _token Token used by the bounty that was referred
     function collectReferralProfit(address _token) public returns (bool) {
         uint256 amount = viewReferralBalance(msg.sender, _token);
         referralBalances[msg.sender][_token] = 0;
@@ -191,6 +198,7 @@ contract Saloon is
         return true;
     }
 
+    /// @notice Allows referres to collect their profit from all valid bounty submission
     function collectAllReferralProfits() external returns (bool) {
         uint256 activeTokenLength = activeTokens.length;
         for (uint256 i; i < activeTokenLength; ++i) {
@@ -204,6 +212,8 @@ contract Saloon is
     /////////////////////////// STRATEGY MANAGEMENT ///////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Updates Stategy Factory address
+    /// @param _strategyFactory new Strategy Factory address
     function updateStrategyFactoryAddress(address _strategyFactory)
         external
         onlyOwner
@@ -211,6 +221,7 @@ contract Saloon is
         strategyFactory = StrategyFactory(_strategyFactory);
     }
 
+    /// @notice TODO not sure what this does or how to describe it
     function _deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
         internal
         returns (address)
@@ -235,6 +246,8 @@ contract Saloon is
         return deployedStrategy;
     }
 
+    /// @notice Withdraws current deposit held in active strategy
+    /// @param _pid Bounty pool id
     function withdrawFromActiveStrategy(uint256 _pid)
         internal
         returns (uint256)
@@ -260,7 +273,10 @@ contract Saloon is
         return fundsWithdrawn;
     }
 
-    // Function to handle deploying new strategy, switching strategies, depositing to strategy
+    /// @notice Function to handle deploying new strategy, switching strategies, depositing to strategy
+    /// @param _pid Bounty pool id
+    /// @param _strategyName Name of the strategy
+    /// @param _newDeposit New deposit amount
     function handleStrategyDeposit(
         uint256 _pid,
         string memory _strategyName,
@@ -295,9 +311,12 @@ contract Saloon is
         }
     }
 
-    // Callback function from strategies upon converting yield to underlying
-    // Anyone can call this but will result in lost funds for non-strategies.
-    // Tokens are transferred from msg.sender to this contract and saloonStrategyProfit and/or referralBalances are incremented.
+    /// @notice Callback function from strategies upon converting yield to underlying
+    /// @dev Anyone can call this but will result in lost funds for non-strategies.
+    /// - Tokens are transferred from msg.sender to this contract and saloonStrategyProfit and/or
+    ///   referralBalances are incremented.
+    /// @param _token Token being received
+    /// @param _amount Amount being received
     function receiveStrategyYield(address _token, uint256 _amount)
         external
         override
@@ -317,6 +336,7 @@ contract Saloon is
         }
     }
 
+    /// @notice TODO not sure what this does or how to describe it
     function compoundYieldForPid(uint256 _pid) public {
         bytes32 strategyHash = activeStrategies[_pid];
         IStrategy deployedStrategy = IStrategy(
@@ -325,6 +345,7 @@ contract Saloon is
         deployedStrategy.compound();
     }
 
+    /// @notice TODO not sure what this does or how to describe it
     function compoundYieldForAll() external {
         uint256 arrayLength = poolInfo.length;
         for (uint256 i = 0; i < arrayLength; ++i) {
@@ -337,6 +358,13 @@ contract Saloon is
     ///////////////////////////////////////////////////////////////////////////////
 
     //todo change order of names to match inputs
+    /// @notice Sets the average APY,Pool Cap and deposits project payout
+    /// @dev Can only be called by the projectWallet
+    /// @param _pid Bounty pool id
+    /// @param _poolCap Max size of pool in token amount
+    /// @param _apy Average APY that will be paid to stakers
+    /// @param _deposit Amount to be deopsited as bounty payout
+    /// @param _strateName Name of the strategy to be used
     function setAPYandPoolCapAndDeposit(
         uint256 _pid,
         uint256 _poolCap,
@@ -386,6 +414,12 @@ contract Saloon is
         }
     }
 
+    /// @notice Makes a deposit that will serve as bounty payout
+    /// @dev Only callable by projectWallet
+    /// @param _pid Bounty pool id
+    /// @param _apy Average APY that will be paid to stakers
+    /// @param _deposit
+    /// @param _strategyName Name of the strategy where deposit will go to
     function makeProjectDeposit(
         uint256 _pid,
         uint256 _deposit,
@@ -410,6 +444,10 @@ contract Saloon is
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
 
+    /// @notice Schedules withdrawal for a project deposit
+    /// @dev withdrawal must be made within a certain time window
+    /// @param _pid Bounty pool id
+    /// @param _amount Amount to withdraw
     function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
         external
         returns (bool)
@@ -429,6 +467,9 @@ contract Saloon is
         return true;
     }
 
+    /// @notice Completes scheduled withdrawal
+    /// @param _pid Bounty pool id
+    /// @param _amount Amount to withdraw (must be equal to amount scheduled)
     function projectDepositWithdrawal(uint256 _pid, uint256 _amount)
         external
         returns (bool)
@@ -462,6 +503,8 @@ contract Saloon is
         return true;
     }
 
+    /// @notice Deactivates pool
+    /// @param _pid Bounty pool id
     function windDownBounty(uint256 _pid) external returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
         require(
@@ -479,7 +522,9 @@ contract Saloon is
     /////////////////////////// USER FUNCTIONS ////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
-    // Stake tokens in a Bounty pool to earn premium payments.
+    /// @notice Stake tokens in a Bounty pool to earn premium payments.
+    /// @param _pid Bounty pool id
+    /// @param _amount Amount to be staked
     function stake(uint256 _pid, uint256 _amount)
         external
         nonReentrant
@@ -518,7 +563,9 @@ contract Saloon is
         return tokenId;
     }
 
-    /// Schedule unstake with specific amount
+    /// @notice Schedule unstake with specific amount
+    /// @dev must be unstaked within a certain time window after scheduled
+    /// @param _tokenId Token Id of ERC721 being unstaked
     function scheduleUnstake(uint256 _tokenId) external returns (bool) {
         require(ownerOf(_tokenId) == msg.sender, "sender is not owner");
 
@@ -533,7 +580,9 @@ contract Saloon is
         return true;
     }
 
-    // Withdraw LP tokens from MasterChef.
+    /// @notice Unstake scheduled tokenId
+    /// @param _tokenId Token Id of ERC721 being unstaked
+    /// @param _shouldHarvest Whether staker wants to claim his owed premium or not
     function unstake(uint256 _tokenId, bool _shouldHarvest)
         external
         nonReentrant
@@ -588,6 +637,9 @@ contract Saloon is
         return true;
     }
 
+    /// @notice Updates and transfers amount owed to a tokenId
+    /// @param _tokenId Token Id of ERC721 being updated
+    /// @param _shouldHarvest Whether staker wants to claim his owed premium or not
     function _updateTokenReward(uint256 _tokenId, bool _shouldHarvest)
         internal
     {
@@ -632,6 +684,8 @@ contract Saloon is
         }
     }
 
+    /// @notice Claims premium for specified tokenId
+    /// @param _tokenId Token Id of ERC721
     function claimPremium(uint256 _tokenId) external nonReentrant {
         // Intentionally allow non-owners to claim for token
         _updateTokenReward(_tokenId, true);
@@ -641,6 +695,9 @@ contract Saloon is
     /////////////////////////// INTERNAL FUNCTIONS ////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Bills premium from project wallet
+    /// @param _pid Bounty pool id of what pool is being billed
+    /// @param _pending How much premium stakers are owed
     function _billPremium(uint256 _pid, uint256 _pending) internal {
         PoolInfo storage pool = poolInfo[_pid];
 
@@ -682,6 +739,10 @@ contract Saloon is
         emit PremiumBilled(_pid, billAmount);
     }
 
+    /// @notice Increases how much a referrer is entitled to withdraw
+    /// @param _referrer Referrer address
+    /// @param _token ERC20 Token address 
+    /// @param _amount Amount referrer is entitled to
     function _increaseReferralBalance(
         address _referrer,
         address _token,
@@ -692,6 +753,8 @@ contract Saloon is
         }
     }
 
+    /// @notice Pays valid bounty submission to hunter
+    /// @dev
     function payBounty(
         uint256 _pid,
         address _hunter,
