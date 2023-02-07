@@ -35,9 +35,9 @@ contract StargateStrategyTest is DSTest, Script {
     function testAccessControl() external {
         vm.startPrank(USDCHolder);
         vm.expectRevert("Not authorized");
-        stargateStrategy.depositToStrategy(1);
+        stargateStrategy.depositToStrategy();
         vm.expectRevert("Not authorized");
-        stargateStrategy.withdrawFromStrategy(1, 0);
+        stargateStrategy.withdrawFromStrategy(0);
         vm.expectRevert("Not authorized");
         stargateStrategy.compound();
         vm.expectRevert("Not authorized");
@@ -52,31 +52,13 @@ contract StargateStrategyTest is DSTest, Script {
         stargateStrategy.updateUniswapRouterAddress(USDCHolder);
     }
 
-    function testOwnershipTransfer() external {
-        vm.prank(USDCHolder);
-        vm.expectRevert("Not pending owner");
-        stargateStrategy.acceptOwnershipTransfer();
-
-        stargateStrategy.setPendingOwner(rando);
-
-        vm.startPrank(USDCHolder);
-        vm.expectRevert("Not pending owner");
-        stargateStrategy.acceptOwnershipTransfer();
-        vm.stopPrank();
-
-        vm.startPrank(rando);
-        stargateStrategy.acceptOwnershipTransfer();
-        address owner = address(stargateStrategy.saloon());
-        assertEq(owner, rando);
-    }
-
     // ============================
     // Test Implementation Update
     // ============================
     function testDeposit() external {
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.transfer(address(stargateStrategy), USDCBalance);
-        uint256 lpDepositBalance = stargateStrategy.depositToStrategy(1);
+        uint256 lpDepositBalance = stargateStrategy.depositToStrategy();
         int256 balanceDiff = int256(USDCBalance) - int256(lpDepositBalance);
         // LP tokens aren't minted 1:1, so only checking that the returned LP is close to input.
         assert(balanceDiff < int256(USDCBalance) / 100);
@@ -89,11 +71,10 @@ contract StargateStrategyTest is DSTest, Script {
     function testWithdraw() external {
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.transfer(address(stargateStrategy), USDCBalance);
-        uint256 lpAdded = stargateStrategy.depositToStrategy(1);
+        uint256 lpAdded = stargateStrategy.depositToStrategy();
 
         vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
         uint256 amountWithdrawn = stargateStrategy.withdrawFromStrategy(
-            1,
             lpAdded
         );
 
@@ -104,7 +85,7 @@ contract StargateStrategyTest is DSTest, Script {
     function testCompound() external {
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.transfer(address(stargateStrategy), USDCBalance);
-        stargateStrategy.depositToStrategy(1);
+        stargateStrategy.depositToStrategy();
 
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
@@ -120,7 +101,7 @@ contract StargateStrategyTest is DSTest, Script {
     function testDepositCompoundWithdraw() external {
         uint256 USDCBalanceInitial = USDC.balanceOf(address(this));
         USDC.transfer(address(stargateStrategy), USDCBalanceInitial);
-        stargateStrategy.depositToStrategy(1);
+        stargateStrategy.depositToStrategy();
 
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
@@ -129,7 +110,7 @@ contract StargateStrategyTest is DSTest, Script {
 
         uint256 lpDepositBalanceIntermediate = stargateStrategy
             .lpDepositBalance();
-        stargateStrategy.withdrawFromStrategy(1, lpDepositBalanceIntermediate);
+        stargateStrategy.withdrawFromStrategy(lpDepositBalanceIntermediate);
         uint256 USDCBalanceFinal = USDC.balanceOf(address(this));
         assert(USDCBalanceFinal > USDCBalanceInitial);
     }
@@ -137,7 +118,7 @@ contract StargateStrategyTest is DSTest, Script {
     function testWithdrawYield() external {
         uint256 USDCBalanceInitial = USDC.balanceOf(address(this));
         USDC.transfer(address(stargateStrategy), USDCBalanceInitial);
-        stargateStrategy.depositToStrategy(1);
+        stargateStrategy.depositToStrategy();
 
         vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
         stargateStrategy.withdrawYield();

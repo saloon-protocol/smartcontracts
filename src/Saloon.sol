@@ -206,7 +206,7 @@ contract Saloon is
     /////////////////////////// REFERRAL CLAIMING /////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
-    /// @notice Allows referres to collect their profit from all bounties using the same token
+    /// @notice Allows referrers to collect their profit from all bounties for one token
     /// @param _token Token used by the bounty that was referred
     function collectReferralProfit(address _token) public returns (bool) {
         uint256 amount = viewReferralBalance(msg.sender, _token);
@@ -216,7 +216,7 @@ contract Saloon is
         return true;
     }
 
-    /// @notice Allows referres to collect their profit from all valid bounty submission
+    /// @notice Allows referrers to collect their profit from all bounties for all tokens
     function collectAllReferralProfits() external returns (bool) {
         uint256 activeTokenLength = activeTokens.length;
         for (uint256 i; i < activeTokenLength; ++i) {
@@ -239,7 +239,7 @@ contract Saloon is
         strategyFactory = StrategyFactory(_strategyFactory);
     }
 
-    /// @notice TODO not sure what this does or how to describe it
+    /// @notice Deploys a new strategy contract if the bounty does not have one already
     function _deployStrategyIfNeeded(uint256 _pid, string memory _strategyName)
         internal
         returns (address)
@@ -282,7 +282,6 @@ contract Saloon is
             uint256 activeStrategyLPDepositBalance = activeStrategy
                 .lpDepositBalance();
             fundsWithdrawn = activeStrategy.withdrawFromStrategy(
-                1,
                 activeStrategyLPDepositBalance
             );
             pool.depositInfo.projectDepositHeld += fundsWithdrawn;
@@ -322,7 +321,7 @@ contract Saloon is
                     deployedStrategy,
                     _newDeposit + fundsWithdrawn
                 );
-                strategy.depositToStrategy(1); // This is stargate USDC pool hardcode
+                strategy.depositToStrategy();
             } else {
                 pool.depositInfo.projectDepositHeld += _newDeposit;
             }
@@ -354,16 +353,16 @@ contract Saloon is
         }
     }
 
-    /// @notice TODO not sure what this does or how to describe it
+    /// @notice Harvest pending yield from active strategy for single pid and reinvest
+    /// @param _pid Pool id whose strategy should be compounded
     function compoundYieldForPid(uint256 _pid) public {
         bytes32 strategyHash = activeStrategies[_pid];
-        IStrategy deployedStrategy = IStrategy(
-            pidStrategies[_pid][strategyHash]
-        );
-        deployedStrategy.compound();
+        address deployedStrategy = pidStrategies[_pid][strategyHash];
+        if (deployedStrategy != address(0))
+            IStrategy(deployedStrategy).compound();
     }
 
-    /// @notice TODO not sure what this does or how to describe it
+    /// @notice Harvest pending yield from active strategy for all pids and reinvest
     function compoundYieldForAll() external {
         uint256 arrayLength = poolInfo.length;
         for (uint256 i = 0; i < arrayLength; ++i) {
@@ -832,25 +831,6 @@ contract Saloon is
             withdrawFromActiveStrategy(_pid);
             uint256 projectPayout = payoutAmount - totalStaked;
             pool.depositInfo.projectDepositHeld -= projectPayout;
-
-            // I believe the following condition is unnecessary //todo delete this?
-            //
-            // } else if (_amount == poolTotal) {
-            //     // set all staker balances to zero
-            //     uint256 length = pool.stakerList.length;
-            //     for (uint256 i; i < length; ) {
-            //         address _user = pool.stakerList[i];
-            //         NFTInfo storage user = nftInfo[_user];
-            //         _updateTokenReward(_tokenId, false);
-            //         user.amount = 0;
-            //         unchecked {
-            //             ++i;
-            //         }
-            //     }
-            //     pool.generalInfo.totalStaked = 0;
-            //     delete pool.stakerList;
-            //     withdrawFromActiveStrategy(_pid);
-            //     pool.depositInfo.projectDepositHeld = 0;
         } else {
             revert("Amount too high");
         }

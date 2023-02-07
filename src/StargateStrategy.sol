@@ -45,6 +45,10 @@ contract StargateStrategy is IStrategy {
         _;
     }
 
+    /// @notice Constructs the strategy contract. Sets proper addresses and approvals.
+    /// @dev Initiated by Saloon._deployStrategyIfNeeded() => StrategyFactory.deployStrategy()
+    /// @dev Includes Saloon commission + hunter payout
+    /// @param _owner Owner of this contract. Contracts deployed through pipeline will be owned by Saloon.sol
     constructor(address _owner) {
         stargateRouter = IStargateRouter(
             0x8731d54E9D02c286767d56ac03e8037C07e01e98
@@ -63,31 +67,25 @@ contract StargateStrategy is IStrategy {
         saloon = ISaloon(_owner);
     }
 
-    // Currently unreachable from Saloon.sol
-    function setPendingOwner(address _pendingOwner) external onlyOwner {
-        pendingOwner = _pendingOwner;
-    }
-
-    // Currently unreachable from Saloon.sol
-    function acceptOwnershipTransfer() external {
-        require(msg.sender == pendingOwner, "Not pending owner");
-        saloon = ISaloon(pendingOwner);
-        pendingOwner = address(0);
-    }
-
+    /// @notice Update any or all of the necessary stargate addresses.
+    /// @param _stargateRouter The router contract used for adding and removing liquidity.
+    /// @param _stargateLPToken The LP Token that is provided as a result of adding liquidity.
+    /// @param _stargateLPStaking The staking contract used to stake Stargate LP tokens.
     function updateStargateAddresses(
         address _stargateRouter,
-        address _stargateLPStaking,
-        address _stargateLPToken
+        address _stargateLPToken,
+        address _stargateLPStaking
     ) external onlyOwner {
         if (_stargateRouter != address(0))
             stargateRouter = IStargateRouter(_stargateRouter);
-        if (_stargateLPStaking != address(0))
-            stargateLPStaking = IStargateLPStaking(_stargateLPStaking);
         if (_stargateLPToken != address(0))
             stargateLPToken = IStargateLPToken(_stargateLPToken);
+        if (_stargateLPStaking != address(0))
+            stargateLPStaking = IStargateLPStaking(_stargateLPStaking);
     }
 
+    /// @notice Update the Uniswap router address used to swap STG for deposit token.
+    /// @param _uniswapRouter The router contract used for swapping tokens.
     function updateUniswapRouterAddress(address _uniswapRouter)
         external
         onlyOwner
@@ -96,11 +94,9 @@ contract StargateStrategy is IStrategy {
             uniswapRouter = IUniswapRouter(_uniswapRouter);
     }
 
-    function depositToStrategy(uint256 _poolId)
-        public
-        onlyOwner
-        returns (uint256)
-    {
+    /// @notice Put all deposit tokens held in this contract to work.
+    /// @dev Add liquidity to stargate router => receive LP tokens => deposit LP tokens into stargate LPStaking
+    function depositToStrategy() public onlyOwner returns (uint256) {
         uint256 USDCBalance = USDC.balanceOf(address(this));
         USDC.approve(address(stargateRouter), USDCBalance);
 
@@ -114,7 +110,10 @@ contract StargateStrategy is IStrategy {
         return lpBalanceAdded;
     }
 
-    function withdrawFromStrategy(uint256 _poolId, uint256 _amount)
+    /// @notice Withdraw deposited LP from staking contract, remove liquidity, and send to caller
+    /// @dev Automatically converts pending yield to deposit token and sends entire contract balance.
+    /// @param _amount Amount of LP tokens to withdraw from strategy.
+    function withdrawFromStrategy(uint256 _amount)
         external
         onlyOwner
         returns (uint256)
@@ -124,33 +123,38 @@ contract StargateStrategy is IStrategy {
         stargateLPStaking.withdraw(0, _amount);
         uint256 lpBalanceAvailable = stargateLPToken.balanceOf(address(this));
         uint256 amountReturned = stargateRouter.instantRedeemLocal(
-            uint16(_poolId),
+            1,
             lpBalanceAvailable,
             address(this)
         );
-        convertReward(address(this));
+        _convertReward(address(this));
         uint256 fundsToReturn = USDC.balanceOf(address(this));
         USDC.safeTransfer(msg.sender, fundsToReturn);
 
         return fundsToReturn;
     }
 
+    /// @notice Convert pending reward into deposit token and deposit.
     function compound() external onlyOwner returns (uint256) {
         stargateLPStaking.deposit(0, 0);
-        convertReward(address(this));
-        uint256 lpAdded = depositToStrategy(1);
+        _convertReward(address(this));
+        uint256 lpAdded = depositToStrategy();
 
         return lpAdded;
     }
 
+    /// @notice Withdraw all pending yield from strategy to caller.
+    /// @dev 10% Saloon fee automatically taken when converting yield to deposit token.
     function withdrawYield() external onlyOwner returns (uint256) {
         stargateLPStaking.deposit(0, 0);
-        uint256 returnedAmount = convertReward(msg.sender);
+        uint256 returnedAmount = _convertReward(msg.sender);
 
         return returnedAmount;
     }
 
-    function convertReward(address _receiver) internal returns (uint256) {
+    /// @notice Convert all pending yield into deposit token.
+    /// @dev 10% Saloon fee automatically taken when converting yield to deposit token.
+    function _convertReward(address _receiver) internal returns (uint256) {
         uint256 availableSTG = rewardBalance();
         if (availableSTG == 0) return 0;
         STG.approve(address(uniswapRouter), availableSTG);
@@ -184,10 +188,12 @@ contract StargateStrategy is IStrategy {
         return returnedAmount;
     }
 
+    /// @notice The balance of yield tokens currently in the contract.
     function rewardBalance() public view returns (uint256) {
         return STG.balanceOf(address(this));
     }
 
+    /// @notice The amount of pending token owed to this contract due to deposit.
     function pendingRewardBalance() external view returns (uint256) {
         return stargateLPStaking.pendingStargate(0, address(this)); // PID 0 is S*USDC
     }
