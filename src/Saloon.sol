@@ -357,7 +357,6 @@ contract Saloon is
     /////////////////////////// PROJECT OWNER FUNCTIONS ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
-    //todo change order of names to match inputs
     /// @notice Sets the average APY,Pool Cap and deposits project payout
     /// @dev Can only be called by the projectWallet
     /// @param _pid Bounty pool id
@@ -646,7 +645,7 @@ contract Saloon is
         PoolInfo storage pool = poolInfo[pid];
         NFTInfo storage token = nftInfo[_tokenId];
 
-        // if (token.amount == 0 && token.unclaimed == 0) {
+        // if (token.amount == 0 && token.unclaimed == 0) { todo delete this?
         //     token.lastClaimedTime = block.timestamp;
         //     return;
         // }
@@ -819,7 +818,7 @@ contract Saloon is
             uint256 projectPayout = _amount - totalStaked;
             pool.depositInfo.projectDepositHeld -= projectPayout;
 
-            // I believe the following condition is unnecessary
+            // I believe the following condition is unnecessary //todo delete this?
             //
             // } else if (_amount == poolTotal) {
             //     // set all staker balances to zero
