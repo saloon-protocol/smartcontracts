@@ -10,6 +10,7 @@ import "./BountyTokenNFT.sol";
 import "./StrategyFactory.sol";
 
 /* Implement:
+- TODO implement BPS in payBounty
 - TODO Fill in missing events
 - TODO Referral profit tests (Bounty/Premium/Yield)
 */
