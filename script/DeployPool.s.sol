@@ -22,6 +22,7 @@ contract Deploy is Script {
             0x1B7FE02Da6c7a7175a33D109397492c2872c6A5e,
             "DUMMY2",
             address(0),
+            0,
             0
         );
 

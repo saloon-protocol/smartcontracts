@@ -71,6 +71,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         vm.startPrank(project);
@@ -117,6 +118,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
     }
@@ -138,6 +140,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
     }
@@ -168,6 +171,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         vm.startPrank(project);
@@ -186,6 +190,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         vm.startPrank(project);
@@ -208,6 +213,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         vm.startPrank(project);
@@ -748,6 +754,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         vm.startPrank(project);
@@ -804,7 +811,8 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             referrer,
-            5000
+            5000,
+            block.timestamp + 365 days
         );
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 * 10**6);
@@ -859,6 +867,70 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(totalProfit, 0);
     }
 
+    function testReferrerClaimBountyExpired() external {
+        // Set up new pool with referral
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            referrer,
+            5000,
+            block.timestamp + 1 days
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            poolCap, // $100
+            apy, // 10%
+            deposit, // $30
+            ""
+        );
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10**6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10**6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10**6);
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + 2 days);
+        saloon.payBounty(pid, hunter, 10000);
+
+        saloon.collectSaloonProfits(address(usdc), saloonWallet);
+
+        // test wallet has received amount
+        uint256 saloonWalletBalance = usdc.balanceOf(saloonWallet);
+        assertEq(saloonWalletBalance, (5 * 10**6));
+        uint256 referrerWalletBalance = saloon.viewReferralBalance(
+            referrer,
+            address(usdc)
+        );
+        assertEq(referrerWalletBalance, 0); // Referral window expired. Referrer balance was never increased.
+
+        vm.startPrank(referrer);
+        saloon.collectAllReferralProfits();
+        referrerWalletBalance = usdc.balanceOf(referrer);
+        assertEq(referrerWalletBalance, 0); // Referral window expired. Referrer balance was never increased.
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+    }
+
     function testDecimalsCall() external {
         (, bytes memory _decimals) = address(usdc).staticcall(
             abi.encodeWithSignature("decimals()")
@@ -878,6 +950,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
 
@@ -886,6 +959,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         assertEq(pid, 1);
@@ -904,6 +978,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
         assertEq(pid, 2);
@@ -916,6 +991,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             project,
             "yeehaw",
             address(0),
+            0,
             0
         );
     }

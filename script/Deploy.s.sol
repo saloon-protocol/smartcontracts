@@ -39,6 +39,7 @@ contract Deploy is Script {
             projectWallet,
             "Saloon",
             address(0),
+            0,
             0
         );
         saloon.setAPYandPoolCapAndDeposit(

@@ -60,6 +60,7 @@ interface ISaloon {
     struct ReferralInfo {
         address referrer;
         uint256 referralFee; // in BPS (10000)
+        uint256 endTime;
     }
 
     event NewBountyDeployed(

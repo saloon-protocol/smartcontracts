@@ -121,15 +121,19 @@ contract Saloon is
     /// @param _token Token to be used by bounty pool
     /// @param _projectWallet Address that will be able to deposit funds, set APY and poolCap for the pool
     /// @param _projectName Name of the project that is hosting the bounty
+    /// @param _referrer Address of the individual that referred this bounty to The Saloon
+    /// @param _referralFee Referral fee that the referrer will receive (in BPS), max 50%
+    /// @param _referralEndTime Timestamp up until the referral will be active
     function addNewBountyPool(
         address _token,
         address _projectWallet,
         string memory _projectName,
         address _referrer,
-        uint256 _referralFee
+        uint256 _referralFee,
+        uint256 _referralEndTime
     ) external onlyOwner returns (uint256) {
         require(tokenWhitelist[_token], "token not whitelisted");
-        require(_referralFee <= 10000, "referral fee too high");
+        require(_referralFee <= 5000, "referral fee too high");
         // uint8 _tokenDecimals = IERC20(_token).decimals();
         (, bytes memory _decimals) = _token.staticcall(
             abi.encodeWithSignature("decimals()")
@@ -144,6 +148,7 @@ contract Saloon is
         newBounty.generalInfo.projectName = _projectName;
         newBounty.referralInfo.referrer = _referrer;
         newBounty.referralInfo.referralFee = _referralFee;
+        newBounty.referralInfo.endTime = _referralEndTime;
         poolInfo.push(newBounty);
         // emit event
         return (poolInfo.length - 1);
@@ -183,6 +188,18 @@ contract Saloon is
             collectSaloonProfits(_token, _saloonWallet);
         }
         return true;
+    }
+
+    function extendReferralPeriod(uint256 _pid, uint256 _endTime)
+        external
+        onlyOwner
+    {
+        PoolInfo storage pool = poolInfo[_pid];
+        require(
+            _endTime > pool.referralInfo.endTime,
+            "can only extend end time"
+        );
+        pool.referralInfo.endTime = _endTime;
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -1068,7 +1085,8 @@ contract Saloon is
     {
         PoolInfo memory pool = poolInfo[_pid];
         address referrer = pool.referralInfo.referrer;
-        if (referrer == address(0)) {
+        uint256 endTime = pool.referralInfo.endTime;
+        if (referrer == address(0) || endTime < block.timestamp) {
             return (_totalAmount, 0, referrer);
         } else {
             uint256 referralAmount = (_totalAmount *
