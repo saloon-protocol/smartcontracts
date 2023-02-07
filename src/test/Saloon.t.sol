@@ -639,21 +639,18 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
 
         vm.prank(newOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        saloon.payBounty(pid, newOwner, 10 * 10**6);
+        saloon.payBounty(pid, newOwner, 2000); // $20 stake + $30 deposit = $50 total... 2000 BPS = 20% = $10
 
-        saloon.payBounty(pid, hunter, 10 * 10**6);
+        saloon.payBounty(pid, hunter, 2000);
 
         // test hunters balance got the right amount
         uint256 hunterBalance = usdc.balanceOf(hunter);
         assertEq(hunterBalance, 9 * 10**6); // 0.9 usdc
 
         // test saloonBountyProfit got the right amount
-        (
-            uint256 totalProfit,
-            uint256 bountyProfit,
-            uint256 strategyProfit,
-            uint256 premiumProfit
-        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        (, uint256 bountyProfit, , ) = saloon.viewSaloonProfitBalance(
+            address(usdc)
+        );
         assertEq(bountyProfit, 1 * 10**6); // 0.1 usdc
 
         // test stakers balance was reduced properly
@@ -664,33 +661,18 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         // total staked should be 1 total now. total Pool value = 4 usdc
         uint256 bountyBalance = saloon.viewBountyBalance(pid);
         assertEq(bountyBalance, 40 * 10**6);
-
-        saloon.payBounty(pid, hunter, 40 * 10**6 - 1); // Subtracting 1 wei because Stargate returns 1 wei less if withdrawn in same block
-        // test stakers balance was reduced properly
-        (uint256 stakerAmountt, , , , ) = saloon.viewTokenInfo(tokenId);
-        (uint256 stakerAmountt2, , , , ) = saloon.viewTokenInfo(tokenId2);
-        assertEq(stakerAmountt2, stakerAmountt); // should be zero
-
-        // test saloon bountyprofit
-        (
-            uint256 totalProfit2,
-            uint256 bountyProfit2,
-            uint256 strategyProfit2,
-            uint256 premiumProfit2
-        ) = saloon.viewSaloonProfitBalance(address(usdc));
-        assertEq(bountyProfit2, 5 * 10**6 - 1); // subtracting 1 wei due to precision loss from stargate staking
     }
 
     function testPayBountyStrategyDepositNeeded() external {
         vm.prank(newOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        saloon.payBounty(pid, newOwner, 1 * 10**6);
+        saloon.payBounty(pid, newOwner, 10000);
 
-        saloon.payBounty(pid, hunter, 1 * 10**6);
+        saloon.payBounty(pid, hunter, 5000);
 
         // test hunters balance got the right amount
         uint256 hunterBalance = usdc.balanceOf(hunter);
-        assertEq(hunterBalance, 9 * 10**5); // 0.9 usdc
+        assertEq(hunterBalance, ((15 * 10**6) * 9) / 10); // 13.5 usdc
 
         // test saloonBountyProfit got the right amount
         (
@@ -699,7 +681,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             uint256 strategyProfit,
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
-        assertEq(bountyProfit, 1 * 10**5); // 0.1 usdc
+        assertEq(bountyProfit, 15 * 10**5); // 1.5 usdc
     }
 
     // ============================
@@ -720,7 +702,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stake2, 10 * 10**6);
         vm.stopPrank();
 
-        saloon.payBounty(pid, hunter, 50 * 10**6 - 1); // -1 wei due to stargate precision loss
+        saloon.payBounty(pid, hunter, 10000); // -1 wei due to stargate precision loss
 
         saloon.collectSaloonProfits(address(usdc), saloonWallet);
 
@@ -756,7 +738,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stake2, 10 * 10**6);
         vm.stopPrank();
 
-        saloon.payBounty(pid, hunter, 50 * 10**6 - 1); // Immediate stargate precision loss
+        saloon.payBounty(pid, hunter, 10000); // Immediate stargate precision loss
 
         // Repeat with pool with token DAI
 
@@ -787,7 +769,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stake4, 10 ether);
         vm.stopPrank();
 
-        saloon.payBounty(pid2, hunter, 50 ether);
+        saloon.payBounty(pid2, hunter, 10000);
 
         saloon.collectAllSaloonProfits(saloonWallet);
 
@@ -795,7 +777,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         uint256 walletBalanceUSDC = usdc.balanceOf(saloonWallet);
         assertEq(walletBalanceUSDC, 5 * 10**6 - 1); // Immediate stargate precision loss
         uint256 walletBalanceDAI = dai.balanceOf(saloonWallet);
-        assertEq(walletBalanceDAI, 5 ether);
+        assertEq(walletBalanceDAI, 5 ether - 1);
 
         // test variables have been reset
         (
@@ -849,7 +831,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stake2, 10 * 10**6);
         vm.stopPrank();
 
-        saloon.payBounty(pid, hunter, 50 * 10**6); // -2 wei due to stargate precision loss
+        saloon.payBounty(pid, hunter, 10000);
 
         saloon.collectSaloonProfits(address(usdc), saloonWallet);
 

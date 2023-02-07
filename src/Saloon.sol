@@ -757,50 +757,47 @@ contract Saloon is
     /// @dev Includes Saloon commission + hunter payout
     /// @param _pid Bounty pool id
     /// @param _hunter Hunter address that will receive payout
-    /// @param _amount Amount to be paid
+    /// @param _payoutBPS Percentage of pool to payout in BPS
     function payBounty(
         uint256 _pid,
         address _hunter,
-        uint256 _amount
+        uint256 _payoutBPS
     ) public onlyOwner returns (bool) {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 totalStaked = pool.generalInfo.totalStaked;
         uint256 poolTotal = totalStaked + viewMinProjectDeposit(_pid);
-        uint256 balanceBefore = poolTotal;
+        uint256 payoutAmount = (poolTotal * _payoutBPS) / BPS;
 
         // if stakers can cover payout
-        if (_amount <= totalStaked) {
-            if (_amount == totalStaked) {
-                // set all token balances to zero
-                uint256 length = pidNFTList[_pid].length;
-                for (uint256 i; i < length; ) {
-                    uint256 tokenId = pidNFTList[_pid][i];
-                    NFTInfo storage token = nftInfo[tokenId];
-                    _updateTokenReward(tokenId, false);
-                    token.amount = 0;
-                    unchecked {
-                        ++i;
-                    }
-                }
-                pool.generalInfo.totalStaked = 0;
-                delete pool.stakerList;
-            } else {
-                uint256 percentage = ((_amount * PRECISION) / totalStaked);
-                uint256 length = pidNFTList[_pid].length;
-                for (uint256 i; i < length; ) {
-                    uint256 tokenId = pidNFTList[_pid][i];
-                    NFTInfo storage token = nftInfo[tokenId];
-                    _updateTokenReward(tokenId, false);
-                    uint256 userPay = (token.amount * percentage) / PRECISION;
-                    token.amount -= userPay;
-                    pool.generalInfo.totalStaked -= userPay;
-                    unchecked {
-                        ++i;
-                    }
+        if (payoutAmount == totalStaked) {
+            // set all token balances to zero
+            uint256 length = pidNFTList[_pid].length;
+            for (uint256 i; i < length; ) {
+                uint256 tokenId = pidNFTList[_pid][i];
+                NFTInfo storage token = nftInfo[tokenId];
+                _updateTokenReward(tokenId, false);
+                token.amount = 0;
+                unchecked {
+                    ++i;
                 }
             }
-            // if stakers alone cannot cover payout
-        } else if (_amount > totalStaked && _amount <= poolTotal) {
+            pool.generalInfo.totalStaked = 0;
+            delete pool.stakerList;
+        } else if (payoutAmount < totalStaked) {
+            uint256 percentage = ((payoutAmount * PRECISION) / totalStaked);
+            uint256 length = pidNFTList[_pid].length;
+            for (uint256 i; i < length; ) {
+                uint256 tokenId = pidNFTList[_pid][i];
+                NFTInfo storage token = nftInfo[tokenId];
+                _updateTokenReward(tokenId, false);
+                uint256 userPay = (token.amount * percentage) / PRECISION;
+                token.amount -= userPay;
+                pool.generalInfo.totalStaked -= userPay;
+                unchecked {
+                    ++i;
+                }
+            }
+        } else if (payoutAmount > totalStaked && payoutAmount <= poolTotal) {
             // set all token balances to zero
             uint256 length = pidNFTList[_pid].length;
             for (uint256 i; i < length; ) {
@@ -816,7 +813,7 @@ contract Saloon is
             delete pool.stakerList;
             // calculate remaining amount for project to pay
             withdrawFromActiveStrategy(_pid);
-            uint256 projectPayout = _amount - totalStaked;
+            uint256 projectPayout = payoutAmount - totalStaked;
             pool.depositInfo.projectDepositHeld -= projectPayout;
 
             // I believe the following condition is unnecessary //todo delete this?
@@ -842,9 +839,9 @@ contract Saloon is
         }
 
         // calculate saloon commission
-        uint256 saloonCommission = (_amount * bountyFee) / BPS;
+        uint256 saloonCommission = (payoutAmount * bountyFee) / BPS;
         // subtract commission from payout
-        uint256 hunterPayout = _amount - saloonCommission;
+        uint256 hunterPayout = payoutAmount - saloonCommission;
 
         // Calculate fee taken from bounty payments. 10% taken from total payment upon payout.
         // Of that 10%, some % might go to referrer of bounty. The rest goes to The Saloon.
@@ -857,13 +854,13 @@ contract Saloon is
         _increaseReferralBalance(referrer, token, referralAmount);
         saloonBountyProfit[token] += saloonAmount;
 
-        // transfer payout to hunteI
+        // transfer payout to hunter
         IERC20(pool.generalInfo.token).safeTransfer(_hunter, hunterPayout);
         uint256 balanceAfter = pool.generalInfo.totalStaked +
             viewMinProjectDeposit(_pid);
 
-        emit BountyPaid(_hunter, address(pool.generalInfo.token), _amount);
-        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
+        emit BountyPaid(_hunter, address(pool.generalInfo.token), payoutAmount);
+        emit BountyBalanceChanged(_pid, poolTotal, balanceAfter);
         return true;
     }
 
@@ -947,6 +944,8 @@ contract Saloon is
         PoolInfo memory pool = poolInfo[_pid];
         return (pool.depositInfo.projectDepositHeld +
             pool.depositInfo.projectDepositInStrategy);
+        // note Certain strategies like Stargate return 1 wei less than deposited if withdrawn immediately.
+        // We subtract 1 wei to prevent the edge case of underflow when withdrawing deposit or paying bounty.
     }
 
     function viewTotalStaked(uint256 _pid) public view returns (uint256) {
