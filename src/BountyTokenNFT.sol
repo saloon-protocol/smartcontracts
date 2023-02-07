@@ -30,7 +30,7 @@ Definite Integral:
 --------------------------------
 Notes:
 Default Curve is used to calculate the staking reward.
-Such reward is then multiplied by multiplier to match the targetAPY offered by the project,
+Such reward is then multiplied by scalingMultiplier to match the targetAPY offered by the project,
 which my differ from the standard 1.06%
 ================================================
 ================================================
@@ -68,22 +68,29 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         __ERC721_init("BountyToken", "BTT");
     }
 
-    /// @notice Calculates multiplier given targetAPY
+    /// @notice Calculates scalingMultiplier given targetAPY
     /// @param _targetAPY the advertised average APY of a bounty
-    /// @param _pid poolID that the multiplier will be assigned to
-    function updateMultiplier(uint256 _pid, uint256 _targetAPY) internal {
-        uint256 m = (_targetAPY * PRECISION) / DEFAULT_APY;
-        poolInfo[_pid].generalInfo.multiplier = m;
+    /// @param _pid poolID that the scalingMultiplier will be assigned to
+    function updateScalingMultiplier(uint256 _pid, uint256 _targetAPY)
+        internal
+    {
+        uint256 sm = (_targetAPY * PRECISION) / DEFAULT_APY;
+        poolInfo[_pid].generalInfo.scalingMultiplier = sm;
     }
 
-    // Default curve function implementation
-    //      1/(0.66x+0.1)
+    /// @notice Default curve function implementation
+    /// @dev calculates Y given X
+    ///     -    1/(0.66x+0.1)
+    ///     - Y = APY
+    ///     - X = total token amount in pool scaled to X variable
+    /// @param _x X value
     function curveImplementation(uint256 _x) internal pure returns (uint256 y) {
         uint256 denominator = ((0.66 ether * _x) / 1e18) + 0.1 ether;
         y = (1 ether * 1e18) / denominator;
     }
 
-    //  Get Current APY of pool (y-value) scaled to target APY
+    /// @notice Gets Current APY of pool (y-value) scaled to target APY
+    /// @param _pid Bounty pool id
     function getCurrentAPY(uint256 _pid)
         public
         view
@@ -92,11 +99,17 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         PoolInfo memory pool = poolInfo[_pid];
 
         // get current x-value
-        uint256 x = pool.tokenInfo.currentX;
-        // current unit APY =  y-value * multiplier
-        currentAPY = curveImplementation(x) * pool.generalInfo.multiplier;
+        uint256 x = pool.curveInfo.currentX;
+        // current unit APY =  y-value * scalingMultiplier
+        currentAPY =
+            curveImplementation(x) *
+            pool.generalInfo.scalingMultiplier;
     }
 
+    /// @notice Convert token amount to X value equivalent
+    /// @dev max X value is 5
+    /// @param _pid Bounty pool id
+    /// @param _stake Amount to be converted
     function convertStakeToPoolMeasurements(uint256 _pid, uint256 _stake)
         internal
         view
@@ -109,11 +122,11 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         x = 5 * poolPercentage;
     }
 
-    /// @notice calculates effective APY staker will be entitled to in exchange for amount staked
+    /// @notice Calculates effective APY staker will be entitled to in exchange for amount staked
     /// @dev formula for calculating effective price:
-    /// (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
+    ///      (50000000000000 * ((ln(33 * (sk)) + 5_000_000) - ln((33 * s) + 5_000_000))) / 33
+    /// @param _pid Bounty pool id
     /// @param _stake amount to be staked
-    /// @param _pid ID of current pool
     function calculateEffectiveAPY(uint256 _pid, uint256 _stake)
         public
         view
@@ -121,7 +134,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     {
         PoolInfo memory pool = poolInfo[_pid];
         // get current x
-        uint256 s = pool.tokenInfo.currentX;
+        uint256 s = pool.curveInfo.currentX;
         // convert stake to x-value
         (uint256 k, ) = convertStakeToPoolMeasurements(_pid, _stake);
         uint256 sk = k + s;
@@ -138,14 +151,18 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         // calculate effective APY
         uint256 effectiveAPY = unwrap(res) / (k * 1e6);
 
-        // get pool Multiplier
-        uint256 m = pool.generalInfo.multiplier;
+        // get pool scalingMultiplier
+        uint256 m = pool.generalInfo.scalingMultiplier;
 
         // calculate effective APY according to APY offered
         scaledAPY = (effectiveAPY * m) / PRECISION;
     }
 
-    function calculateEffectiveAPYConsolidate(
+    /// @notice Calculates effective APY for arbitrary values
+    /// @param _pid Bounty pool id
+    /// @param _stake Arbitrary stake amount
+    /// @param _memX Arbitrary X value
+    function calculateArbitraryEffectiveAPY(
         uint256 _pid,
         uint256 _stake,
         uint256 _memX
@@ -169,11 +186,11 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         // calculate effective APY
         uint256 effectiveAPY = unwrap(res) / (k * 1e6);
 
-        // get pool Multiplier
-        uint256 m = pool.generalInfo.multiplier;
+        // get pool scalingMultiplier
+        uint256 sm = pool.generalInfo.scalingMultiplier;
 
         // calculate effective APY according to APY offered
-        scaledAPY = (effectiveAPY * m) / PRECISION;
+        scaledAPY = (effectiveAPY * sm) / PRECISION;
     }
 
     // TODO * Register when a token is transferred between accounts so seller
@@ -181,12 +198,15 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     //  /note - this might be a function for Saloon.sol?
     //
 
-    // * update current pool size (x value)
+    /// @notice Update current pool size (X value)
+    /// @dev reflects the new value of X in relation to change in pool size
+    /// @param _pid Bounty pool id
+    /// @param _newX New X value
     function updateCurrentX(uint256 _pid, uint256 _newX)
         internal
         returns (bool)
     {
-        poolInfo[_pid].tokenInfo.currentX = _newX;
+        poolInfo[_pid].curveInfo.currentX = _newX;
         return true;
     }
 
@@ -198,7 +218,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         returns (uint256 newAPY)
     {
         newAPY = curveImplementation(_x);
-        poolInfo[_pid].tokenInfo.currentY = newAPY;
+        poolInfo[_pid].curveInfo.currentY = newAPY;
     }
 
     function removeNFTFromPidList(uint256 _tokenId) internal {
@@ -224,27 +244,31 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         pidNFTList[pid].pop(); // Can't pop from array in memory, so pop after writing to storage
     }
 
-    // * mint function that includes pool ID when minting
+    /// @notice Mints ERC721 to staker representing their stake and how much APY they are entitled to
+    /// @dev also updates pool variables
+    /// @param _pid Bounty pool id
+    /// @param _staker Staker address
+    /// @param _stake Stake amount
     function _mint(
         uint256 _pid,
         address _staker,
-        uint256 _amount
+        uint256 _stake
     ) internal returns (uint256) {
         require(_staker != address(0), "ERC20: mint to the zero address");
 
-        uint256 apy = calculateEffectiveAPY(_pid, _amount);
+        uint256 apy = calculateEffectiveAPY(_pid, _stake);
         // uint256 apy = poolInfo[_pid].generalInfo.apy;
 
         uint256 tokenId = super._mint(_staker);
 
         NFTInfo memory token;
 
-        // Convert _amount to _xAmount
-        token.amount = _amount;
-        (uint256 xDelta, ) = convertStakeToPoolMeasurements(_pid, _amount);
+        // Convert _amount to X value
+        token.amount = _stake;
+        (uint256 xDelta, ) = convertStakeToPoolMeasurements(_pid, _stake);
 
         require(
-            poolInfo[_pid].tokenInfo.totalSupply + xDelta <= 5 ether,
+            poolInfo[_pid].curveInfo.totalSupply + xDelta <= 5 ether,
             "X boundary violated"
         );
 
@@ -256,14 +280,15 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         pidNFTList[_pid].push(tokenId);
         nftToPid[tokenId] = _pid;
 
-        poolInfo[_pid].tokenInfo.totalSupply += xDelta;
-        updateCurrentX(_pid, poolInfo[_pid].tokenInfo.totalSupply);
+        poolInfo[_pid].curveInfo.totalSupply += xDelta;
+        updateCurrentX(_pid, poolInfo[_pid].curveInfo.totalSupply);
 
         // _afterTokenTransfer(address(0), _staker, _amount);
 
         return tokenId;
     }
 
+    // TODO Decide whether to delete this or not
     //  balanceOf function  that checks for pool ID
     // function balanceOf(address _staker, uint256 _pid)
     //     public
@@ -281,26 +306,29 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     //     return stakerBalance[_staker][_pid];
     // }
 
-    // burn function that takes into account poolID
+    /// @notice Burns token Id
+    /// @param _tokenId ERC721 token id to be burned
     function _burn(uint256 _tokenId) internal override {
         uint256 pid = nftToPid[_tokenId];
         NFTInfo memory token = nftInfo[_tokenId];
 
-        // _beforeTokenTransfer(_staker, address(0), _amount);
+        // _beforeTokenTransfer(_staker, address(0), _amount); //todo delete this?
 
         super._burn(_tokenId);
 
-        // emit Transfer(_staker, address(0), _amount);
+        // emit Transfer(_staker, address(0), _amount); //todo delete this?
 
-        // _afterTokenTransfer(_staker, address(0), _amount);
+        // _afterTokenTransfer(_staker, address(0), _amount); //todo delete this?
     }
 
+    /// @notice Processes unstakes and calculates new APY for remaining stakers of a specific pool
+    /// @param _pid Bounty pool id
     function consolidate(uint256 _pid) public {
         PoolInfo memory pool = poolInfo[_pid];
-        uint256[] memory unstakedTokens = pool.tokenInfo.unstakedTokens;
+        uint256[] memory unstakedTokens = pool.curveInfo.unstakedTokens;
         uint256 unstakeLength = unstakedTokens.length;
 
-        // NEED TO CHECK IF POOL IS ACTIVE/WOUND DOWN?? Any malicious project actions due to check?
+        //todo NEED TO CHECK IF POOL IS ACTIVE/WOUND DOWN?? Any malicious project actions due to check?
         if (unstakeLength == 0 || !pool.isActive) return; // No unstakes have occured, no need to consolidate
 
         for (uint256 i = 0; i < unstakeLength; ++i) {
@@ -310,27 +338,24 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         uint256[] memory tokenArray = pidNFTList[_pid];
         uint256 length = tokenArray.length;
         uint256 memX;
-        // updateCurrentX(_pid, 0);
+        // updateCurrentX(_pid, 0); //todo delete this?
 
         for (uint256 i = 0; i < length; ++i) {
             uint256 tokenId = tokenArray[i];
             NFTInfo storage token = nftInfo[tokenId];
             uint256 stakeAmount = token.amount;
-            token.apy = calculateEffectiveAPYConsolidate(
-                _pid,
-                stakeAmount,
-                memX
-            );
+            token.apy = calculateArbitraryEffectiveAPY(_pid, stakeAmount, memX);
             memX += token.xDelta;
-            // updateCurrentX(
+            // updateCurrentX( //todo delete this?
             //     _pid,
-            //     poolInfo[_pid].tokenInfo.totalSupply + stakeAmount
+            //     poolInfo[_pid].curveInfo.totalSupply + stakeAmount
             // );
         }
 
-        poolInfo[_pid].tokenInfo.totalSupply = memX;
+        poolInfo[_pid].curveInfo.totalSupply = memX;
     }
 
+    /// @notice Processes unstakes and calculates new APY for remaining stakers for all pools
     function consolidateAll() public {
         uint256 arrayLength = poolInfo.length;
         for (uint256 i = 0; i < arrayLength; ++i) {

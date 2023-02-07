@@ -6,13 +6,13 @@ import "../SaloonProxy.sol";
 import "../lib/ERC20.sol";
 import "ds-test/test.sol";
 import "forge-std/Script.sol";
-import "../BountyToken.sol";
+import "../BountyTokenNFT.sol";
 import "prb-math/UD60x18.sol";
 
-contract DevBountyTokenTest is BountyToken, DSTest, Script {
+contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
     using SafeMath for *;
 
-    BountyToken btt;
+    BountyTokenNFT btt;
 
     function setUp() external {
         // // string memory bsc = vm.envString("BSC_RPC_URL");
@@ -21,7 +21,7 @@ contract DevBountyTokenTest is BountyToken, DSTest, Script {
         // uint256 forkId = vm.createFork(mumbai);
         // vm.selectFork(forkId);
 
-        btt = new BountyToken();
+        btt = new BountyTokenNFT();
         PoolInfo memory pool;
         pool.generalInfo.token = IERC20(address(0xadd));
         pool.generalInfo.tokenDecimals = 18;
@@ -29,7 +29,7 @@ contract DevBountyTokenTest is BountyToken, DSTest, Script {
         pool.generalInfo.projectName = "lele";
         pool.generalInfo.apy = 0;
         pool.generalInfo.poolCap = 10_000_000 ether;
-        pool.generalInfo.multiplier = 0;
+        pool.generalInfo.scalingMultiplier = 0;
         pool.generalInfo.totalStaked = 0;
         pool.poolTimelock.timelock = 0;
         pool.poolTimelock.timeLimit = 0;
@@ -47,7 +47,7 @@ contract DevBountyTokenTest is BountyToken, DSTest, Script {
         pool1.generalInfo.projectName = "lele";
         pool1.generalInfo.apy = 0;
         pool1.generalInfo.poolCap = 1000 ether;
-        pool1.generalInfo.multiplier = 0;
+        pool1.generalInfo.scalingMultiplier = 0;
         pool1.generalInfo.totalStaked = 0;
         pool1.poolTimelock.timelock = 0;
         pool1.poolTimelock.timeLimit = 0;
@@ -62,15 +62,15 @@ contract DevBountyTokenTest is BountyToken, DSTest, Script {
     function testCalculateMultiplier() external {
         // Test for double APY
         uint256 doubleAPY = DEFAULT_APY * 2;
-        updateMultiplier(doubleAPY, 0);
+        updateScalingMultiplier(doubleAPY, 0);
 
-        assertEq(poolInfo[0].generalInfo.multiplier, 2 ether);
+        assertEq(poolInfo[0].generalInfo.scalingMultiplier, 2 ether);
 
         // Test for half APY
         uint256 halfAPY = DEFAULT_APY / 2;
-        updateMultiplier(halfAPY, 1);
+        updateScalingMultiplier(halfAPY, 1);
 
-        assertEq(poolInfo[1].generalInfo.multiplier, 0.5 ether);
+        assertEq(poolInfo[1].generalInfo.scalingMultiplier, 0.5 ether);
     }
 
     function testCurveImplementation() external {

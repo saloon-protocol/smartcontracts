@@ -9,7 +9,7 @@ interface ISaloon {
         DepositInfo depositInfo;
         PremiumInfo premiumInfo;
         TimelockInfo poolTimelock;
-        TokenInfo tokenInfo;
+        CurveInfo curveInfo;
         ReferralInfo referralInfo;
         address[] stakerList;
         uint256 freezeTime;
@@ -24,7 +24,7 @@ interface ISaloon {
         string projectName;
         uint256 poolCap;
         uint256 totalStaked;
-        uint256 multiplier;
+        uint256 scalingMultiplier;
     }
 
     struct DepositInfo {
@@ -44,8 +44,8 @@ interface ISaloon {
         bool withdrawalExecuted;
     }
 
-    // TODO Change this to "CurveInfo"
-    struct TokenInfo {
+    // TODO Change this from TokenInfo to "CurveInfo"
+    struct CurveInfo {
         // amount staked in curve X-value
         uint256 currentX;
         // current APY

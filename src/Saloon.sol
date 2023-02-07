@@ -312,7 +312,7 @@ contract Saloon is
     }
 
     /// @notice Callback function from strategies upon converting yield to underlying
-    /// @dev Anyone can call this but will result in lost funds for non-strategies.
+    /// @dev Anyone can call this but will result in lost funds for non-strategies. TODO ADD MODIFIER TO THIS?
     /// - Tokens are transferred from msg.sender to this contract and saloonStrategyProfit and/or
     ///   referralBalances are incremented.
     /// @param _token Token being received
@@ -364,7 +364,7 @@ contract Saloon is
     /// @param _poolCap Max size of pool in token amount
     /// @param _apy Average APY that will be paid to stakers
     /// @param _deposit Amount to be deopsited as bounty payout
-    /// @param _strateName Name of the strategy to be used
+    /// @param _strategyName Name of the strategy to be used
     function setAPYandPoolCapAndDeposit(
         uint256 _pid,
         uint256 _poolCap,
@@ -407,7 +407,7 @@ contract Saloon is
             requiredPremiumBalancePerPeriod -
             saloonCommission;
 
-        updateMultiplier(_pid, _apy);
+        updateScalingMultiplier(_pid, _apy);
 
         if (bytes(_strategyName).length > 0) {
             handleStrategyDeposit(_pid, _strategyName, _deposit);
@@ -417,8 +417,7 @@ contract Saloon is
     /// @notice Makes a deposit that will serve as bounty payout
     /// @dev Only callable by projectWallet
     /// @param _pid Bounty pool id
-    /// @param _apy Average APY that will be paid to stakers
-    /// @param _deposit
+    /// @param _deposit Amount to be deposited
     /// @param _strategyName Name of the strategy where deposit will go to
     function makeProjectDeposit(
         uint256 _pid,
@@ -632,7 +631,7 @@ contract Saloon is
 
         // If any unstake occurs, pool needs consolidation. Even if the last token in the pid array unstakes, the pool X value needs
         // to be reset to the proper location
-        pool.tokenInfo.unstakedTokens.push(_tokenId);
+        pool.curveInfo.unstakedTokens.push(_tokenId);
 
         return true;
     }
@@ -741,7 +740,7 @@ contract Saloon is
 
     /// @notice Increases how much a referrer is entitled to withdraw
     /// @param _referrer Referrer address
-    /// @param _token ERC20 Token address 
+    /// @param _token ERC20 Token address
     /// @param _amount Amount referrer is entitled to
     function _increaseReferralBalance(
         address _referrer,
@@ -754,7 +753,11 @@ contract Saloon is
     }
 
     /// @notice Pays valid bounty submission to hunter
-    /// @dev
+    /// @dev only callable by Saloon owner
+    /// @dev Includes Saloon commission + hunter payout
+    /// @param _pid Bounty pool id
+    /// @param _hunter Hunter address that will receive payout
+    /// @param _amount Amount to be paid
     function payBounty(
         uint256 _pid,
         address _hunter,
@@ -864,8 +867,10 @@ contract Saloon is
         return true;
     }
 
-    // Return reward multiplier over the given _from to _to block.
-    function getMultiplier(uint256 _from, uint256 _to)
+    /// @notice Calculates time passed in seconds from lastClaimedTime to endTime.
+    /// @param _from lastClaimedTime
+    /// @param _to endTime
+    function getSecondsPassed(uint256 _from, uint256 _to)
         public
         pure
         returns (uint256)
@@ -873,7 +878,7 @@ contract Saloon is
         return _to.sub(_from);
     }
 
-    // make into function to view Pending yield to claim
+    // TODO make into function to view Pending yield to claim
     function pendingPremium(uint256 _tokenId)
         public
         view
@@ -891,9 +896,14 @@ contract Saloon is
             ? pool.freezeTime
             : block.timestamp;
 
-        // multiplier = number of seconds
-        uint256 multiplier = getMultiplier(token.lastClaimedTime, endTime);
-        newPending = (((token.amount * token.apy) / BPS) * multiplier) / YEAR;
+        // secondsPassed = number of seconds between lastClaimedTime and endTime
+        uint256 secondsPassed = getSecondsPassed(
+            token.lastClaimedTime,
+            endTime
+        );
+        newPending =
+            (((token.amount * token.apy) / BPS) * secondsPassed) /
+            YEAR;
         totalPending = newPending + token.unclaimed;
         // actualPending subtracts Saloon premium fee
         actualPending = (totalPending * (BPS - premiumFee)) / BPS;
