@@ -178,7 +178,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         usdc.approve(address(saloon), 1000 * 10**6);
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
         uint256 bountyBalance = saloon.viewBountyBalance(pid);
-        assertEq(bountyBalance, 10 * 10**6);
+        assertEq(bountyBalance, 10 * 10**6 - 1);
     }
 
     // ============================
@@ -198,8 +198,8 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
         bool scheduled = saloon.scheduleProjectDepositWithdrawal(
             pid,
-            10 * 10**6
-        );
+            10 * 10**6 - 1
+        ); // Immediate redeems from Stargate may return 1 wei less token.
 
         assert(true == scheduled);
     }
@@ -219,25 +219,25 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         vm.startPrank(project);
         usdc.approve(address(saloon), 1000 * 10**6);
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
-        saloon.scheduleProjectDepositWithdrawal(pid, 10 * 10**6);
+        saloon.scheduleProjectDepositWithdrawal(pid, 10 * 10**6 - 1);
 
         vm.warp(block.timestamp + 8 days);
         // Test if withdrawal is successfull during withdrawal window
-        bool completed = saloon.projectDepositWithdrawal(pid, 10 * 10**6 - 10); // Immediate redeems from Stargate may return 1 wei less token.
+        bool completed = saloon.projectDepositWithdrawal(pid, 10 * 10**6 - 1); // Immediate redeems from Stargate may return 1 wei less token.
         assert(true == completed);
 
         // Test if withdrawal fails outside withdrawal window
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
-        saloon.scheduleProjectDepositWithdrawal(pid, 10 * 10**6);
+        saloon.scheduleProjectDepositWithdrawal(pid, 10 * 10**6 - 1);
         vm.warp(block.timestamp + 6 days);
         vm.expectRevert("Timelock not set or not completed in time");
-        saloon.projectDepositWithdrawal(pid, 10 * 10**6);
+        saloon.projectDepositWithdrawal(pid, 10 * 10**6 - 1);
 
         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
-        saloon.scheduleProjectDepositWithdrawal(pid, 10 * 10**6);
+        saloon.scheduleProjectDepositWithdrawal(pid, 10 * 10**6 - 1);
         vm.warp(block.timestamp + 11 days);
         vm.expectRevert("Timelock not set or not completed in time");
-        saloon.projectDepositWithdrawal(pid, 10 * 10**6);
+        saloon.projectDepositWithdrawal(pid, 10 * 10**6 - 1);
     }
 
     // ============================
@@ -526,9 +526,9 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             uint256 actualPending,
             uint256 newPending
         ) = saloon.pendingPremium(tokenId);
-        assertEq(totalPending, 1 * 10**6);
-        assertEq(actualPending, 9 * 10**5);
-        assertEq(newPending, 1 * 10**6);
+        assertEq(totalPending, (10 * 10**6 * 4168) / 10000);
+        assertEq(actualPending, (totalPending * 9) / 10);
+        assertEq(newPending, (10 * 10**6 * 4168) / 10000);
 
         saloon.claimPremium(tokenId);
         // mint - stake + premium -> 500 - 10 + (10 * (10% * 90%)) = 409 * 10**6
@@ -594,15 +594,20 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         vm.startPrank(staker);
         //test if after claiming balance decreases by the amount of pending
         saloon.claimPremium(tokenId);
-        // 2 * 10**6 + requiredPremiumBalancePerPeriod
-        uint256 balanceExpected = 10 * 10**6 + requiredPremiumBalancePerPeriod; // +10 from stake, deposit was sent to strategy. Dynamic APY made it so that premium surpassed balance
+
+        // +10 from stake, deposit was sent to strategy. Dynamic APY made it so that premium surpassed balance
+        // Saloon also still hold's Saloon's profit from premium (totalPending - actualPending)
         uint256 balanceAfterClaim = usdc.balanceOf(address(saloon));
+        uint256 balanceExpected = 10 *
+            10**6 +
+            requiredPremiumBalancePerPeriod +
+            (totalPending - actualPending);
         assertEq(balanceAfterClaim, balanceExpected);
 
         // test if requiredPremiumBalancePerPeriod is topped up when premiumAvailable is not enough
         vm.warp(block.timestamp + 730 days);
         (totalPending, actualPending, ) = saloon.pendingPremium(tokenId);
-        assertEq(totalPending, ((10 * 10**6 * 1000) / 10000) * 2);
+        assertEq(totalPending, ((10 * 10**6 * 4168) / 10000) * 2);
 
         saloon.claimPremium(tokenId);
         // stake balance + requiredBalancePerPeriod + Saloon Fee for 3 years (user's pending / 2 years * 3 years * 10%)
@@ -631,42 +636,42 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     function testPayBountyStakingCovers() external {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
-        uint256 tokenId = saloon.stake(pid, 10 * 10**6);
+        uint256 tokenId = saloon.stake(pid, 35 * 10**6);
         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-        assertEq(stake, 10 * 10**6);
+        assertEq(stake, 35 * 10**6);
         vm.stopPrank();
 
         vm.startPrank(staker2);
         usdc.approve(address(saloon), 1000 * 10**6);
-        uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
+        uint256 tokenId2 = saloon.stake(pid, 35 * 10**6);
         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-        assertEq(stake2, 10 * 10**6);
+        assertEq(stake2, 35 * 10**6);
         vm.stopPrank();
 
         vm.prank(newOwner);
         vm.expectRevert("Ownable: caller is not the owner");
-        saloon.payBounty(pid, newOwner, 2000); // $20 stake + $30 deposit = $50 total... 2000 BPS = 20% = $10
+        saloon.payBounty(pid, newOwner, 2000); // $70 stake + $30 deposit = $100 total... 2000 BPS = 20% = $20
 
         saloon.payBounty(pid, hunter, 2000);
 
         // test hunters balance got the right amount
         uint256 hunterBalance = usdc.balanceOf(hunter);
-        assertEq(hunterBalance, 9 * 10**6); // 0.9 usdc
+        assertEq(hunterBalance, 18 * 10**6); // 0.9 usdc
 
-        // test saloonBountyProfit got the right amount
+        // test saloonBountyProfit has the right amount
         (, uint256 bountyProfit, , ) = saloon.viewSaloonProfitBalance(
             address(usdc)
         );
-        assertEq(bountyProfit, 1 * 10**6); // 0.1 usdc
+        assertEq(bountyProfit, 2 * 10**6 - 1); // 2 usdc
 
         // test stakers balance was reduced properly
         (uint256 stakerAmount, , , , ) = saloon.viewTokenInfo(tokenId);
         (uint256 stakerAmount2, , , , ) = saloon.viewTokenInfo(tokenId2);
-        assertEq(stakerAmount2, stakerAmount); // balances should be 0.5 usdc both
+        assertEq(stakerAmount2, stakerAmount); // balances should be 25 usdc both
 
         // total staked should be 1 total now. total Pool value = 4 usdc
         uint256 bountyBalance = saloon.viewBountyBalance(pid);
-        assertEq(bountyBalance, 40 * 10**6);
+        assertEq(bountyBalance, 80 * 10**6 + 1);
     }
 
     function testPayBountyStrategyDepositNeeded() external {
@@ -687,7 +692,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             uint256 strategyProfit,
             uint256 premiumProfit
         ) = saloon.viewSaloonProfitBalance(address(usdc));
-        assertEq(bountyProfit, 15 * 10**5); // 1.5 usdc
+        assertEq(bountyProfit, 15 * 10**5 - 1); // 1.5 usdc
     }
 
     // ============================
@@ -784,7 +789,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         uint256 walletBalanceUSDC = usdc.balanceOf(saloonWallet);
         assertEq(walletBalanceUSDC, 5 * 10**6 - 1); // Immediate stargate precision loss
         uint256 walletBalanceDAI = dai.balanceOf(saloonWallet);
-        assertEq(walletBalanceDAI, 5 ether - 1);
+        assertEq(walletBalanceDAI, 5 ether); // No precision loss because deposit was not sent to strategy
 
         // test variables have been reset
         (

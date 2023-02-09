@@ -267,9 +267,49 @@ contract Saloon is
         return deployedStrategy;
     }
 
+    /// @notice Function to handle deploying new strategy, switching strategies, depositing to strategy
+    /// @param _pid Bounty pool id
+    /// @param _strategyName Name of the strategy
+    /// @param _newDeposit New deposit amount
+    function handleStrategyDeposit(
+        uint256 _pid,
+        string memory _strategyName,
+        uint256 _newDeposit
+    ) internal returns (uint256) {
+        PoolInfo storage pool = poolInfo[_pid];
+
+        bytes32 _strategyHash = keccak256(abi.encode(_strategyName));
+        bytes32 activeStrategyHash = activeStrategies[_pid];
+        if (activeStrategyHash != _strategyHash) {
+            uint256 fundsWithdrawn = _withdrawFromActiveStrategy(_pid);
+            address deployedStrategy = _deployStrategyIfNeeded(
+                _pid,
+                _strategyName
+            );
+            if (deployedStrategy != address(0)) {
+                IStrategy strategy = IStrategy(deployedStrategy);
+                pool.depositInfo.projectDepositHeld -=
+                    _newDeposit +
+                    fundsWithdrawn;
+                // Subtract 1 wei due to precision loss when depositing into strategy if redeemed immediately
+                pool.depositInfo.projectDepositInStrategy +=
+                    _newDeposit +
+                    fundsWithdrawn -
+                    1;
+                IERC20(pool.generalInfo.token).safeTransfer(
+                    deployedStrategy,
+                    _newDeposit + fundsWithdrawn
+                );
+                strategy.depositToStrategy();
+            } else {
+                pool.depositInfo.projectDepositHeld += _newDeposit;
+            }
+        }
+    }
+
     /// @notice Withdraws current deposit held in active strategy
     /// @param _pid Bounty pool id
-    function withdrawFromActiveStrategy(uint256 _pid)
+    function _withdrawFromActiveStrategy(uint256 _pid)
         internal
         returns (uint256)
     {
@@ -287,48 +327,11 @@ contract Saloon is
             fundsWithdrawn = activeStrategy.withdrawFromStrategy(
                 activeStrategyLPDepositBalance
             );
+            pool.depositInfo.projectDepositInStrategy = 0;
             pool.depositInfo.projectDepositHeld += fundsWithdrawn;
         }
 
         return fundsWithdrawn;
-    }
-
-    /// @notice Function to handle deploying new strategy, switching strategies, depositing to strategy
-    /// @param _pid Bounty pool id
-    /// @param _strategyName Name of the strategy
-    /// @param _newDeposit New deposit amount
-    function handleStrategyDeposit(
-        uint256 _pid,
-        string memory _strategyName,
-        uint256 _newDeposit
-    ) internal returns (uint256) {
-        PoolInfo storage pool = poolInfo[_pid];
-
-        bytes32 _strategyHash = keccak256(abi.encode(_strategyName));
-        bytes32 activeStrategyHash = activeStrategies[_pid];
-        if (activeStrategyHash != _strategyHash) {
-            uint256 fundsWithdrawn = withdrawFromActiveStrategy(_pid);
-            address deployedStrategy = _deployStrategyIfNeeded(
-                _pid,
-                _strategyName
-            );
-            if (deployedStrategy != address(0)) {
-                IStrategy strategy = IStrategy(deployedStrategy);
-                pool.depositInfo.projectDepositHeld -=
-                    _newDeposit +
-                    fundsWithdrawn;
-                pool.depositInfo.projectDepositInStrategy +=
-                    _newDeposit +
-                    fundsWithdrawn;
-                IERC20(pool.generalInfo.token).safeTransfer(
-                    deployedStrategy,
-                    _newDeposit + fundsWithdrawn
-                );
-                strategy.depositToStrategy();
-            } else {
-                pool.depositInfo.projectDepositHeld += _newDeposit;
-            }
-        }
     }
 
     /// @notice Callback function from strategies upon converting yield to underlying
@@ -505,7 +508,7 @@ contract Saloon is
         pool.poolTimelock.withdrawalExecuted = true;
 
         if (pool.depositInfo.projectDepositHeld < _amount)
-            withdrawFromActiveStrategy(_pid);
+            _withdrawFromActiveStrategy(_pid);
 
         uint256 balanceBefore = pool.generalInfo.totalStaked +
             viewMinProjectDeposit(_pid);
@@ -831,7 +834,7 @@ contract Saloon is
             pool.generalInfo.totalStaked = 0;
             delete pool.stakerList;
             // calculate remaining amount for project to pay
-            withdrawFromActiveStrategy(_pid);
+            _withdrawFromActiveStrategy(_pid);
             uint256 projectPayout = payoutAmount - totalStaked;
             pool.depositInfo.projectDepositHeld -= projectPayout;
         } else {
