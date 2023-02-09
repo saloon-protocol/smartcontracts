@@ -8,12 +8,10 @@ import "./interfaces/IStrategy.sol";
 import "./interfaces/IStargateRouter.sol";
 import "./interfaces/IStargateLPStaking.sol";
 import "./interfaces/IStargateLPToken.sol";
-import "./interfaces/IUniswapRouter.sol";
+import "./interfaces/IUniswapRouterV3.sol";
 
 /* Implement:
-- TODO add back ownable
 - TODO Slippage control
-- TODO remove unnecessary view functions
 */
 
 contract StargateStrategy is IStrategy {
@@ -37,12 +35,13 @@ contract StargateStrategy is IStrategy {
     IStargateLPToken public stargateLPToken;
     IUniswapRouter public uniswapRouter;
     IERC20 public constant USDC =
-        IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+        IERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
+    IERC20 public constant USDT =
+        IERC20(0xc2132D05D31c914a87C6611C10748AEb04B58e8F);
     IERC20 public constant DAI =
-        IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
-    IERC20 public constant STG =
-        IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
-    address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+        IERC20(0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063);
+    address public constant WETH9 = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619;
+    IERC20 public STG;
 
     uint24 public constant poolFee = 3000;
 
@@ -60,17 +59,15 @@ contract StargateStrategy is IStrategy {
         require(_depositToken != address(0), "invalid deposit token");
 
         stargateRouter = IStargateRouter(
-            0x8731d54E9D02c286767d56ac03e8037C07e01e98
+            0x45A01E4e04F14f7A4a6702c74187c5F6222033cd
         );
         stargateLPStaking = IStargateLPStaking(
-            0xB0D502E938ed5f4df2E681fE6E419ff29631d62b
+            0x8731d54E9D02c286767d56ac03e8037C07e01e98
         );
-        stargateLPToken = IStargateLPToken(
-            0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56
-        ); //S*USDC
         uniswapRouter = IUniswapRouter(
             0xE592427A0AEce92De3Edee1F18E0157C05861564
         );
+        STG = IERC20(0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590);
 
         saloon = ISaloon(_owner);
         depositToken = _depositToken;
@@ -79,21 +76,36 @@ contract StargateStrategy is IStrategy {
         if (depositToken == address(USDC)) {
             depositPoolId = 1;
             stakingPoolId = 0;
+            stargateLPToken = IStargateLPToken(
+                0x1205f31718499dBf1fCa446663B532Ef87481fe1
+            ); //S*USDC
+        } else if (depositToken == address(USDT)) {
+            depositPoolId = 2;
+            stakingPoolId = 1;
+            stargateLPToken = IStargateLPToken(
+                0x29e38769f23701A2e4A8Ef0492e19dA4604Be62c
+            ); //S*USDC
         } else if (depositToken == address(DAI)) {
-            depositPoolId = 1;
-            stakingPoolId = 0;
+            depositPoolId = 3;
+            stakingPoolId = 2;
+            stargateLPToken = IStargateLPToken(
+                0x1c272232Df0bb6225dA87f4dEcD9d37c32f63Eea
+            ); //S*USDC
         }
     }
 
     /// @notice Update any or all of the necessary stargate addresses.
+    /// @param _STG The STG token contract. There is currently a governance proposal to redeploy STG token due to Alameda connection.
     /// @param _stargateRouter The router contract used for adding and removing liquidity.
     /// @param _stargateLPToken The LP Token that is provided as a result of adding liquidity.
     /// @param _stargateLPStaking The staking contract used to stake Stargate LP tokens.
     function updateStargateAddresses(
+        address _STG,
         address _stargateRouter,
         address _stargateLPToken,
         address _stargateLPStaking
     ) external onlyOwner {
+        if (_STG != address(0)) STG = IERC20(_STG);
         if (_stargateRouter != address(0))
             stargateRouter = IStargateRouter(_stargateRouter);
         if (_stargateLPToken != address(0))

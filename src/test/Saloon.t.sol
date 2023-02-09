@@ -34,9 +34,9 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     uint256 constant deposit = 30 * 10**6;
 
     function setUp() external {
-        string memory mumbai = vm.envString("ETH_RPC_URL");
+        string memory rpc = vm.envString("POLYGON_RPC_URL");
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        uint256 forkId = vm.createFork(mumbai);
+        uint256 forkId = vm.createFork(rpc);
         vm.selectFork(forkId);
 
         saloonImplementation = new Saloon();
@@ -45,9 +45,9 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         StrategyFactory factory = new StrategyFactory();
         saloon.initialize(address(factory));
 
-        usdc = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+        usdc = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
         address USDCHolder = address(
-            0x7713974908Be4BEd47172370115e8b1219F4A5f0
+            0x9810762578aCCF1F314320CCa5B72506aE7D7630
         );
         vm.prank(USDCHolder);
         usdc.transfer(address(this), 100000 * (10**6));

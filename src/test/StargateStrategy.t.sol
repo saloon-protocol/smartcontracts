@@ -9,8 +9,8 @@ import "forge-std/Script.sol";
 contract StargateStrategyTest is DSTest, Script {
     StargateStrategy stargateStrategy;
 
-    ERC20 USDC = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-    address USDCHolder = address(0x7713974908Be4BEd47172370115e8b1219F4A5f0);
+    ERC20 USDC = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
+    address USDCHolder = address(0x9810762578aCCF1F314320CCa5B72506aE7D7630);
     address rando = address(0x98);
 
     function receiveStrategyYield(address _token, uint256 _amount) external {
@@ -18,7 +18,7 @@ contract StargateStrategyTest is DSTest, Script {
     }
 
     function setUp() external {
-        string memory rpc = vm.envString("ETH_RPC_URL");
+        string memory rpc = vm.envString("POLYGON_RPC_URL");
         uint256 forkId = vm.createFork(rpc);
         vm.selectFork(forkId);
 
@@ -44,6 +44,7 @@ contract StargateStrategyTest is DSTest, Script {
         stargateStrategy.withdrawYield();
         vm.expectRevert("Not authorized");
         stargateStrategy.updateStargateAddresses(
+            USDCHolder,
             USDCHolder,
             USDCHolder,
             USDCHolder
