@@ -1756,7 +1756,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
@@ -1847,7 +1847,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
@@ -1938,7 +1938,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
@@ -2067,7 +2067,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
         "src/lib/OwnableUpgradeable.sol"
       ],
@@ -2129,8 +2129,8 @@
       }
     },
     "src/StargateStrategy.sol": {
-      "lastModificationDate": 1675967423510,
-      "contentHash": "6f69ebe36da0e10a1aa5ae38655a47ad",
+      "lastModificationDate": 1675976197723,
+      "contentHash": "f52d4b52b23c8c2e64fd959cf904e13e",
       "sourceName": "src/StargateStrategy.sol",
       "solcConfig": {
         "settings": {
@@ -2170,7 +2170,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol"
+        "src/interfaces/IUniswapV2Router.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
@@ -2222,7 +2222,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol"
+        "src/interfaces/IUniswapV2Router.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
@@ -2428,10 +2428,49 @@
         }
       }
     },
-    "src/interfaces/IUniswapRouter.sol": {
-      "lastModificationDate": 1674583520006,
-      "contentHash": "76fb9de90d23baab251a5df434347956",
-      "sourceName": "src/interfaces/IUniswapRouter.sol",
+    "src/interfaces/IUniswapV2Router.sol": {
+      "lastModificationDate": 1675975751747,
+      "contentHash": "0f595d802ba3c64aba149959994742ea",
+      "sourceName": "src/interfaces/IUniswapV2Router.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.6.2",
+      "artifacts": {
+        "IUniswapV2Router": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapV2Router.sol/IUniswapV2Router.json"
+        }
+      }
+    },
+    "src/interfaces/IUniswapV3Router.sol": {
+      "lastModificationDate": 1675975760744,
+      "contentHash": "42b4d441971688d5c60aa05ef09ddb40",
+      "sourceName": "src/interfaces/IUniswapV3Router.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -2462,11 +2501,11 @@
       "imports": [],
       "versionRequirement": ">=0.7.5",
       "artifacts": {
-        "IUniswapRouter": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapRouter.sol/IUniswapRouter.json"
+        "IUniswapV3Router": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapV3Router.sol/IUniswapV3Router.json"
         },
         "IUniswapV3SwapCallback": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapRouter.sol/IUniswapV3SwapCallback.json"
+          "0.8.17+commit.8df45f5f.Linux.gcc": "IUniswapV3Router.sol/IUniswapV3SwapCallback.json"
         }
       }
     },
@@ -2804,7 +2843,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC20.sol",
         "src/lib/ERC721Upgradeable.sol",
         "src/lib/OwnableUpgradeable.sol"
@@ -2894,7 +2933,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC20.sol",
         "src/lib/ERC721Upgradeable.sol",
         "src/lib/OwnableUpgradeable.sol"
@@ -2907,8 +2946,8 @@
       }
     },
     "src/test/StargateStrategy.t.sol": {
-      "lastModificationDate": 1675965317044,
-      "contentHash": "fb52820488fa111cac24db79d6f282fc",
+      "lastModificationDate": 1675975896260,
+      "contentHash": "b48d5d19c1aa4c7ee67c36dc0f71b543",
       "sourceName": "src/test/StargateStrategy.t.sol",
       "solcConfig": {
         "settings": {
@@ -2957,7 +2996,7 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapRouter.sol",
+        "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC20.sol"
       ],
       "versionRequirement": "^0.8.0",

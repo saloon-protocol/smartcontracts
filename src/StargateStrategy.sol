@@ -8,7 +8,7 @@ import "./interfaces/IStrategy.sol";
 import "./interfaces/IStargateRouter.sol";
 import "./interfaces/IStargateLPStaking.sol";
 import "./interfaces/IStargateLPToken.sol";
-import "./interfaces/IUniswapRouterV3.sol";
+import "./interfaces/IUniswapV2Router.sol";
 
 /* Implement:
 - TODO Slippage control
@@ -33,7 +33,8 @@ contract StargateStrategy is IStrategy {
     IStargateRouter public stargateRouter;
     IStargateLPStaking public stargateLPStaking;
     IStargateLPToken public stargateLPToken;
-    IUniswapRouter public uniswapRouter;
+    IUniswapV2Router public swapRouter;
+
     IERC20 public constant USDC =
         IERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
     IERC20 public constant USDT =
@@ -64,8 +65,8 @@ contract StargateStrategy is IStrategy {
         stargateLPStaking = IStargateLPStaking(
             0x8731d54E9D02c286767d56ac03e8037C07e01e98
         );
-        uniswapRouter = IUniswapRouter(
-            0xE592427A0AEce92De3Edee1F18E0157C05861564
+        swapRouter = IUniswapV2Router(
+            0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506
         );
         STG = IERC20(0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590);
 
@@ -115,13 +116,10 @@ contract StargateStrategy is IStrategy {
     }
 
     /// @notice Update the Uniswap router address used to swap STG for deposit token.
-    /// @param _uniswapRouter The router contract used for swapping tokens.
-    function updateUniswapRouterAddress(address _uniswapRouter)
-        external
-        onlyOwner
-    {
-        if (_uniswapRouter != address(0))
-            uniswapRouter = IUniswapRouter(_uniswapRouter);
+    /// @param _swapRouter The router contract used for swapping tokens.
+    function updateSwapRouterAddress(address _swapRouter) external onlyOwner {
+        if (_swapRouter != address(0))
+            swapRouter = IUniswapV2Router(_swapRouter);
     }
 
     /// @notice Put all deposit tokens held in this contract to work.
@@ -187,24 +185,22 @@ contract StargateStrategy is IStrategy {
     function _convertReward(address _receiver) internal returns (uint256) {
         uint256 availableSTG = rewardBalance();
         if (availableSTG == 0) return 0;
-        STG.approve(address(uniswapRouter), availableSTG);
+        STG.approve(address(swapRouter), availableSTG);
 
-        IUniswapRouter.ExactInputParams memory params = IUniswapRouter
-            .ExactInputParams({
-                path: abi.encodePacked(
-                    address(STG),
-                    poolFee,
-                    WETH9,
-                    poolFee,
-                    address(USDC)
-                ),
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountIn: availableSTG,
-                amountOutMinimum: 0
-            });
+        address[] memory path = new address[](2);
+        path[0] = address(STG);
+        path[1] = address(USDC);
 
-        uint256 returnedAmount = uniswapRouter.exactInput(params);
+        uint256[] memory returnedAmounts = swapRouter.swapExactTokensForTokens(
+            availableSTG,
+            0, // Don't worry about slippage for yield conversion
+            path,
+            address(this),
+            block.timestamp
+        );
+
+        // [inputAmount, outputAmount]
+        uint256 returnedAmount = returnedAmounts[1];
         uint256 saloonFee = (returnedAmount * FEE) / BPS;
         uint256 amountMinusFee = returnedAmount - saloonFee;
 

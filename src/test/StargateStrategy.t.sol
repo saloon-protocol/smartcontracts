@@ -50,7 +50,7 @@ contract StargateStrategyTest is DSTest, Script {
             USDCHolder
         );
         vm.expectRevert("Not authorized");
-        stargateStrategy.updateUniswapRouterAddress(USDCHolder);
+        stargateStrategy.updateSwapRouterAddress(USDCHolder);
     }
 
     // ============================
