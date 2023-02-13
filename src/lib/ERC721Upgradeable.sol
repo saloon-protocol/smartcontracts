@@ -47,6 +47,9 @@ contract ERC721Upgradeable is
 
     uint256 public index;
 
+    // Mapping from owner to list of owned token IDs
+    mapping(address => uint256[]) internal _ownedTokens;
+
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
@@ -549,6 +552,37 @@ contract ERC721Upgradeable is
     }
 
     /**
+     * @dev Private function to add a token to this extension's ownership-tracking data structures.
+     * @param to address representing the new owner of the given token ID
+     * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
+     */
+    function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
+        _ownedTokens[to].push(tokenId);
+    }
+
+    /**
+     * @dev Private function to remove a token from this extension's ownership-tracking data structures. Note that
+     * while the token is not assigned a new owner, the `_ownedTokensIndex` mapping is _not_ updated: this allows for
+     * gas optimizations e.g. when performing a transfer operation (avoiding double writes).
+     * This has O(1) time complexity, but alters the order of the _ownedTokens array.
+     * @param from address representing the previous owner of the given token ID
+     * @param tokenId uint256 ID of the token to be removed from the tokens list of the given address
+     */
+    function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId)
+        private
+    {
+        uint256[] memory tokens = _ownedTokens[from];
+        uint256 tokenLength = tokens.length;
+        for (uint256 i = 0; i < tokenLength; ++i) {
+            if (tokens[i] == tokenId) {
+                tokens[i] = tokens[tokenLength - 1];
+                _ownedTokens[from] = tokens;
+                _ownedTokens[from].pop();
+            }
+        }
+    }
+
+    /**
      * @dev Hook that is called before any (single) token transfer. This includes minting and burning.
      * See {_beforeConsecutiveTokenTransfer}.
      *
@@ -566,7 +600,14 @@ contract ERC721Upgradeable is
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual {}
+    ) internal virtual {
+        if (from != to && from != address(0)) {
+            _removeTokenFromOwnerEnumeration(from, tokenId);
+        }
+        if (to != from && to != address(0)) {
+            _addTokenToOwnerEnumeration(to, tokenId);
+        }
+    }
 
     /**
      * @dev Hook that is called after any (single) transfer of tokens. This includes minting and burning.

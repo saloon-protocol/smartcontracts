@@ -45,12 +45,8 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     // Info of each pool.
     PoolInfo[] public poolInfo;
 
-    // staker address => poolID => staker balance
-    mapping(uint256 => uint256) public nftBalance;
-
-    mapping(uint256 => uint256) public nftAPY;
-
     struct NFTInfo {
+        uint256 pid;
         uint256 amount;
         uint256 xDelta;
         uint256 apy;
@@ -263,6 +259,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
 
         NFTInfo memory token;
 
+        token.pid = _pid;
         // Convert _amount to X value
         token.amount = _stake;
         (uint256 xDelta, ) = convertStakeToPoolMeasurements(_pid, _stake);
@@ -288,38 +285,18 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         return tokenId;
     }
 
-    // TODO Decide whether to delete this or not
-    //  balanceOf function  that checks for pool ID
-    // function balanceOf(address _staker, uint256 _pid)
-    //     public
-    //     view
-    //     returns (uint256)
-    // {
-    //     return stakerBalance[_staker][_pid];
+    // /// @notice Burns token Id
+    // /// @param _tokenId ERC721 token id to be burned
+    // function _burn(uint256 _tokenId) internal override {
+    //     // uint256 pid = nftToPid[_tokenId];
+    //     // NFTInfo memory token = nftInfo[_tokenId];
+
+    //     super._burn(_tokenId);
+
+    //     // emit Transfer(_staker, address(0), _amount); //todo delete this?
+
+    //     // _afterTokenTransfer(_staker, address(0), _amount); //todo delete this?
     // }
-
-    // function balanceOfPid(address _staker, uint256 _pid)
-    //     public
-    //     view
-    //     returns (uint256)
-    // {
-    //     return stakerBalance[_staker][_pid];
-    // }
-
-    /// @notice Burns token Id
-    /// @param _tokenId ERC721 token id to be burned
-    function _burn(uint256 _tokenId) internal override {
-        uint256 pid = nftToPid[_tokenId];
-        NFTInfo memory token = nftInfo[_tokenId];
-
-        // _beforeTokenTransfer(_staker, address(0), _amount); //todo delete this?
-
-        super._burn(_tokenId);
-
-        // emit Transfer(_staker, address(0), _amount); //todo delete this?
-
-        // _afterTokenTransfer(_staker, address(0), _amount); //todo delete this?
-    }
 
     /// @notice Processes unstakes and calculates new APY for remaining stakers of a specific pool
     /// @param _pid Bounty pool id
@@ -353,6 +330,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         }
 
         poolInfo[_pid].curveInfo.totalSupply = memX;
+        // poolInfo[_pid].curveInfo.unstakedTokens = uint256[];
     }
 
     /// @notice Processes unstakes and calculates new APY for remaining stakers for all pools
@@ -367,4 +345,18 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         external
         virtual
     {}
+
+    function getAllTokensByOwner(address owner)
+        public
+        view
+        returns (NFTInfo[] memory userTokens)
+    {
+        uint256[] memory tokens = _ownedTokens[owner];
+        uint256 tokenLength = tokens.length;
+        uint256 index = 0;
+        for (uint256 i = 0; i < tokenLength; ++i) {
+            userTokens[index] = nftInfo[tokens[i]];
+            index++;
+        }
+    }
 }
