@@ -353,6 +353,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     {
         uint256[] memory tokens = _ownedTokens[owner];
         uint256 tokenLength = tokens.length;
+        userTokens = new NFTInfo[](tokenLength);
         uint256 index = 0;
         for (uint256 i = 0; i < tokenLength; ++i) {
             userTokens[index] = nftInfo[tokens[i]];

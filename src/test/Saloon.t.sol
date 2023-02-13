@@ -509,6 +509,37 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 2); // +2 due precision loss
     }
 
+    function testTokenList() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10**6);
+
+        uint256 tokenId1 = saloon.stake(pid, 10 * 10**6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
+        uint256 tokenId3 = saloon.stake(pid, 10 * 10**6);
+
+        NFTInfo[] memory tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 3);
+
+        saloon.transferFrom(staker, project, 1);
+
+        tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 2);
+
+        // Unstaking with _shouldHarvest == true burns the NFT
+        saloon.scheduleUnstake(2);
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(2, true);
+        tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 1);
+
+        // Unstaking with _shouldHarvest == false DOES NOT burn the NFT
+        saloon.scheduleUnstake(3);
+        vm.warp(block.timestamp + 8 days);
+        unstaked = saloon.unstake(3, false);
+        tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 1);
+    }
+
     // ============================
     // Test claimPremium
     // ============================
