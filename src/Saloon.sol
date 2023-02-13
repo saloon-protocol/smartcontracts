@@ -708,7 +708,10 @@ contract Saloon is
     /// @notice Claims premium for specified tokenId
     /// @param _tokenId Token Id of ERC721
     function claimPremium(uint256 _tokenId) external nonReentrant {
-        // Intentionally allow non-owners to claim for token
+        require(
+            _isApprovedOrOwner(_msgSender(), _tokenId),
+            "ERC721: caller is not token owner or approved"
+        );
         _updateTokenReward(_tokenId, true);
     }
 
