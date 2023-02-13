@@ -315,7 +315,6 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         uint256[] memory tokenArray = pidNFTList[_pid];
         uint256 length = tokenArray.length;
         uint256 memX;
-        // updateCurrentX(_pid, 0); //todo delete this?
 
         for (uint256 i = 0; i < length; ++i) {
             uint256 tokenId = tokenArray[i];
@@ -323,14 +322,10 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
             uint256 stakeAmount = token.amount;
             token.apy = calculateArbitraryEffectiveAPY(_pid, stakeAmount, memX);
             memX += token.xDelta;
-            // updateCurrentX( //todo delete this?
-            //     _pid,
-            //     poolInfo[_pid].curveInfo.totalSupply + stakeAmount
-            // );
         }
 
         poolInfo[_pid].curveInfo.totalSupply = memX;
-        // poolInfo[_pid].curveInfo.unstakedTokens = uint256[];
+        delete poolInfo[_pid].curveInfo.unstakedTokens;
     }
 
     /// @notice Processes unstakes and calculates new APY for remaining stakers for all pools
