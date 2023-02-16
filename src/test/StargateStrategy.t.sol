@@ -91,12 +91,11 @@ contract StargateStrategyTest is DSTest, Script {
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
         vm.roll(block.number + 10000); // STG rewards based on passed blocks, not timestamp
-        uint256 lpAdded = stargateStrategy.compound();
-        assert(lpAdded > 0); // Small 1 wei (USDC) precision loss
+        uint256 depositTokenAdded = stargateStrategy.compound();
+        assert(depositTokenAdded > 0); // Small 1 wei (USDC) precision loss
 
         uint256 lpDepositBalanceFinal = stargateStrategy.lpDepositBalance();
         assert(lpDepositBalanceFinal > lpDepositBalanceInitial);
-        assertEq(lpDepositBalanceFinal, lpDepositBalanceInitial + lpAdded);
     }
 
     function testDepositCompoundWithdraw() external {

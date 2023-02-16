@@ -470,8 +470,12 @@ contract Saloon is
     {
         bytes32 strategyHash = activeStrategies[_pid];
         address deployedStrategy = pidStrategies[_pid][strategyHash];
-        if (deployedStrategy != address(0))
-            IStrategy(deployedStrategy).compound();
+        if (deployedStrategy != address(0)) {
+            uint256 depositAdded = IStrategy(deployedStrategy).compound();
+            poolInfo[_pid].depositInfo.projectDepositInStrategy +=
+                depositAdded -
+                1; // Subtract 1 wei for immediate withdrawal precision issues
+        }
     }
 
     /// @notice Harvest pending yield from active strategy for all pids and reinvest

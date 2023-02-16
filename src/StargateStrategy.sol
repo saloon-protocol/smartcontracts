@@ -165,10 +165,10 @@ contract StargateStrategy is IStrategy {
     /// @notice Convert pending reward into deposit token and deposit.
     function compound() external onlyOwner returns (uint256) {
         stargateLPStaking.deposit(0, 0);
-        _convertReward(address(this));
-        uint256 lpAdded = depositToStrategy();
+        uint256 newDepositTokens = _convertReward(address(this));
+        depositToStrategy();
 
-        return lpAdded;
+        return newDepositTokens;
     }
 
     /// @notice Withdraw all pending yield from strategy to caller.
