@@ -35,7 +35,6 @@ contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
         pool.poolTimelock.timeLimit = 0;
         pool.poolTimelock.withdrawalScheduledAmount = 0;
         pool.poolTimelock.withdrawalExecuted = false;
-        pool.stakerList;
         pool.isActive = false;
         pool.freezeTime = 0;
         poolInfo.push(pool);
@@ -53,7 +52,6 @@ contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
         pool1.poolTimelock.timeLimit = 0;
         pool1.poolTimelock.withdrawalScheduledAmount = 0;
         pool1.poolTimelock.withdrawalExecuted = false;
-        pool1.stakerList;
         pool1.isActive = false;
         pool1.freezeTime = 0;
         poolInfo.push(pool1);
@@ -62,13 +60,13 @@ contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
     function testCalculateMultiplier() external {
         // Test for double APY
         uint256 doubleAPY = DEFAULT_APY * 2;
-        updateScalingMultiplier(0, doubleAPY);
+        _updateScalingMultiplier(0, doubleAPY);
 
         assertEq(poolInfo[0].generalInfo.scalingMultiplier, 2 ether);
 
         // Test for half APY
         uint256 halfAPY = DEFAULT_APY / 2;
-        updateScalingMultiplier(1, halfAPY);
+        _updateScalingMultiplier(1, halfAPY);
 
         assertEq(poolInfo[1].generalInfo.scalingMultiplier, 0.5 ether);
     }
@@ -124,7 +122,7 @@ contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
         // Test for zero x
         uint256 x0 = 0.00 ether;
 
-        uint256 currentApy = curveImplementation(x0);
+        uint256 currentApy = _curveImplementation(x0);
 
         assertEq(currentApy, 10 ether);
     }

@@ -20,7 +20,8 @@ contract PayBounty is Script {
         saloonProxy.payBounty(
             0,
             0xC77dDf4A215874D0Ee52dC2207bf72b468De6651,
-            1112 ether
+            1000, // 10%
+            0
         );
 
         // USDC.approve(saloon, 2500 ether);

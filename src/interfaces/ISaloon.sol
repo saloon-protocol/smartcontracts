@@ -11,7 +11,6 @@ interface ISaloon {
         TimelockInfo poolTimelock;
         CurveInfo curveInfo;
         ReferralInfo referralInfo;
-        address[] stakerList;
         uint256 freezeTime;
         bool isActive;
     }

@@ -413,45 +413,6 @@
         }
       }
     },
-    "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol": {
-      "lastModificationDate": 1669910050084,
-      "contentHash": "97b4e53f26b063f69e1ab9df9d64299e",
-      "sourceName": "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs"
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ReentrancyGuard": {
-          "0.8.17+commit.8df45f5f.Linux.gcc": "ReentrancyGuard.sol/ReentrancyGuard.json"
-        }
-      }
-    },
     "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol": {
       "lastModificationDate": 1669910050358,
       "contentHash": "92cc1aad41bdb18ca20f6e03f461de7d",
@@ -1112,6 +1073,48 @@
         }
       }
     },
+    "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol": {
+      "lastModificationDate": 1669649096962,
+      "contentHash": "c469f32b1b5b393dc20fb6bb5ae8a3fa",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ReentrancyGuardUpgradeable": {
+          "0.8.17+commit.8df45f5f.Linux.gcc": "ReentrancyGuardUpgradeable.sol/ReentrancyGuardUpgradeable.json"
+        }
+      }
+    },
     "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol": {
       "lastModificationDate": 1669649097246,
       "contentHash": "ba28cf60b52b00d2b3a190bcdf0952bd",
@@ -1717,7 +1720,6 @@
         "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol",
@@ -1734,6 +1736,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
@@ -1808,7 +1811,6 @@
         "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol",
@@ -1825,6 +1827,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
@@ -1859,8 +1862,8 @@
       }
     },
     "script/PayBounty.s.sol": {
-      "lastModificationDate": 1675194908698,
-      "contentHash": "fdf904bb3a0cb39ceff4710591796bca",
+      "lastModificationDate": 1676576847873,
+      "contentHash": "4eab85c70ed22ec412c3b7486d593ca4",
       "sourceName": "script/PayBounty.s.sol",
       "solcConfig": {
         "settings": {
@@ -1899,7 +1902,6 @@
         "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol",
@@ -1916,6 +1918,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
@@ -1950,8 +1953,8 @@
       }
     },
     "src/BountyTokenNFT.sol": {
-      "lastModificationDate": 1676316742531,
-      "contentHash": "cc44745cd3241fa88b8c1a6fd340e699",
+      "lastModificationDate": 1676572861758,
+      "contentHash": "c872756d1b75de18ce1d99b6cc0bd5e9",
       "sourceName": "src/BountyTokenNFT.sol",
       "solcConfig": {
         "settings": {
@@ -2005,8 +2008,8 @@
       }
     },
     "src/Saloon.sol": {
-      "lastModificationDate": 1676316961737,
-      "contentHash": "bc1a17939a866981a24423c645e0b909",
+      "lastModificationDate": 1676577944900,
+      "contentHash": "4d234a6985fe2254e7d1fb89f1aa26a1",
       "sourceName": "src/Saloon.sol",
       "solcConfig": {
         "settings": {
@@ -2036,7 +2039,6 @@
         }
       },
       "imports": [
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
@@ -2047,6 +2049,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
@@ -2129,8 +2132,8 @@
       }
     },
     "src/StargateStrategy.sol": {
-      "lastModificationDate": 1675976197723,
-      "contentHash": "f52d4b52b23c8c2e64fd959cf904e13e",
+      "lastModificationDate": 1676574313913,
+      "contentHash": "b9286d4fe3a16535fd86ef02961027d8",
       "sourceName": "src/StargateStrategy.sol",
       "solcConfig": {
         "settings": {
@@ -2232,8 +2235,8 @@
       }
     },
     "src/interfaces/ISaloon.sol": {
-      "lastModificationDate": 1675794649082,
-      "contentHash": "270f71e81477f9d376092ac9d9d4c1d3",
+      "lastModificationDate": 1676572503818,
+      "contentHash": "13000cb6cef127a8e881009afdfdca8d",
       "sourceName": "src/interfaces/ISaloon.sol",
       "solcConfig": {
         "settings": {
@@ -2766,8 +2769,8 @@
       }
     },
     "src/test/BountyToken.t.sol": {
-      "lastModificationDate": 1675781976390,
-      "contentHash": "5e0f57380566781196dfa3298bfc0367",
+      "lastModificationDate": 1676572811689,
+      "contentHash": "ab26ed17d60ea5163de354e740d80a24",
       "sourceName": "src/test/BountyToken.t.sol",
       "solcConfig": {
         "settings": {
@@ -2807,7 +2810,6 @@
         "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
@@ -2821,6 +2823,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
@@ -2856,8 +2859,8 @@
       }
     },
     "src/test/Saloon.t.sol": {
-      "lastModificationDate": 1676315989580,
-      "contentHash": "3f23e23e2b02faa355e2d725cc47a191",
+      "lastModificationDate": 1676576832589,
+      "contentHash": "8245f63ac8028c4668df7207ad26570d",
       "sourceName": "src/test/Saloon.t.sol",
       "solcConfig": {
         "settings": {
@@ -2897,7 +2900,6 @@
         "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
         "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
         "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
-        "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
@@ -2911,6 +2913,7 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
         "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
@@ -2946,8 +2949,8 @@
       }
     },
     "src/test/StargateStrategy.t.sol": {
-      "lastModificationDate": 1675975896260,
-      "contentHash": "b48d5d19c1aa4c7ee67c36dc0f71b543",
+      "lastModificationDate": 1676575832418,
+      "contentHash": "6df4e8f5ecbd4b25f6ec262d4eec1963",
       "sourceName": "src/test/StargateStrategy.t.sol",
       "solcConfig": {
         "settings": {

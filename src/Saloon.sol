@@ -3,31 +3,25 @@ pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
+import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./lib/OwnableUpgradeable.sol";
 import "./BountyTokenNFT.sol";
 import "./StrategyFactory.sol";
 
-/* Implement:
-- TODO implement BPS in payBounty
-- TODO Fill in missing events
-- TODO Referral profit tests (Bounty/Premium/Yield)
-*/
-
 contract Saloon is
     OwnableUpgradeable,
     UUPSUpgradeable,
-    ReentrancyGuard,
+    ReentrancyGuardUpgradeable,
     BountyTokenNFT
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
-    uint256 constant bountyFee = 1000; // 10%
-    uint256 constant premiumFee = 1000; // 10%
+    uint256 constant saloonFee = 1000; // 10%
 
+    // token => amount
     mapping(address => uint256) public saloonBountyProfit;
     mapping(address => uint256) public saloonPremiumProfit;
     mapping(address => uint256) public saloonStrategyProfit;
@@ -55,6 +49,16 @@ contract Saloon is
     // Minimum stake amounts per token.
     mapping(address => uint256) public minTokenStakeAmount;
 
+    modifier onlyOwnerOrProject(uint256 _pid) {
+        PoolInfo memory pool = poolInfo[_pid];
+        require(
+            msg.sender == pool.generalInfo.projectWallet ||
+                msg.sender == _owner,
+            "Not authorized"
+        );
+        _;
+    }
+
     modifier activePool(uint256 _pid) {
         PoolInfo memory pool = poolInfo[_pid];
         if (!pool.isActive) revert("pool not active");
@@ -73,15 +77,12 @@ contract Saloon is
         onlyOwner
     {}
 
-    function poolLength() external view returns (uint256) {
-        return poolInfo.length;
-    }
-
     ///////////////////////////////////////////////////////////////////////////////
     /////////////////////////// SALOON OWNER FUNCTIONS ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
     /// @notice Updates the list of ERC20 tokens allow to be used in bounty pools
+    /// @notice _minStakeAmount must either be set on first whitelisting for token, or must be un-whitelisted and then re-whitelisted to reset value
     /// @dev Only one token is allowed per pool
     /// @param _token ERC20 to add or remove from whitelist
     /// @param _whitelisted bool to select if a token will be added or removed
@@ -92,7 +93,7 @@ contract Saloon is
         uint256 _minStakeAmount
     ) external onlyOwner returns (bool) {
         require(
-            tokenWhitelist[_token] == !_whitelisted || _minStakeAmount > 0,
+            tokenWhitelist[_token] == !_whitelisted,
             "no change to whitelist"
         );
         tokenWhitelist[_token] = _whitelisted;
@@ -154,9 +155,113 @@ contract Saloon is
         return (poolInfo.length - 1);
     }
 
-    function billPremium(uint256 _pid) public onlyOwner returns (bool) {
+    /// @notice Extend the referral period for the bounty. The new end time can only be larger than the current value.
+    /// @param _pid The pool id for the bounty
+    /// @param _endTime The new end time for the referral bonus
+    function extendReferralPeriod(uint256 _pid, uint256 _endTime)
+        external
+        onlyOwner
+    {
+        PoolInfo storage pool = poolInfo[_pid];
+        require(
+            _endTime > pool.referralInfo.endTime,
+            "can only extend end time"
+        );
+        pool.referralInfo.endTime = _endTime;
+    }
+
+    /// @notice Bill premiums for a single pool.
+    /// @param _pid The pool id for the bounty
+    function billPremium(uint256 _pid)
+        public
+        nonReentrant
+        onlyOwner
+        returns (bool)
+    {
         _billPremium(_pid, 0);
         return true;
+    }
+
+    /// @notice Pays valid bounty submission to hunter
+    /// @dev only callable by Saloon owner
+    /// @dev Includes Saloon commission + hunter payout
+    /// @param _pid Bounty pool id
+    /// @param _hunter Hunter address that will receive payout
+    /// @param _payoutBPS Percentage of pool to payout in BPS
+    /// @param _payoutBPS Percentage of Saloon's fee that will go to hunter as bonus
+    function payBounty(
+        uint256 _pid,
+        address _hunter,
+        uint16 _payoutBPS,
+        uint16 _hunterBonusBPS
+    ) public onlyOwner {
+        require(_payoutBPS <= 10000, "Payout too high");
+        require(_hunterBonusBPS <= 10000, "Bonus too high");
+
+        PoolInfo storage pool = poolInfo[_pid];
+        NFTInfo storage token;
+        uint256 totalStaked = pool.generalInfo.totalStaked;
+        uint256 poolTotal = viewBountyBalance(_pid);
+        uint256 payoutAmount = (poolTotal * _payoutBPS) / BPS;
+        uint256 length = pidNFTList[_pid].length;
+
+        // if stakers can cover payout
+        if (payoutAmount <= totalStaked) {
+            uint256 percentage = ((payoutAmount * PRECISION) / totalStaked);
+            for (uint256 i; i < length; ) {
+                uint256 tokenId = pidNFTList[_pid][i];
+                token = nftInfo[tokenId];
+                _updateTokenReward(tokenId, false);
+                uint256 userPay = (token.amount * percentage) / PRECISION;
+                token.amount -= userPay;
+                pool.generalInfo.totalStaked -= userPay;
+                unchecked {
+                    ++i;
+                }
+            }
+        } else if (payoutAmount > totalStaked && payoutAmount <= poolTotal) {
+            // set all token balances to zero
+            for (uint256 i; i < length; ) {
+                uint256 tokenId = pidNFTList[_pid][i];
+                token = nftInfo[tokenId];
+                _updateTokenReward(tokenId, false);
+                token.amount = 0;
+                unchecked {
+                    ++i;
+                }
+            }
+            pool.generalInfo.totalStaked = 0;
+            // calculate remaining amount for project to pay
+            _withdrawFromActiveStrategy(_pid);
+            uint256 projectPayout = payoutAmount - totalStaked;
+            pool.depositInfo.projectDepositHeld -= projectPayout;
+        } else {
+            revert("Amount too high");
+        }
+
+        // calculate saloon commission (10% by default, lower if _hunterBonusBPS > 0)
+        uint256 saloonCommission = (((payoutAmount * saloonFee) / BPS) *
+            (BPS - _hunterBonusBPS)) / BPS;
+
+        // Calculate fee taken from bounty payments. 10% taken from total payment upon payout.
+        // Of that 10%, some % might go to referrer of bounty. The rest goes to The Saloon.
+        (
+            uint256 saloonAmount,
+            uint256 referralAmount,
+            address referrer
+        ) = calcReferralSplit(_pid, saloonCommission);
+        address paymentToken = address(pool.generalInfo.token);
+        _increaseReferralBalance(referrer, paymentToken, referralAmount);
+        saloonBountyProfit[paymentToken] += saloonAmount;
+
+        // transfer payout to hunter
+        IERC20(paymentToken).safeTransfer(
+            _hunter,
+            payoutAmount - saloonCommission
+        );
+
+        emit BountyPaid(_hunter, paymentToken, payoutAmount);
+        // emit BountyBalanceChanged(_pid, poolTotal, viewBountyBalance(_pid));
     }
 
     /// @notice Transfer Saloon profits for a specific token from premiums and bounties collected
@@ -190,29 +295,23 @@ contract Saloon is
         return true;
     }
 
-    function extendReferralPeriod(uint256 _pid, uint256 _endTime)
-        external
-        onlyOwner
-    {
-        PoolInfo storage pool = poolInfo[_pid];
-        require(
-            _endTime > pool.referralInfo.endTime,
-            "can only extend end time"
-        );
-        pool.referralInfo.endTime = _endTime;
-    }
-
     ///////////////////////////////////////////////////////////////////////////////
     /////////////////////////// REFERRAL CLAIMING /////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
     /// @notice Allows referrers to collect their profit from all bounties for one token
     /// @param _token Token used by the bounty that was referred
-    function collectReferralProfit(address _token) public returns (bool) {
+    function collectReferralProfit(address _token)
+        public
+        nonReentrant
+        returns (bool)
+    {
         uint256 amount = viewReferralBalance(msg.sender, _token);
-        referralBalances[msg.sender][_token] = 0;
-        IERC20(_token).safeTransfer(msg.sender, amount);
-        emit referralPaid(msg.sender, amount);
+        if (amount > 0) {
+            referralBalances[msg.sender][_token] = 0;
+            IERC20(_token).safeTransfer(msg.sender, amount);
+            emit referralPaid(msg.sender, amount);
+        }
         return true;
     }
 
@@ -220,8 +319,8 @@ contract Saloon is
     function collectAllReferralProfits() external returns (bool) {
         uint256 activeTokenLength = activeTokens.length;
         for (uint256 i; i < activeTokenLength; ++i) {
-            address _token = activeTokens[i];
-            collectReferralProfit(_token);
+            address token = activeTokens[i];
+            collectReferralProfit(token);
         }
         return true;
     }
@@ -247,21 +346,23 @@ contract Saloon is
         address deployedStrategy;
         bytes32 strategyHash = keccak256(abi.encode(_strategyName));
         address pidStrategy = pidStrategies[_pid][strategyHash];
+
+        // Active strategy must be updated regardless of deployment success/failure
+
         if (pidStrategy == address(0)) {
             deployedStrategy = strategyFactory.deployStrategy(
                 _strategyName,
                 address(poolInfo[_pid].generalInfo.token)
             );
         } else {
+            activeStrategies[_pid] = strategyHash;
             return pidStrategy;
         }
 
-        if (deployedStrategy == address(0)) {
-            return address(0);
-        } else {
+        if (deployedStrategy != address(0)) {
             pidStrategies[_pid][strategyHash] = deployedStrategy;
-            activeStrategies[_pid] = strategyHash;
             strategyAddressToPid[deployedStrategy] = _pid;
+            activeStrategies[_pid] = strategyHash;
         }
 
         return deployedStrategy;
@@ -271,7 +372,7 @@ contract Saloon is
     /// @param _pid Bounty pool id
     /// @param _strategyName Name of the strategy
     /// @param _newDeposit New deposit amount
-    function handleStrategyDeposit(
+    function _handleStrategyDeposit(
         uint256 _pid,
         string memory _strategyName,
         uint256 _newDeposit
@@ -288,21 +389,19 @@ contract Saloon is
             );
             if (deployedStrategy != address(0)) {
                 IStrategy strategy = IStrategy(deployedStrategy);
-                pool.depositInfo.projectDepositHeld -=
-                    _newDeposit +
-                    fundsWithdrawn;
+                uint256 projectDepositHeld = pool
+                    .depositInfo
+                    .projectDepositHeld;
+                pool.depositInfo.projectDepositHeld = 0;
                 // Subtract 1 wei due to precision loss when depositing into strategy if redeemed immediately
-                pool.depositInfo.projectDepositInStrategy +=
-                    _newDeposit +
-                    fundsWithdrawn -
+                pool.depositInfo.projectDepositInStrategy =
+                    projectDepositHeld -
                     1;
                 IERC20(pool.generalInfo.token).safeTransfer(
                     deployedStrategy,
-                    _newDeposit + fundsWithdrawn
+                    projectDepositHeld
                 );
                 strategy.depositToStrategy();
-            } else {
-                pool.depositInfo.projectDepositHeld += _newDeposit;
             }
         }
     }
@@ -317,6 +416,9 @@ contract Saloon is
 
         uint256 fundsWithdrawn;
         bytes32 activeStrategyHash = activeStrategies[_pid];
+
+        // Reset active strategy upon every withdraw. All withdrawals are in full.
+        activeStrategies[_pid] = bytes32(0);
 
         if (activeStrategyHash != bytes32(0)) {
             IStrategy activeStrategy = IStrategy(
@@ -361,7 +463,11 @@ contract Saloon is
 
     /// @notice Harvest pending yield from active strategy for single pid and reinvest
     /// @param _pid Pool id whose strategy should be compounded
-    function compoundYieldForPid(uint256 _pid) public {
+    function compoundYieldForPid(uint256 _pid)
+        public
+        onlyOwnerOrProject(_pid)
+        nonReentrant
+    {
         bytes32 strategyHash = activeStrategies[_pid];
         address deployedStrategy = pidStrategies[_pid][strategyHash];
         if (deployedStrategy != address(0))
@@ -377,7 +483,7 @@ contract Saloon is
     }
 
     ///////////////////////////////////////////////////////////////////////////////
-    /////////////////////////// PROJECT OWNER FUNCTIONS ///////////////////////////
+    ///////////////////////////// PROJECT FUNCTIONS ///////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
 
     /// @notice Sets the average APY,Pool Cap and deposits project payout
@@ -393,7 +499,7 @@ contract Saloon is
         uint16 _apy,
         uint256 _deposit,
         string memory _strategyName
-    ) external {
+    ) external nonReentrant {
         PoolInfo storage pool = poolInfo[_pid];
         require(
             !pool.isActive && pool.generalInfo.poolCap == 0,
@@ -401,7 +507,7 @@ contract Saloon is
         );
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
-            _poolCap >= 100 * (10**pool.generalInfo.tokenDecimals) &&
+            _poolCap >= 1000 * (10**pool.generalInfo.tokenDecimals) &&
                 _poolCap <= 10000000 * (10**pool.generalInfo.tokenDecimals),
             "Pool cap out of range"
         );
@@ -413,7 +519,9 @@ contract Saloon is
             );
 
         uint256 saloonCommission = (requiredPremiumBalancePerPeriod * //note could make this a pool.variable
-            premiumFee) / BPS;
+            saloonFee) / BPS;
+
+        uint256 balanceBefore = viewBountyBalance(_pid);
 
         IERC20(pool.generalInfo.token).safeTransferFrom(
             msg.sender,
@@ -429,11 +537,14 @@ contract Saloon is
             requiredPremiumBalancePerPeriod -
             saloonCommission;
 
-        updateScalingMultiplier(_pid, _apy);
+        _updateScalingMultiplier(_pid, _apy);
 
         if (bytes(_strategyName).length > 0) {
-            handleStrategyDeposit(_pid, _strategyName, _deposit);
+            _handleStrategyDeposit(_pid, _strategyName, _deposit);
         }
+
+        uint256 balanceAfter = viewBountyBalance(_pid);
+        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
 
     /// @notice Makes a deposit that will serve as bounty payout
@@ -445,23 +556,23 @@ contract Saloon is
         uint256 _pid,
         uint256 _deposit,
         string memory _strategyName
-    ) external {
+    ) external nonReentrant {
         PoolInfo storage pool = poolInfo[_pid];
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
 
-        uint256 balanceBefore = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
+        uint256 balanceBefore = viewBountyBalance(_pid);
         IERC20(pool.generalInfo.token).safeTransferFrom(
             msg.sender,
             address(this),
             _deposit
         );
         pool.depositInfo.projectDepositHeld += _deposit;
-        uint256 balanceAfter = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
 
-        handleStrategyDeposit(_pid, _strategyName, _deposit);
+        if (bytes(_strategyName).length > 0) {
+            _handleStrategyDeposit(_pid, _strategyName, _deposit);
+        }
 
+        uint256 balanceAfter = viewBountyBalance(_pid);
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
     }
 
@@ -493,6 +604,7 @@ contract Saloon is
     /// @param _amount Amount to withdraw (must be equal to amount scheduled)
     function projectDepositWithdrawal(uint256 _pid, uint256 _amount)
         external
+        nonReentrant
         returns (bool)
     {
         PoolInfo storage pool = poolInfo[_pid];
@@ -510,33 +622,62 @@ contract Saloon is
         if (pool.depositInfo.projectDepositHeld < _amount)
             _withdrawFromActiveStrategy(_pid);
 
-        uint256 balanceBefore = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
+        uint256 balanceBefore = viewBountyBalance(_pid);
         pool.depositInfo.projectDepositHeld -= _amount;
         IERC20(pool.generalInfo.token).safeTransfer(
             pool.generalInfo.projectWallet,
             _amount
         );
-        uint256 balanceAfter = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
+        uint256 balanceAfter = viewBountyBalance(_pid);
 
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
         return true;
     }
 
+    function withdrawProjectYield(uint256 _pid)
+        external
+        nonReentrant
+        returns (uint256 returnedAmount)
+    {
+        PoolInfo memory pool = poolInfo[_pid];
+        require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
+
+        bytes32 activeStrategyHash = activeStrategies[_pid];
+        if (activeStrategyHash != bytes32(0)) {
+            IStrategy activeStrategy = IStrategy(
+                pidStrategies[_pid][activeStrategyHash]
+            );
+            returnedAmount = activeStrategy.withdrawYield();
+            IERC20(pool.generalInfo.token).safeTransfer(
+                pool.generalInfo.projectWallet,
+                returnedAmount
+            );
+        }
+    }
+
     /// @notice Deactivates pool
     /// @param _pid Bounty pool id
-    function windDownBounty(uint256 _pid) external returns (bool) {
+    function windDownBounty(uint256 _pid)
+        external
+        onlyOwnerOrProject(_pid)
+        returns (bool)
+    {
         PoolInfo storage pool = poolInfo[_pid];
-        require(
-            msg.sender == pool.generalInfo.projectWallet ||
-                msg.sender == _owner,
-            "Not authorized"
-        );
         require(pool.isActive, "Pool not active");
         pool.isActive = false;
         pool.freezeTime = block.timestamp;
         return true;
+    }
+
+    /// @notice Updates the pool's project wallet address
+    /// @param _pid Bounty pool id
+    /// @param _projectWallet The new project wallet
+    function updateProjectWalletAddress(uint256 _pid, address _projectWallet)
+        external
+        onlyOwnerOrProject(_pid)
+    {
+        require(_projectWallet != address(0), "Invalid wallet address");
+        poolInfo[_pid].generalInfo.projectWallet = _projectWallet;
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -558,8 +699,7 @@ contract Saloon is
             "Min stake not met"
         );
 
-        uint256 balanceBefore = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
+        uint256 balanceBefore = viewBountyBalance(_pid);
 
         pool.generalInfo.token.safeTransferFrom(
             msg.sender,
@@ -571,14 +711,12 @@ contract Saloon is
 
         pool.generalInfo.totalStaked += _amount;
         require(
-            pool.generalInfo.poolCap > 0 &&
-                pool.generalInfo.totalStaked <= pool.generalInfo.poolCap,
+            pool.generalInfo.totalStaked <= pool.generalInfo.poolCap,
             "Exceeded pool limit"
         );
         emit Staked(msg.sender, _pid, _amount);
 
-        uint256 balanceAfter = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
+        uint256 balanceAfter = viewBountyBalance(_pid);
         emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
 
         return tokenId;
@@ -587,33 +725,41 @@ contract Saloon is
     /// @notice Schedule unstake with specific amount
     /// @dev must be unstaked within a certain time window after scheduled
     /// @param _tokenId Token Id of ERC721 being unstaked
-    function scheduleUnstake(uint256 _tokenId) external returns (bool) {
-        require(ownerOf(_tokenId) == msg.sender, "sender is not owner");
+    function scheduleUnstake(uint256 _tokenId)
+        external
+        nonReentrant
+        returns (bool)
+    {
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenId),
+            "sender is not owner"
+        );
 
-        uint256 _pid = nftToPid[_tokenId];
         NFTInfo storage token = nftInfo[_tokenId];
+        uint256 pid = token.pid;
         token.timelock = block.timestamp + PERIOD;
         token.timelimit = block.timestamp + PERIOD + 3 days;
 
-        uint256 withdrawableAmount = token.amount;
-
-        emit WithdrawalOrUnstakeScheduled(_pid, withdrawableAmount);
+        emit WithdrawalOrUnstakeScheduled(pid, token.amount);
         return true;
     }
 
     /// @notice Unstake scheduled tokenId
     /// @param _tokenId Token Id of ERC721 being unstaked
-    /// @param _shouldHarvest Whether staker wants to claim his owed premium or not
+    /// @param _shouldHarvest Whether staker wants to claim their owed premium or not
     function unstake(uint256 _tokenId, bool _shouldHarvest)
         external
         nonReentrant
         returns (bool)
     {
-        require(ownerOf(_tokenId) == msg.sender, "sender is not owner");
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenId),
+            "sender is not owner"
+        );
 
-        uint256 _pid = nftToPid[_tokenId];
-        PoolInfo storage pool = poolInfo[_pid];
         NFTInfo storage token = nftInfo[_tokenId];
+        uint256 pid = token.pid;
+        PoolInfo storage pool = poolInfo[pid];
 
         require(
             token.timelock < block.timestamp &&
@@ -629,8 +775,7 @@ contract Saloon is
         token.timelock = 0;
         token.timelimit = 0;
 
-        uint256 balanceBefore = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
+        uint256 balanceBefore = viewBountyBalance(pid);
 
         // If user is claiming premium while unstaking, burn the NFT position.
         // We only allow the user to not claim premium to ensure that they can
@@ -645,11 +790,10 @@ contract Saloon is
             pool.generalInfo.token.safeTransfer(msg.sender, amount);
         }
 
-        emit Unstaked(msg.sender, _pid, amount);
+        emit Unstaked(msg.sender, pid, amount);
 
-        uint256 balanceAfter = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
-        emit BountyBalanceChanged(_pid, balanceBefore, balanceAfter);
+        uint256 balanceAfter = viewBountyBalance(pid);
+        emit BountyBalanceChanged(pid, balanceBefore, balanceAfter);
 
         // If any unstake occurs, pool needs consolidation. Even if the last token in the pid array unstakes, the pool X value needs
         // to be reset to the proper location
@@ -660,18 +804,14 @@ contract Saloon is
 
     /// @notice Updates and transfers amount owed to a tokenId
     /// @param _tokenId Token Id of ERC721 being updated
-    /// @param _shouldHarvest Whether staker wants to claim his owed premium or not
+    /// @param _shouldHarvest Whether staker wants to claim their owed premium or not
     function _updateTokenReward(uint256 _tokenId, bool _shouldHarvest)
         internal
     {
-        uint256 pid = nftToPid[_tokenId];
-        PoolInfo storage pool = poolInfo[pid];
         NFTInfo storage token = nftInfo[_tokenId];
+        uint256 pid = token.pid;
+        PoolInfo storage pool = poolInfo[pid];
 
-        // if (token.amount == 0 && token.unclaimed == 0) { todo delete this?
-        //     token.lastClaimedTime = block.timestamp;
-        //     return;
-        // }
         (
             uint256 totalPending,
             uint256 actualPending,
@@ -709,7 +849,7 @@ contract Saloon is
     /// @param _tokenId Token Id of ERC721
     function claimPremium(uint256 _tokenId) external nonReentrant {
         require(
-            _isApprovedOrOwner(_msgSender(), _tokenId),
+            _isApprovedOrOwner(msg.sender, _tokenId),
             "ERC721: caller is not token owner or approved"
         );
         _updateTokenReward(_tokenId, true);
@@ -720,13 +860,12 @@ contract Saloon is
     ///////////////////////////////////////////////////////////////////////////////
 
     /// @notice Bills premium from project wallet
+    /// @dev Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
+    /// @dev This prevents anyone calling this multiple times and draining the project wallet
     /// @param _pid Bounty pool id of what pool is being billed
-    /// @param _pending How much premium stakers are owed
+    /// @param _pending The extra amount of pending that must be billed to bring bounty balance up to full
     function _billPremium(uint256 _pid, uint256 _pending) internal {
         PoolInfo storage pool = poolInfo[_pid];
-
-        // Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
-        // This prevents anyone calling this 1000 times and draining the project wallet
 
         uint256 billAmount = calcRequiredPremiumBalancePerPeriod(
             pool.generalInfo.poolCap,
@@ -741,10 +880,11 @@ contract Saloon is
             billAmount
         );
 
+        pool.premiumInfo.premiumBalance += billAmount;
+
         // Calculate fee taken from premium payments. 10% taken from project upon billing.
         // Of that 10%, some % might go to referrer of bounty.The rest goes to The Saloon.
-        uint256 saloonPremiumCommission = (billAmount * premiumFee) / BPS;
-        pool.premiumInfo.premiumBalance += billAmount;
+        uint256 saloonPremiumCommission = (billAmount * saloonFee) / BPS;
 
         (
             uint256 saloonAmount,
@@ -777,98 +917,9 @@ contract Saloon is
         }
     }
 
-    /// @notice Pays valid bounty submission to hunter
-    /// @dev only callable by Saloon owner
-    /// @dev Includes Saloon commission + hunter payout
-    /// @param _pid Bounty pool id
-    /// @param _hunter Hunter address that will receive payout
-    /// @param _payoutBPS Percentage of pool to payout in BPS
-    function payBounty(
-        uint256 _pid,
-        address _hunter,
-        uint256 _payoutBPS
-    ) public onlyOwner returns (bool) {
-        PoolInfo storage pool = poolInfo[_pid];
-        uint256 totalStaked = pool.generalInfo.totalStaked;
-        uint256 poolTotal = totalStaked + viewMinProjectDeposit(_pid);
-        uint256 payoutAmount = (poolTotal * _payoutBPS) / BPS;
-
-        // if stakers can cover payout
-        if (payoutAmount == totalStaked) {
-            // set all token balances to zero
-            uint256 length = pidNFTList[_pid].length;
-            for (uint256 i; i < length; ) {
-                uint256 tokenId = pidNFTList[_pid][i];
-                NFTInfo storage token = nftInfo[tokenId];
-                _updateTokenReward(tokenId, false);
-                token.amount = 0;
-                unchecked {
-                    ++i;
-                }
-            }
-            pool.generalInfo.totalStaked = 0;
-            delete pool.stakerList;
-        } else if (payoutAmount < totalStaked) {
-            uint256 percentage = ((payoutAmount * PRECISION) / totalStaked);
-            uint256 length = pidNFTList[_pid].length;
-            for (uint256 i; i < length; ) {
-                uint256 tokenId = pidNFTList[_pid][i];
-                NFTInfo storage token = nftInfo[tokenId];
-                _updateTokenReward(tokenId, false);
-                uint256 userPay = (token.amount * percentage) / PRECISION;
-                token.amount -= userPay;
-                pool.generalInfo.totalStaked -= userPay;
-                unchecked {
-                    ++i;
-                }
-            }
-        } else if (payoutAmount > totalStaked && payoutAmount <= poolTotal) {
-            // set all token balances to zero
-            uint256 length = pidNFTList[_pid].length;
-            for (uint256 i; i < length; ) {
-                uint256 tokenId = pidNFTList[_pid][i];
-                NFTInfo storage token = nftInfo[tokenId];
-                _updateTokenReward(tokenId, false);
-                token.amount = 0;
-                unchecked {
-                    ++i;
-                }
-            }
-            pool.generalInfo.totalStaked = 0;
-            delete pool.stakerList;
-            // calculate remaining amount for project to pay
-            _withdrawFromActiveStrategy(_pid);
-            uint256 projectPayout = payoutAmount - totalStaked;
-            pool.depositInfo.projectDepositHeld -= projectPayout;
-        } else {
-            revert("Amount too high");
-        }
-
-        // calculate saloon commission
-        uint256 saloonCommission = (payoutAmount * bountyFee) / BPS;
-        // subtract commission from payout
-        uint256 hunterPayout = payoutAmount - saloonCommission;
-
-        // Calculate fee taken from bounty payments. 10% taken from total payment upon payout.
-        // Of that 10%, some % might go to referrer of bounty. The rest goes to The Saloon.
-        (
-            uint256 saloonAmount,
-            uint256 referralAmount,
-            address referrer
-        ) = calcReferralSplit(_pid, saloonCommission);
-        address token = address(pool.generalInfo.token);
-        _increaseReferralBalance(referrer, token, referralAmount);
-        saloonBountyProfit[token] += saloonAmount;
-
-        // transfer payout to hunter
-        IERC20(pool.generalInfo.token).safeTransfer(_hunter, hunterPayout);
-        uint256 balanceAfter = pool.generalInfo.totalStaked +
-            viewMinProjectDeposit(_pid);
-
-        emit BountyPaid(_hunter, address(pool.generalInfo.token), payoutAmount);
-        emit BountyBalanceChanged(_pid, poolTotal, balanceAfter);
-        return true;
-    }
+    ///////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// VIEW FUNCTIONS /////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     /// @notice Calculates time passed in seconds from lastClaimedTime to endTime.
     /// @param _from lastClaimedTime
@@ -881,7 +932,6 @@ contract Saloon is
         return _to.sub(_from);
     }
 
-    // TODO make into function to view Pending yield to claim
     function pendingPremium(uint256 _tokenId)
         public
         view
@@ -891,9 +941,9 @@ contract Saloon is
             uint256 newPending
         )
     {
-        uint256 pid = nftToPid[_tokenId];
-        PoolInfo memory pool = poolInfo[pid];
         NFTInfo memory token = nftInfo[_tokenId];
+        uint256 pid = token.pid;
+        PoolInfo memory pool = poolInfo[pid];
 
         uint256 endTime = pool.freezeTime != 0
             ? pool.freezeTime
@@ -908,10 +958,7 @@ contract Saloon is
             (((token.amount * token.apy) / BPS) * secondsPassed) /
             YEAR;
         totalPending = newPending + token.unclaimed;
-        // actualPending subtracts Saloon premium fee
-        actualPending = (totalPending * (BPS - premiumFee)) / BPS;
-
-        // note saloonPremiumProfit variable is updated in billPremium()
+        actualPending = (totalPending * (BPS - saloonFee)) / BPS;
 
         return (totalPending, actualPending, newPending);
     }
@@ -927,8 +974,8 @@ contract Saloon is
         )
     {
         bountyProfit = saloonBountyProfit[_token];
-        premiumProfit = saloonPremiumProfit[_token];
         strategyProfit = saloonStrategyProfit[_token];
+        premiumProfit = saloonPremiumProfit[_token];
         totalProfit = premiumProfit + bountyProfit + strategyProfit;
     }
 
@@ -940,18 +987,15 @@ contract Saloon is
         referralBalance = referralBalances[_referrer][_token];
     }
 
-    function viewBountyBalance(uint256 _pid) external view returns (uint256) {
+    function viewBountyBalance(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return (pool.generalInfo.totalStaked + viewMinProjectDeposit(_pid));
-        // note does totalStaked/project deposit take into account saloon fee?
     }
 
     function viewMinProjectDeposit(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return (pool.depositInfo.projectDepositHeld +
             pool.depositInfo.projectDepositInStrategy);
-        // note Certain strategies like Stargate return 1 wei less than deposited if withdrawn immediately.
-        // We subtract 1 wei to prevent the edge case of underflow when withdrawing deposit or paying bounty.
     }
 
     function viewTotalStaked(uint256 _pid) public view returns (uint256) {
@@ -980,22 +1024,12 @@ contract Saloon is
             uint256 timelock
         )
     {
-        uint256 pid = nftToPid[_tokenId];
         NFTInfo memory token = nftInfo[_tokenId];
         amount = token.amount;
         apy = token.apy;
         (, actualPending, ) = pendingPremium(_tokenId);
         unclaimed = token.unclaimed;
         timelock = token.timelock;
-    }
-
-    function viewUserUnclaimed(uint256 _tokenId)
-        external
-        view
-        returns (uint256 unclaimed)
-    {
-        NFTInfo storage token = nftInfo[_tokenId];
-        unclaimed = token.unclaimed;
     }
 
     function viewPoolPremiumInfo(uint256 _pid)
@@ -1033,10 +1067,7 @@ contract Saloon is
     }
 
     function viewHackerPayout(uint256 _pid) public view returns (uint256) {
-        PoolInfo memory pool = poolInfo[_pid];
-        return
-            ((pool.generalInfo.totalStaked +
-                pool.depositInfo.projectDepositHeld) * (BPS - bountyFee)) / BPS;
+        return (viewBountyBalance(_pid) * (BPS - saloonFee)) / BPS;
     }
 
     function viewBountyInfo(uint256 _pid)

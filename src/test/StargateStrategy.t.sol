@@ -64,7 +64,7 @@ contract StargateStrategyTest is DSTest, Script {
         // LP tokens aren't minted 1:1, so only checking that the returned LP is close to input.
         assert(balanceDiff < int256(USDCBalance) / 100);
 
-        vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
+        vm.roll(block.number + 10000); // STG rewards based on passed blocks, not timestamp
         uint256 pendingRewards = stargateStrategy.pendingRewardBalance();
         assert(pendingRewards > 0);
     }
@@ -74,7 +74,7 @@ contract StargateStrategyTest is DSTest, Script {
         USDC.transfer(address(stargateStrategy), USDCBalance);
         uint256 lpAdded = stargateStrategy.depositToStrategy();
 
-        vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
+        vm.roll(block.number + 10000); // STG rewards based on passed blocks, not timestamp
         uint256 amountWithdrawn = stargateStrategy.withdrawFromStrategy(
             lpAdded
         );
@@ -90,7 +90,7 @@ contract StargateStrategyTest is DSTest, Script {
 
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
-        vm.roll(block.number + 100); // STG rewards based on passed blocks, not timestamp
+        vm.roll(block.number + 10000); // STG rewards based on passed blocks, not timestamp
         uint256 lpAdded = stargateStrategy.compound();
         assert(lpAdded > 0); // Small 1 wei (USDC) precision loss
 
@@ -106,7 +106,7 @@ contract StargateStrategyTest is DSTest, Script {
 
         uint256 lpDepositBalanceInitial = stargateStrategy.lpDepositBalance();
 
-        vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
+        vm.roll(block.number + 10000); // STG rewards based on passed blocks, not timestamp
         stargateStrategy.compound();
 
         uint256 lpDepositBalanceIntermediate = stargateStrategy
@@ -121,7 +121,7 @@ contract StargateStrategyTest is DSTest, Script {
         USDC.transfer(address(stargateStrategy), USDCBalanceInitial);
         stargateStrategy.depositToStrategy();
 
-        vm.roll(block.number + 1000); // STG rewards based on passed blocks, not timestamp
+        vm.roll(block.number + 10000); // STG rewards based on passed blocks, not timestamp
         stargateStrategy.withdrawYield();
 
         uint256 USDCBalanceFinal = USDC.balanceOf(address(this));

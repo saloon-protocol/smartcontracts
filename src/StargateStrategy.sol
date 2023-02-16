@@ -125,10 +125,10 @@ contract StargateStrategy is IStrategy {
     /// @notice Put all deposit tokens held in this contract to work.
     /// @dev Add liquidity to stargate router => receive LP tokens => deposit LP tokens into stargate LPStaking
     function depositToStrategy() public onlyOwner returns (uint256) {
-        uint256 USDCBalance = USDC.balanceOf(address(this));
-        USDC.approve(address(stargateRouter), USDCBalance);
+        uint256 tokenBalance = IERC20(depositToken).balanceOf(address(this));
+        USDC.approve(address(stargateRouter), tokenBalance);
 
-        stargateRouter.addLiquidity(depositPoolId, USDCBalance, address(this)); // 1 = Harcode for USDC LP
+        stargateRouter.addLiquidity(depositPoolId, tokenBalance, address(this)); // 1 = Harcode for USDC LP
         uint256 lpBalanceAdded = stargateLPToken.balanceOf(address(this));
 
         stargateLPToken.approve(address(stargateLPStaking), lpBalanceAdded);
@@ -156,8 +156,8 @@ contract StargateStrategy is IStrategy {
             address(this)
         );
         _convertReward(address(this));
-        uint256 fundsToReturn = USDC.balanceOf(address(this));
-        USDC.safeTransfer(msg.sender, fundsToReturn);
+        uint256 fundsToReturn = IERC20(depositToken).balanceOf(address(this));
+        IERC20(depositToken).safeTransfer(msg.sender, fundsToReturn);
 
         return fundsToReturn;
     }
@@ -182,6 +182,7 @@ contract StargateStrategy is IStrategy {
 
     /// @notice Convert all pending yield into deposit token.
     /// @dev 10% Saloon fee automatically taken when converting yield to deposit token.
+    /// @param _receiver The receiver of the yield after Saloon fees are taken.
     function _convertReward(address _receiver) internal returns (uint256) {
         uint256 availableSTG = rewardBalance();
         if (availableSTG == 0) return 0;
@@ -189,7 +190,7 @@ contract StargateStrategy is IStrategy {
 
         address[] memory path = new address[](2);
         path[0] = address(STG);
-        path[1] = address(USDC);
+        path[1] = depositToken;
 
         uint256[] memory returnedAmounts = swapRouter.swapExactTokensForTokens(
             availableSTG,
@@ -204,14 +205,14 @@ contract StargateStrategy is IStrategy {
         uint256 saloonFee = (returnedAmount * FEE) / BPS;
         uint256 amountMinusFee = returnedAmount - saloonFee;
 
-        saloon.receiveStrategyYield(address(USDC), saloonFee);
+        saloon.receiveStrategyYield(depositToken, saloonFee);
 
         // Only transfer if receiver is not this contract. Otherwise, keep underlying here for compound.
         if (_receiver != address(this)) {
-            USDC.safeTransfer(_receiver, amountMinusFee);
+            IERC20(depositToken).safeTransfer(_receiver, amountMinusFee);
         }
 
-        return returnedAmount;
+        return amountMinusFee;
     }
 
     /// @notice The balance of yield tokens currently in the contract.
