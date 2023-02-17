@@ -295,7 +295,6 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
         uint256[] memory unstakedTokens = pool.curveInfo.unstakedTokens;
         uint256 unstakeLength = unstakedTokens.length;
 
-        //todo NEED TO CHECK IF POOL IS ACTIVE/WOUND DOWN?? Any malicious project actions due to check?
         if (unstakeLength == 0 || !pool.isActive) return; // No unstakes have occured, no need to consolidate
 
         for (uint256 i = 0; i < unstakeLength; ++i) {
@@ -319,7 +318,7 @@ contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
     }
 
     /// @notice Processes unstakes and calculates new APY for remaining stakers for all pools
-    function consolidateAll() public {
+    function consolidateAll() external {
         uint256 arrayLength = poolInfo.length;
         for (uint256 i = 0; i < arrayLength; ++i) {
             consolidate(i);

@@ -206,7 +206,7 @@ contract Saloon is
         uint256 length = pidNFTList[_pid].length;
 
         // if stakers can cover payout
-        if (payoutAmount <= totalStaked) {
+        if (payoutAmount < totalStaked) {
             uint256 percentage = ((payoutAmount * PRECISION) / totalStaked);
             for (uint256 i; i < length; ) {
                 uint256 tokenId = pidNFTList[_pid][i];
@@ -219,13 +219,15 @@ contract Saloon is
                     ++i;
                 }
             }
-        } else if (payoutAmount > totalStaked && payoutAmount <= poolTotal) {
+        } else if (payoutAmount >= totalStaked && payoutAmount <= poolTotal) {
             // set all token balances to zero
             for (uint256 i; i < length; ) {
                 uint256 tokenId = pidNFTList[_pid][i];
                 token = nftInfo[tokenId];
                 _updateTokenReward(tokenId, false);
                 token.amount = 0;
+                token.apy = 0;
+                pool.curveInfo.unstakedTokens.push(tokenId);
                 unchecked {
                     ++i;
                 }
@@ -857,6 +859,12 @@ contract Saloon is
             "ERC721: caller is not token owner or approved"
         );
         _updateTokenReward(_tokenId, true);
+
+        // Burn token in case token amount == 0. This can occur when:
+        // 1) User called unstake() with _shouldHarvest == false. They received their deposit back
+        // and left their unclaimed premium in the contract.
+        // 2) The pool was emptied via payBounty() following payout for a critical severity submission.
+        if (nftInfo[_tokenId].amount == 0) _burn(_tokenId);
     }
 
     ///////////////////////////////////////////////////////////////////////////////
