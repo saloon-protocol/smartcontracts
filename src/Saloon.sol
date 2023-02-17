@@ -197,7 +197,7 @@ contract Saloon is
     ) public onlyOwner {
         require(_payoutBPS <= 10000, "Payout too high");
         require(_hunterBonusBPS <= 10000, "Bonus too high");
-        uint256 _pid = __pid;
+        uint256 _pid = __pid; // Appeasing "Stack too Deep" Gods
         PoolInfo storage pool = poolInfo[_pid];
         NFTInfo storage token;
         uint256 totalStaked = pool.generalInfo.totalStaked;
