@@ -185,19 +185,19 @@ contract Saloon is
     /// @notice Pays valid bounty submission to hunter
     /// @dev only callable by Saloon owner
     /// @dev Includes Saloon commission + hunter payout
-    /// @param _pid Bounty pool id
+    /// @param __pid Bounty pool id
     /// @param _hunter Hunter address that will receive payout
     /// @param _payoutBPS Percentage of pool to payout in BPS
     /// @param _payoutBPS Percentage of Saloon's fee that will go to hunter as bonus
     function payBounty(
-        uint256 _pid,
+        uint256 __pid,
         address _hunter,
         uint16 _payoutBPS,
         uint16 _hunterBonusBPS
     ) public onlyOwner {
         require(_payoutBPS <= 10000, "Payout too high");
         require(_hunterBonusBPS <= 10000, "Bonus too high");
-
+        uint256 _pid = __pid;
         PoolInfo storage pool = poolInfo[_pid];
         NFTInfo storage token;
         uint256 totalStaked = pool.generalInfo.totalStaked;
@@ -261,7 +261,7 @@ contract Saloon is
         );
 
         emit BountyPaid(_hunter, paymentToken, payoutAmount);
-        // emit BountyBalanceChanged(_pid, poolTotal, viewBountyBalance(_pid));
+        emit BountyBalanceChanged(_pid, poolTotal, viewBountyBalance(_pid));
     }
 
     /// @notice Transfer Saloon profits for a specific token from premiums and bounties collected
