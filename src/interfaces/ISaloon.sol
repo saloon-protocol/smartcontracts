@@ -95,4 +95,14 @@ interface ISaloon {
     event referralPaid(address indexed referrer, uint256 amount);
 
     function receiveStrategyYield(address _token, uint256 _amount) external;
+
+    function poolLength() external view returns (uint256);
+
+    function getPoolInfo(uint256 _pid) external view returns (PoolInfo memory);
+
+    function updateCurrentX(uint256 _pid, uint256 _newX) external;
+
+    function increaseTotalSupply(uint256 _pid, uint256 _xDelta) external;
+
+    function finalizeConsolidation(uint256 _pid, uint256 _memX) external;
 }

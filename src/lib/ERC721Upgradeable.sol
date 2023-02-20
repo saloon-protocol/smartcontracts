@@ -306,6 +306,14 @@ contract ERC721Upgradeable is
         return _ownerOf(tokenId) != address(0);
     }
 
+    function isApprovedOrOwner(address spender, uint256 tokenId)
+        external
+        view
+        returns (bool)
+    {
+        return _isApprovedOrOwner(spender, tokenId);
+    }
+
     /**
      * @dev Returns whether `spender` is allowed to manage `tokenId`.
      *

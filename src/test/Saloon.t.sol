@@ -4,16 +4,19 @@ pragma solidity ^0.8.0;
 import "../Saloon.sol";
 import "../SaloonProxy.sol";
 import "../StrategyFactory.sol";
+import "../BountyTokenNFT.sol";
+import "../interfaces/IBountyTokenNFT.sol";
 import "../lib/ERC20.sol";
 import "ds-test/test.sol";
 import "forge-std/Script.sol";
 
 // import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
-contract SaloonTest is BountyTokenNFT, DSTest, Script {
+contract SaloonTest is DSTest, Script {
     Saloon saloonImplementation;
     SaloonProxy saloonProxy;
     Saloon saloon;
+    BountyTokenNFT bountyToken;
     bytes data = "";
 
     ERC20 usdc;
@@ -36,6 +39,11 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
 
+    uint256 constant DEFAULT_APY = 1.06 ether;
+    uint256 constant PRECISION = 1e18;
+    uint256 constant saloonFee = 1000; // 10%
+    uint256 constant BPS = 10_000;
+
     function setUp() external {
         string memory rpc = vm.envString("POLYGON_RPC_URL");
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -46,7 +54,8 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         saloonProxy = new SaloonProxy(address(saloonImplementation), data);
         saloon = Saloon(address(saloonProxy));
         StrategyFactory factory = new StrategyFactory();
-        saloon.initialize(address(factory));
+        bountyToken = new BountyTokenNFT(address(saloonProxy));
+        saloon.initialize(address(bountyToken), address(factory));
 
         usdc = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
         address USDCHolder = address(
@@ -270,7 +279,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
         assertEq(stake, 10 * 10**6);
-        assertEq(saloon.ownerOf(tokenId), staker);
+        assertEq(bountyToken.ownerOf(tokenId), staker);
     }
 
     // ============================
@@ -342,7 +351,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stakeAfter, 0);
 
         // Consolidate pool. Should increase APY for token2 and token3.
-        saloon.consolidate(pid);
+        bountyToken.consolidate(pid);
 
         (, uint256 tokenAPY2New, , , ) = saloon.viewTokenInfo(tokenId2);
         (, uint256 tokenAPY3New, , , ) = saloon.viewTokenInfo(tokenId3);
@@ -427,7 +436,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             uint256 totalPending,
             uint256 actualPending,
             uint256 newPending
-        ) = saloon.pendingPremium(tokenId);
+        ) = bountyToken.pendingPremium(tokenId);
         (, , uint256 actualPendingTokenInfo, , ) = saloon.viewTokenInfo(
             tokenId
         );
@@ -456,7 +465,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
 
         // unstake
         vm.warp(block.timestamp + 8 days);
-        (totalPending, actualPending, newPending) = saloon.pendingPremium(
+        (totalPending, actualPending, newPending) = bountyToken.pendingPremium(
             tokenId
         );
         (
@@ -514,26 +523,27 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
         uint256 tokenId3 = saloon.stake(pid, 10 * 10**6);
 
-        NFTInfo[] memory tokens = saloon.getAllTokensByOwner(staker);
+        BountyTokenNFT.NFTInfo[] memory tokens = bountyToken
+            .getAllTokensByOwner(staker);
         assertEq(tokens.length, 3);
 
-        saloon.transferFrom(staker, project, 1);
+        bountyToken.transferFrom(staker, project, 1);
 
-        tokens = saloon.getAllTokensByOwner(staker);
+        tokens = bountyToken.getAllTokensByOwner(staker);
         assertEq(tokens.length, 2);
 
         // Unstaking with _shouldHarvest == true burns the NFT
         saloon.scheduleUnstake(2);
         vm.warp(block.timestamp + 8 days);
         bool unstaked = saloon.unstake(2, true);
-        tokens = saloon.getAllTokensByOwner(staker);
+        tokens = bountyToken.getAllTokensByOwner(staker);
         assertEq(tokens.length, 1);
 
         // Unstaking with _shouldHarvest == false DOES NOT burn the NFT
         saloon.scheduleUnstake(3);
         vm.warp(block.timestamp + 8 days);
         unstaked = saloon.unstake(3, false);
-        tokens = saloon.getAllTokensByOwner(staker);
+        tokens = bountyToken.getAllTokensByOwner(staker);
         assertEq(tokens.length, 1);
     }
 
@@ -553,7 +563,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             uint256 totalPending,
             uint256 actualPending,
             uint256 newPending
-        ) = saloon.pendingPremium(tokenId);
+        ) = bountyToken.pendingPremium(tokenId);
         assertEq(totalPending, (100 * 10**6 * 4168) / 10000);
         assertEq(actualPending, (totalPending * 9) / 10);
         assertEq(newPending, (100 * 10**6 * 4168) / 10000);
@@ -566,7 +576,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         // test unstake and claim
         saloon.scheduleUnstake(tokenId);
         vm.warp(block.timestamp + 1 weeks + 1 days);
-        (, uint256 actualPending2, ) = saloon.pendingPremium(tokenId);
+        (, uint256 actualPending2, ) = bountyToken.pendingPremium(tokenId);
         saloon.unstake(tokenId, true);
         // previous balance - stake + premium -> 481.797534246575342466 + 20 + (20 * (8/365 * 10% * 90%)) = 501.836986301
         uint256 stakerBalance2 = usdc.balanceOf(staker);
@@ -606,9 +616,8 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(balanceBefore, topUpBalance);
 
         vm.warp(block.timestamp + 365 days);
-        (uint256 totalPending, uint256 actualPending, ) = saloon.pendingPremium(
-            tokenId
-        );
+        (uint256 totalPending, uint256 actualPending, ) = bountyToken
+            .pendingPremium(tokenId);
         assertEq(totalPending, 41680000); // 10e6 stake => 10% of pool = 41.68% APY on 10% avg APY, for 1 year = 4.168e6 USDC
         assertEq(actualPending, (41680000 * 9) / 10);
 
@@ -636,7 +645,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
 
         // test if requiredPremiumBalancePerPeriod is topped up when premiumAvailable is not enough
         vm.warp(block.timestamp + 730 days);
-        (totalPending, actualPending, ) = saloon.pendingPremium(tokenId);
+        (totalPending, actualPending, ) = bountyToken.pendingPremium(tokenId);
         assertEq(totalPending, ((100 * 10**6 * 4168) / 10000) * 2);
 
         saloon.claimPremium(tokenId);
@@ -741,7 +750,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         assertEq(stake2, 10 * 10**6);
         vm.stopPrank();
 
-        saloon.payBounty(pid, hunter, 10000, 0); // -1 wei due to stargate precision loss
+        saloon.payBounty(pid, hunter, 0, 0); // -1 wei due to stargate precision loss
 
         saloon.collectSaloonProfits(address(usdc), saloonWallet);
 
