@@ -61,9 +61,9 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
         usdc.transfer(staker2, 1000 * (10**6));
 
         dai = new ERC20("DAI", "DAI", 18);
-        dai.mint(project, 500 ether);
-        dai.mint(staker, 500 ether);
-        dai.mint(staker2, 500 ether);
+        dai.mint(project, 1000 ether);
+        dai.mint(staker, 1000 ether);
+        dai.mint(staker2, 1000 ether);
 
         vm.deal(project, 500 ether);
 
@@ -83,7 +83,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             pid,
             poolCap, // $100
             apy, // 10%
-            deposit, // $30
+            10, // $30
             "Stargate"
         );
         vm.stopPrank();
@@ -279,7 +279,7 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
     function testPendingPremium() external {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10**6);
-        uint256 stakeAmount = 10 * 10**6;
+        uint256 stakeAmount = 100 * 10**6;
 
         uint256 tokenX;
         uint256 tokenAmountX;
@@ -297,9 +297,51 @@ contract SaloonTest is BountyTokenNFT, DSTest, Script {
             assert(APYs[i] > APYs[i + 1]);
         }
 
-        // Pool = $100
+        // Pool = $1000
         // Avg APY = 1000 (10%)
-        // This test makes 10 individual stakes of $10 each
+        // This test makes 10 individual stakes of $100 each
+        // Here are the output effective APYs:
+
+        // [4168, 1627, 1030, 755, 597, 493, 420, 366, 324, 291]
+    }
+
+    function testPendingPremium18Decimals() external {
+        saloon.updateTokenWhitelist(address(dai), true, 10 ether);
+        uint256 pid2 = saloon.addNewBountyPool(
+            address(dai),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        vm.startPrank(project);
+        dai.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid2, 1000 ether, 1000, 30 ether, ""); // No strategy for DAI at the moment
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        dai.approve(address(saloon), 1000 ether);
+        uint256 stakeAmount = 100 ether;
+        uint256[10] memory APYs;
+
+        uint256 tokenX;
+        uint256 tokenAmountX;
+        uint256 tokenAPYX;
+
+        for (uint256 i = 0; i < 10; ++i) {
+            tokenX = saloon.stake(pid2, stakeAmount);
+            (tokenAmountX, tokenAPYX, , , ) = saloon.viewTokenInfo(tokenX);
+            APYs[i] = tokenAPYX;
+        }
+
+        for (uint256 i = 0; i < 9; ++i) {
+            assert(APYs[i] > APYs[i + 1]);
+        }
+
+        // Pool = $1000
+        // Avg APY = 1000 (10%)
+        // This test makes 10 individual stakes of $100 each
         // Here are the output effective APYs:
 
         // [4168, 1627, 1030, 755, 597, 493, 420, 366, 324, 291]
