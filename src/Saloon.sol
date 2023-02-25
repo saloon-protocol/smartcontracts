@@ -117,7 +117,7 @@ contract Saloon is
         return true;
     }
 
-    /// @notice Adds a new bounty pool
+    /// @notice Adds a new bounty pool.
     /// @dev Can only be called by the owner.
     /// @param _token Token to be used by bounty pool
     /// @param _projectWallet Address that will be able to deposit funds, set APY and poolCap for the pool
