@@ -8,6 +8,7 @@ import "ds-test/test.sol";
 import "forge-std/Script.sol";
 import "../BountyTokenNFT.sol";
 import "prb-math/UD60x18.sol";
+import "../SaloonLib.sol";
 
 contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
     using SafeMath for *;
@@ -60,13 +61,13 @@ contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
     function testCalculateMultiplier() external {
         // Test for double APY
         uint256 doubleAPY = DEFAULT_APY * 2;
-        _updateScalingMultiplier(0, doubleAPY);
+        SaloonLib._updateScalingMultiplier(doubleAPY);
 
         assertEq(poolInfo[0].generalInfo.scalingMultiplier, 2 ether);
 
         // Test for half APY
         uint256 halfAPY = DEFAULT_APY / 2;
-        _updateScalingMultiplier(1, halfAPY);
+        SaloonLib._updateScalingMultiplier(halfAPY);
 
         assertEq(poolInfo[1].generalInfo.scalingMultiplier, 0.5 ether);
     }
@@ -122,7 +123,7 @@ contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
         // Test for zero x
         uint256 x0 = 0.00 ether;
 
-        uint256 currentApy = _curveImplementation(x0);
+        uint256 currentApy = SaloonLib._curveImplementation(x0);
 
         assertEq(currentApy, 10 ether);
     }

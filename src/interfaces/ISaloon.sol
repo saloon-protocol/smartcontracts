@@ -26,6 +26,17 @@ interface ISaloon {
         uint256 scalingMultiplier;
     }
 
+    struct NFTInfo {
+        uint256 pid;
+        uint256 amount;
+        uint256 xDelta;
+        uint256 apy;
+        uint256 unclaimed;
+        uint256 lastClaimedTime;
+        uint256 timelock;
+        uint256 timelimit;
+    }
+
     struct DepositInfo {
         uint256 projectDepositHeld;
         uint256 projectDepositInStrategy;
