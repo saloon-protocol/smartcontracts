@@ -724,6 +724,48 @@
         }
       }
     },
+    "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol": {
+      "lastModificationDate": 1657928731846,
+      "contentHash": "ec99d946db3685a3630554aa6055bd7f",
+      "sourceName": "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC721": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IERC721.sol/IERC721.json"
+        }
+      }
+    },
     "lib/openzeppelin-contracts/contracts/utils/Address.sol": {
       "lastModificationDate": 1657928731855,
       "contentHash": "02560bbb9e081911e486286da3fa761f",
@@ -841,6 +883,46 @@
       "artifacts": {
         "StorageSlot": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "StorageSlot.sol/StorageSlot.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol": {
+      "lastModificationDate": 1657928731863,
+      "contentHash": "03e6768535ac4da0e9756f1d8a4a018a",
+      "sourceName": "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC165": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IERC165.sol/IERC165.json"
         }
       }
     },
@@ -1793,7 +1875,6 @@
         "lib/prb-math/src/UD60x18.sol",
         "src/BountyTokenNFT.sol",
         "src/Saloon.sol",
-        "src/SaloonLib.sol",
         "src/SaloonProxy.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
@@ -1805,7 +1886,8 @@
         "src/interfaces/IStrategyFactory.sol",
         "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.10",
       "artifacts": {
@@ -1887,7 +1969,6 @@
         "lib/prb-math/src/UD60x18.sol",
         "src/BountyTokenNFT.sol",
         "src/Saloon.sol",
-        "src/SaloonLib.sol",
         "src/SaloonProxy.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
@@ -1899,7 +1980,8 @@
         "src/interfaces/IStrategyFactory.sol",
         "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.10",
       "artifacts": {
@@ -1981,7 +2063,6 @@
         "lib/prb-math/src/UD60x18.sol",
         "src/BountyTokenNFT.sol",
         "src/Saloon.sol",
-        "src/SaloonLib.sol",
         "src/SaloonProxy.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
@@ -1993,7 +2074,8 @@
         "src/interfaces/IStrategyFactory.sol",
         "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.10",
       "artifacts": {
@@ -2003,8 +2085,8 @@
       }
     },
     "src/BountyTokenNFT.sol": {
-      "lastModificationDate": 1677310066995,
-      "contentHash": "66f0f9957c27deac3712348174626012",
+      "lastModificationDate": 1677646827630,
+      "contentHash": "37fb946c39fcd5401453eba903b50d15",
       "sourceName": "src/BountyTokenNFT.sol",
       "solcConfig": {
         "settings": {
@@ -2052,7 +2134,6 @@
         "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
         "lib/prb-math/src/Core.sol",
         "lib/prb-math/src/UD60x18.sol",
-        "src/SaloonLib.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
@@ -2061,7 +2142,8 @@
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
         "src/interfaces/IUniswapV2Router.sol",
-        "src/lib/ERC721Upgradeable.sol"
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
@@ -2071,8 +2153,8 @@
       }
     },
     "src/Saloon.sol": {
-      "lastModificationDate": 1677311146606,
-      "contentHash": "12bb35844b77e5ca2ef36a637b91d4d2",
+      "lastModificationDate": 1677646211474,
+      "contentHash": "598b5257978188bbfa59396013613d6f",
       "sourceName": "src/Saloon.sol",
       "solcConfig": {
         "settings": {
@@ -2127,7 +2209,6 @@
         "lib/prb-math/src/Core.sol",
         "lib/prb-math/src/UD60x18.sol",
         "src/BountyTokenNFT.sol",
-        "src/SaloonLib.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
@@ -2138,7 +2219,8 @@
         "src/interfaces/IStrategyFactory.sol",
         "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC721Upgradeable.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
@@ -2147,10 +2229,10 @@
         }
       }
     },
-    "src/SaloonLib.sol": {
-      "lastModificationDate": 1677308875643,
-      "contentHash": "29d518c94b3c09391a8b20f991ac3f7a",
-      "sourceName": "src/SaloonLib.sol",
+    "src/SaloonBounty.sol": {
+      "lastModificationDate": 1677648832138,
+      "contentHash": "ae65ad6ec00f2093e334a95e76b2067c",
+      "sourceName": "src/SaloonBounty.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -2183,10 +2265,31 @@
         "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
         "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
         "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
         "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
         "lib/prb-math/src/Core.sol",
         "lib/prb-math/src/UD60x18.sol",
+        "src/BountyTokenNFT.sol",
+        "src/SaloonCommon.sol",
+        "src/SaloonStorage.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
         "src/interfaces/ISaloon.sol",
@@ -2194,12 +2297,258 @@
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
         "src/interfaces/IStrategy.sol",
-        "src/interfaces/IUniswapV2Router.sol"
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.17",
       "artifacts": {
-        "SaloonLib": {
-          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonLib.sol/SaloonLib.json"
+        "SaloonBounty": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonBounty.sol/SaloonBounty.json"
+        }
+      }
+    },
+    "src/SaloonCommon.sol": {
+      "lastModificationDate": 1677647129767,
+      "contentHash": "823b3b1e06110609f197553914d7816e",
+      "sourceName": "src/SaloonCommon.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/BountyTokenNFT.sol",
+        "src/SaloonStorage.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "SaloonCommon": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonCommon.sol/SaloonCommon.json"
+        }
+      }
+    },
+    "src/SaloonManager.sol": {
+      "lastModificationDate": 1677648921991,
+      "contentHash": "1877c9c6e2c1139ab557e43dc085f124",
+      "sourceName": "src/SaloonManager.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/BountyTokenNFT.sol",
+        "src/SaloonCommon.sol",
+        "src/SaloonStorage.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "SaloonManager": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonManager.sol/SaloonManager.json"
+        }
+      }
+    },
+    "src/SaloonProjectPortal.sol": {
+      "lastModificationDate": 1677647117201,
+      "contentHash": "b657a3125c440ce6ffeaa6296ea8fb13",
+      "sourceName": "src/SaloonProjectPortal.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/BountyTokenNFT.sol",
+        "src/SaloonCommon.sol",
+        "src/SaloonStorage.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "SaloonProjectPortal": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonProjectPortal.sol/SaloonProjectPortal.json"
         }
       }
     },
@@ -2251,6 +2600,64 @@
       "artifacts": {
         "SaloonProxy": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonProxy.sol/SaloonProxy.json"
+        }
+      }
+    },
+    "src/SaloonStorage.sol": {
+      "lastModificationDate": 1677642240108,
+      "contentHash": "6313e9d03f13f404a5c25255ba3e2261",
+      "sourceName": "src/SaloonStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "SaloonStorage": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonStorage.sol/SaloonStorage.json"
         }
       }
     },
@@ -2903,6 +3310,62 @@
         }
       }
     },
+    "src/lib/SaloonLib.sol": {
+      "lastModificationDate": 1677641962004,
+      "contentHash": "824b92b2477b9b3f7d2f03bb45203a36",
+      "sourceName": "src/lib/SaloonLib.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IUniswapV2Router.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "SaloonLib": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonLib.sol/SaloonLib.json"
+        }
+      }
+    },
     "src/lib/WETH.sol": {
       "lastModificationDate": 1669842725141,
       "contentHash": "12a87a601683c6a55191fb4ae1eba059",
@@ -2947,8 +3410,8 @@
       }
     },
     "src/test/BountyToken.t.sol": {
-      "lastModificationDate": 1677302185697,
-      "contentHash": "b99b111f8453d50501870175aca2ffc0",
+      "lastModificationDate": 1677641996755,
+      "contentHash": "d7947b612489f1d50df010b52f57eba0",
       "sourceName": "src/test/BountyToken.t.sol",
       "solcConfig": {
         "settings": {
@@ -3017,7 +3480,6 @@
         "lib/prb-math/src/UD60x18.sol",
         "src/BountyTokenNFT.sol",
         "src/Saloon.sol",
-        "src/SaloonLib.sol",
         "src/SaloonProxy.sol",
         "src/StargateStrategy.sol",
         "src/StrategyFactory.sol",
@@ -3030,7 +3492,8 @@
         "src/interfaces/IUniswapV2Router.sol",
         "src/lib/ERC20.sol",
         "src/lib/ERC721Upgradeable.sol",
-        "src/lib/OwnableUpgradeable.sol"
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
       ],
       "versionRequirement": "^0.8.0",
       "artifacts": {

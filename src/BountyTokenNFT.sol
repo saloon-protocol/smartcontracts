@@ -5,7 +5,7 @@ pragma solidity ^0.8.17;
 import "./lib/ERC721Upgradeable.sol";
 import "prb-math/UD60x18.sol";
 import "./interfaces/ISaloon.sol";
-import "./SaloonLib.sol";
+import "./lib/SaloonLib.sol";
 
 //TODO Turn some magic numbers used in calculateEffectiveAPY to constants
 
@@ -37,7 +37,7 @@ which my differ from the standard 1.06%
 ================================================
 */
 
-contract BountyTokenNFT is ISaloon, ERC721Upgradeable {
+contract BountyTokenNFT is ERC721Upgradeable, ISaloon {
     //Constants
     uint256 constant DEFAULT_APY = 1.06 ether;
     uint256 constant BPS = 10_000;

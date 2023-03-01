@@ -8,7 +8,7 @@ import "ds-test/test.sol";
 import "forge-std/Script.sol";
 import "../BountyTokenNFT.sol";
 import "prb-math/UD60x18.sol";
-import "../SaloonLib.sol";
+import "../lib/SaloonLib.sol";
 
 contract DevBountyTokenTest is BountyTokenNFT, DSTest, Script {
     using SafeMath for *;

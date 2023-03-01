@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import "./interfaces/ISaloon.sol";
-import "./StrategyFactory.sol";
+import "../interfaces/ISaloon.sol";
+import "../StrategyFactory.sol";
 import "prb-math/UD60x18.sol";
 
 /*
@@ -100,7 +100,7 @@ library SaloonLib {
     }
 
     //===========================================================================||
-    //                               Saloon                                      ||
+    //                               SALOON                                      ||
     //===========================================================================||
 
     // NOTE: for some reason using this increases bytcode size

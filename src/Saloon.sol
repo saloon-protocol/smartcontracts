@@ -340,10 +340,9 @@ contract Saloon is
 
     /// @notice Updates Stategy Factory address
     /// @param _strategyFactory new Strategy Factory address
-    function updateStrategyFactoryAddress(address _strategyFactory)
-        external
-        onlyOwner
-    {
+    function updateStrategyFactoryAddress(
+        address _strategyFactory //NOTE SALOON ADMIN??
+    ) external onlyOwner {
         strategyFactory = IStrategyFactory(_strategyFactory);
     }
 
@@ -492,7 +491,7 @@ contract Saloon is
         }
     }
 
-    /// @notice Harvest pending yield from active strategy for all pids and reinvest
+    /// @notice Harvest pending yield from active strategy for all pids and reinvest //NOTE SALOON ADMIN?
     function compoundYieldForAll() external {
         uint256 arrayLength = poolInfo.length;
         for (uint256 i = 0; i < arrayLength; ++i) {
