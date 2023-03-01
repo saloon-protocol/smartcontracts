@@ -514,11 +514,9 @@ contract SaloonBounty is
     //     virtual
     // {}
 
-    function getAllTokensByOwner(address _owner)
-        public
-        view
-        returns (NFTInfo[] memory userTokens)
-    {
+    function getAllTokensByOwner(
+        address _owner //NOTE function not necessary if same can be done via frontend
+    ) public view returns (NFTInfo[] memory userTokens) {
         uint256[] memory tokens = _ownedTokens[_owner];
         uint256 tokenLength = tokens.length;
         userTokens = new NFTInfo[](tokenLength);
