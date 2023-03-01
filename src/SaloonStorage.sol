@@ -11,7 +11,10 @@ import "./lib/SaloonLib.sol";
 import "./interfaces/ISaloon.sol";
 
 abstract contract SaloonStorage is ISaloon {
-    // using SafeERC20 for IERC20;
+    address constant saloonManager;
+    address constant saloonProjectPortal;
+    address constant saloonBounty;
+
     uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
     uint256 constant saloonFee = 1000; // 10%

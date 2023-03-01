@@ -6,36 +6,33 @@ pragma solidity ^0.8.17;
 import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import "openzeppelin-contracts/contracts/proxy/Proxy.sol";
 import "./lib/OwnableUpgradeable.sol";
+import "./SaloonStorage.sol";
 
-/**
- * @dev This contract implements an upgradeable proxy. It is upgradeable because calls are delegated to an
- * implementation address that can be changed. This address is stored in storage in the location specified by
- * https://eips.ethereum.org/EIPS/eip-1967[EIP1967], so that it doesn't conflict with the storage layout of the
- * implementation behind the proxy.
- */
-contract SaloonProxy is Proxy, ERC1967Upgrade {
-    /**
-     * @dev Initializes the upgradeable proxy with an initial implementation specified by `_logic`.
-     *
-     * If `_data` is nonempty, it's used as data in a delegate call to `_logic`. This will typically be an encoded
-     * function call, and allows initializing the storage of the proxy like a Solidity constructor.
-     */
-    constructor(address _logic, bytes memory _data) payable {
-        _upgradeToAndCall(_logic, _data, false);
-        // _changeAdmin(_admin);
+contract SaloonProxy is SaloonStorage, OwnableUpgradeable, UUPSUpgradeable {
+    function initialize(
+        address _saloonManager,
+        address _saloonProjectPortal,
+        address _saloonBounty
+    ) public initializer {
+        __Ownable_init();
+        setImplementations(_saloonManager, _saloonProjectPortal, _saloonBounty);
     }
 
-    /**
-     * @dev Returns the current implementation address.
-     */
-    function _implementation()
+    function _authorizeUpgrade(address _newImplementation)
         internal
-        view
         virtual
         override
-        returns (address impl)
-    {
-        return ERC1967Upgrade._getImplementation();
+        onlyOwner
+    {}
+
+    function setImplementations(
+        address _saloonManager,
+        address _saloonProjectPortal,
+        address _saloonBounty
+    ) external onlyOwner {
+        saloonManager = _saloonManager;
+        saloonProjectPortal = _saloonProjectPortal;
+        saloonBounty = _saloonBounty;
     }
 
     //===========================================================================||
