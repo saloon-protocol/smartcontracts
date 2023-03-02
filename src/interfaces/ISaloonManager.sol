@@ -1,5 +1,7 @@
 pragma solidity ^0.8.10;
 import "./ISaloon.sol";
+import "./ISaloonBounty.sol";
+import "./ISaloonProjectPortal.sol";
 
 interface ISaloonManager {
     event AdminChanged(address previousAdmin, address newAdmin);
@@ -159,6 +161,14 @@ interface ISaloonManager {
     function saloonPremiumProfit(address) external view returns (uint256);
 
     function saloonStrategyProfit(address) external view returns (uint256);
+
+    function setImplementations(
+        ISaloonManager,
+        ISaloonProjectPortal,
+        ISaloonBounty
+    ) external;
+
+    function setStrategyFactory(address) external;
 
     function strategyAddressToPid(address) external view returns (uint256);
 

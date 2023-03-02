@@ -51,7 +51,6 @@ contract SaloonBounty is
 
     function initialize(address _strategyFactory) public initializer {
         __Ownable_init();
-        strategyFactory = IStrategyFactory(_strategyFactory);
     }
 
     modifier activePool(uint256 _pid) {

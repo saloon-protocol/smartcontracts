@@ -12,14 +12,12 @@ import "./SaloonCommon.sol";
 contract SaloonProjectPortal is
     SaloonCommon,
     OwnableUpgradeable,
-    UUPSUpgradeable,
     ReentrancyGuardUpgradeable
 {
     using SafeERC20 for IERC20;
 
     function initialize(address _strategyFactory) public initializer {
         __Ownable_init();
-        strategyFactory = IStrategyFactory(_strategyFactory);
     }
 
     modifier onlyOwnerOrProject(uint256 _pid) {
@@ -37,13 +35,6 @@ contract SaloonProjectPortal is
         if (!pool.isActive) revert("pool not active");
         _;
     }
-
-    function _authorizeUpgrade(address _newImplementation)
-        internal
-        virtual
-        override
-        onlyOwner
-    {}
 
     //===========================================================================||
     //                               PROJECT FUNCTIONS                           ||

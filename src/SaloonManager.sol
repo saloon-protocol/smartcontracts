@@ -7,27 +7,34 @@ import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable
 import "./lib/OwnableUpgradeable.sol";
 import "./interfaces/IStrategyFactory.sol";
 import "./SaloonCommon.sol";
+import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 
 // import "./interfaces/ISaloon.sol";
 
 contract SaloonManager is
     OwnableUpgradeable,
-    UUPSUpgradeable,
     ReentrancyGuardUpgradeable,
     SaloonCommon
 {
     using SafeERC20 for IERC20;
 
-    function _authorizeUpgrade(address _newImplementation)
-        internal
-        virtual
-        override
-        onlyOwner
-    {}
-
     ///////////////////////////////////////////////////////////////////////////////
     //                           SALOON OWNER FUNCTIONS                          //
     ///////////////////////////////////////////////////////////////////////////////
+
+    function setImplementations(
+        ISaloonManager _saloonManager,
+        ISaloonProjectPortal _saloonProjectPortal,
+        ISaloonBounty _saloonBounty
+    ) public onlyOwner {
+        saloonManager = _saloonManager;
+        saloonProjectPortal = _saloonProjectPortal;
+        saloonBounty = _saloonBounty;
+    }
+
+    function setStrategyFactory(address _strategyFactory) external onlyOwner {
+        strategyFactory = IStrategyFactory(_strategyFactory);
+    }
 
     /// @notice Updates the list of ERC20 tokens allow to be used in bounty pools
     /// @notice _minStakeAmount must either be set on first whitelisting for token, or must be un-whitelisted and then re-whitelisted to reset value
