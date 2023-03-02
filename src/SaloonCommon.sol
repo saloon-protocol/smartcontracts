@@ -14,6 +14,7 @@ import "./SaloonStorage.sol";
 contract SaloonCommon is SaloonStorage {
     using SafeERC20 for IERC20;
 
+    // NOTE billpremium now doesnt bill includiing saloon commission...
     /// @notice Bills premium from project wallet
     /// @dev Billing is capped at requiredPremiumBalancePerPeriod so not even admins can bill more than needed
     /// @dev This prevents anyone calling this multiple times and draining the project wallet
@@ -21,13 +22,20 @@ contract SaloonCommon is SaloonStorage {
     /// @param _pending The extra amount of pending that must be billed to bring bounty balance up to full
     function _billPremium(uint256 _pid, uint256 _pending) internal {
         PoolInfo storage pool = poolInfo[_pid];
-
+        // FIXME billAmount = weeklyPremium - (currentBalance + pendingPremium) | pendingPremium = unclaimed + accrued
         uint256 billAmount = calcRequiredPremiumBalancePerPeriod(
             pool.generalInfo.poolCap,
             pool.generalInfo.apy
         ) -
             pool.premiumInfo.premiumBalance +
-            _pending; // NOTE bill premium now doesnt bill includiing saloon commission...
+            _pending;
+        // H-1 FIXME how to fix?
+        /// premiumBalance perhaps should never be less than weeklyPremium but could be more.
+        /// premium charged always top up weeklyPremium + totalPending, so we are always one full week in surplus
+
+        /// - Dont substract pending
+        /// - Update premiumBalance in a different order?
+        /// - bill totalPending(_pending here) every time?
 
         IERC20(pool.generalInfo.token).safeTransferFrom(
             pool.generalInfo.projectWallet,
