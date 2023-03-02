@@ -9,11 +9,14 @@ pragma solidity ^0.8.17;
 import "./interfaces/IStrategyFactory.sol";
 import "./lib/SaloonLib.sol";
 import "./interfaces/ISaloon.sol";
+import "./interfaces/ISaloonManager.sol";
+import "./interfaces/ISaloonProjectPortal.sol";
+import "./interfaces/ISaloonBounty.sol";
 
 abstract contract SaloonStorage is ISaloon {
-    address constant saloonManager;
-    address constant saloonProjectPortal;
-    address constant saloonBounty;
+    ISaloonManager public saloonManager;
+    ISaloonProjectPortal public saloonProjectPortal;
+    ISaloonBounty public saloonBounty;
 
     uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
