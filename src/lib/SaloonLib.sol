@@ -155,7 +155,7 @@ library SaloonLib {
 
         // secondsPassed = number of seconds between lastClaimedTime and endTime
         uint256 secondsPassed = endTime - _lastClaimedTime;
-        newPending = (((_amount * _apy) / BPS) * secondsPassed) / YEAR;
+        newPending = ((_amount * _apy * secondsPassed) / BPS) / YEAR; //L5 FIXME multiplication before division fixed
         totalPending = newPending + _unclaimed;
         actualPending = (totalPending * (BPS - saloonFee)) / BPS;
 

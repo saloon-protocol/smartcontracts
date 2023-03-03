@@ -11,6 +11,7 @@ interface ISaloon {
         TimelockInfo poolTimelock;
         CurveInfo curveInfo;
         ReferralInfo referralInfo;
+        uint256 assessmentPeriodEnd;
         uint256 freezeTime;
         bool isActive;
     }
@@ -35,6 +36,7 @@ interface ISaloon {
         uint256 lastClaimedTime;
         uint256 timelock;
         uint256 timelimit;
+        bool hasUnstaked;
     }
 
     struct DepositInfo {

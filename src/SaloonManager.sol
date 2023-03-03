@@ -137,6 +137,12 @@ contract SaloonManager is
         return true;
     }
 
+    // @notice Starts assesment period where users can withdraw instantly and
+    //  bounty payouts dont use stakers fund
+    function startAssessmentPeriod(uint256 _pid) external onlyOwner {
+        poolInfo[_pid].assessmentPeriodEnd = block.timestamp + 14 days;
+    }
+
     /// @notice Transfer Saloon profits for a specific token from premiums and bounties collected
     /// @param _token Token address to be transferred
     /// @param _saloonWallet Address where the funds will go to

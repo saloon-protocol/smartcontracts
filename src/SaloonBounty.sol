@@ -59,6 +59,16 @@ contract SaloonBounty is
         _;
     }
 
+    modifier onlyOwnerOrProject(uint256 _pid) {
+        PoolInfo memory pool = poolInfo[_pid];
+        require(
+            msg.sender == pool.generalInfo.projectWallet ||
+                msg.sender == _owner,
+            "Not authorized"
+        );
+        _;
+    }
+
     /// @notice Updates and transfers amount owed to a tokenId
     /// @param _tokenId Token Id of ERC721 being updated
     /// @param _shouldHarvest Whether staker wants to claim their owed premium or not
@@ -86,6 +96,7 @@ contract SaloonBounty is
                 ? pool.freezeTime
                 : block.timestamp;
             token.unclaimed += newPending;
+            //H1 FIXME add billPremium() here?
             return;
         }
 
@@ -108,23 +119,55 @@ contract SaloonBounty is
         }
     }
 
+    // H-5 FIXME enable projects to claim back the non-consumed APY
+    function withdrawRemainingAPY(uint256 _pid)
+        external
+        onlyOwnerOrProject(_pid)
+    {
+        PoolInfo memory pool = poolInfo[_pid];
+        require(!pool.isActive, "Pool must be deactivated");
+
+        uint256 length = pidNFTList[_pid].length;
+        // billPremium for all pending premium
+        for (uint256 i; i < length; ) {
+            uint256 tokenId = pidNFTList[_pid][i];
+            // token = nftInfo[tokenId];
+            _updateTokenReward(tokenId, true); //note does this risk overflowing?
+            // token.apy = 0; //NOTE Should we set this here? Dont think its necessary
+        }
+        // reimburse the rest to project
+        IERC20(pool.generalInfo.token).safeTransfer(
+            pool.generalInfo.projectWallet,
+            pool.premiumInfo.premiumBalance
+        );
+
+        // set premiumBalance to zero
+        poolInfo[_pid].premiumInfo.premiumBalance = 0;
+    }
+
     /// @notice Pays valid bounty submission to hunter
     /// @dev only callable by Saloon owner
     /// @dev Includes Saloon commission + hunter payout
     /// @param __pid Bounty pool id
     /// @param _hunter Hunter address that will receive payout
     /// @param _payoutBPS Percentage of pool to payout in BPS
-    /// @param _payoutBPS Percentage of Saloon's fee that will go to hunter as bonus
+    /// @param _hunterBonusBPS Percentage of Saloon's fee that will go to hunter as bonus
     function payBounty(
         uint256 __pid,
         address _hunter,
         uint16 _payoutBPS,
         uint16 _hunterBonusBPS
     ) public onlyOwner {
-        require(_payoutBPS <= 10000, "Payout too high");
-        require(_hunterBonusBPS <= 10000, "Bonus too high");
         uint256 _pid = __pid; // Appeasing "Stack too Deep" Gods
         PoolInfo storage pool = poolInfo[_pid];
+
+        require(
+            pool.assessmentPeriodEnd < block.timestamp,
+            "Assesment period bounty"
+        );
+        require(_payoutBPS <= 10000, "Payout too high");
+        require(_hunterBonusBPS <= 10000, "Bonus too high");
+
         NFTInfo storage token;
         uint256 totalStaked = pool.generalInfo.totalStaked;
         uint256 poolTotal = viewBountyBalance(_pid);
@@ -153,7 +196,12 @@ contract SaloonBounty is
                 _updateTokenReward(tokenId, false);
                 token.amount = 0;
                 token.apy = 0;
-                pool.curveInfo.unstakedTokens.push(tokenId);
+
+                // add to unstakedTokens if token hasn't been added yet through direct unstake
+                if (!token.hasUnstaked) {
+                    token.hasUnstaked == true;
+                    pool.curveInfo.unstakedTokens.push(tokenId);
+                }
                 unchecked {
                     ++i;
                 }
@@ -195,6 +243,61 @@ contract SaloonBounty is
 
         emit BountyPaid(_hunter, paymentToken, payoutAmount);
         emit BountyBalanceChanged(_pid, poolTotal, viewBountyBalance(_pid));
+    }
+
+    // M5 FIXME added payBountyDuringAssessment() to make fair payment during assessment period
+    /// @notice Pay bounty during assessment period by using solely project's deposit.
+    function payBountyDuringAssessment(
+        uint256 _pid,
+        address _hunter,
+        uint16 _payoutBPS,
+        uint16 _hunterBonusBPS
+    ) external onlyOwner {
+        PoolInfo storage pool = poolInfo[_pid];
+        require(
+            pool.assessmentPeriodEnd > block.timestamp,
+            "Assesment period bounty"
+        );
+        require(_payoutBPS <= 10000, "Payout too high");
+        require(_hunterBonusBPS <= 10000, "Bonus too high");
+
+        _withdrawFromActiveStrategy(_pid);
+        uint256 projectDeposit = pool.depositInfo.projectDepositHeld;
+        uint256 payoutAmount = (projectDeposit * _payoutBPS) / BPS;
+        pool.depositInfo.projectDepositHeld -= payoutAmount;
+
+        // calculate saloon commission (10% by default, lower if _hunterBonusBPS > 0)
+        uint256 saloonCommission = (((payoutAmount * saloonFee) / BPS) *
+            (BPS - _hunterBonusBPS)) / BPS;
+
+        // Calculate fee taken from bounty payments. 10% taken from total payment upon payout.
+        // Of that 10%, some % might go to referrer of bounty. The rest goes to The Saloon.
+        (
+            uint256 saloonAmount,
+            uint256 referralAmount,
+            address referrer
+        ) = SaloonLib.calcReferralSplit(
+                saloonCommission,
+                pool.referralInfo.endTime,
+                pool.referralInfo.referralFee,
+                pool.referralInfo.referrer
+            );
+        address paymentToken = address(pool.generalInfo.token);
+        _increaseReferralBalance(referrer, paymentToken, referralAmount);
+        saloonBountyProfit[paymentToken] += saloonAmount;
+
+        // transfer payout to hunter
+        IERC20(paymentToken).safeTransfer(
+            _hunter,
+            payoutAmount - saloonCommission
+        );
+
+        emit BountyPaid(_hunter, paymentToken, payoutAmount);
+        emit BountyBalanceChanged(
+            _pid,
+            projectDeposit,
+            viewBountyBalance(_pid)
+        );
     }
 
     /// @notice Stake tokens in a Bounty pool to earn premium payments.
@@ -250,6 +353,7 @@ contract SaloonBounty is
 
         NFTInfo storage token = nftInfo[_tokenId];
         uint256 pid = token.pid;
+        token.apy = 0;
         token.timelock = block.timestamp + PERIOD;
         token.timelimit = block.timestamp + PERIOD + 3 days;
 
@@ -273,12 +377,14 @@ contract SaloonBounty is
         NFTInfo storage token = nftInfo[_tokenId];
         uint256 pid = token.pid;
         PoolInfo storage pool = poolInfo[pid];
-
-        require(
-            token.timelock < block.timestamp &&
-                token.timelimit > block.timestamp,
-            "Timelock not set or not completed in time"
-        );
+        // If pool is under assessment period there is no need to schedule unstake M5 FIXME
+        if (pool.assessmentPeriodEnd > block.timestamp) {
+            require(
+                token.timelock < block.timestamp &&
+                    token.timelimit > block.timestamp,
+                "Timelock not set or not completed in time"
+            );
+        }
 
         _updateTokenReward(_tokenId, _shouldHarvest);
 
@@ -299,7 +405,7 @@ contract SaloonBounty is
         if (amount > 0) {
             pool.generalInfo.totalStaked -= amount;
 
-            pool.generalInfo.token.safeTransfer(msg.sender, amount);
+            pool.generalInfo.token.safeTransfer(ownerOf(_tokenId), amount);
         }
 
         emit Unstaked(msg.sender, pid, amount);
@@ -309,8 +415,11 @@ contract SaloonBounty is
 
         // If any unstake occurs, pool needs consolidation. Even if the last token in the pid array unstakes, the pool X value needs
         // to be reset to the proper location
-        pool.curveInfo.unstakedTokens.push(_tokenId);
-
+        // H-3 FIXME hasUnskated checks whether to add nft to usntaked array or not.
+        if (!token.hasUnstaked) {
+            token.hasUnstaked == true;
+            pool.curveInfo.unstakedTokens.push(_tokenId);
+        }
         return true;
     }
 
@@ -417,7 +526,7 @@ contract SaloonBounty is
             cachedList[i] = cachedList[i + 1];
         }
         pidNFTList[pid] = cachedList;
-        pidNFTList[pid].pop(); // Can't pop from array in memory, so pop after writing to storage
+        // pidNFTList[pid].pop(); // Can't pop from array in memory, so pop after writing to storage
     }
 
     /// @notice Mints ERC721 to staker representing their stake and how much APY they are entitled to
@@ -491,6 +600,7 @@ contract SaloonBounty is
         for (uint256 i = 0; i < length; ++i) {
             uint256 tokenId = tokenArray[i];
             NFTInfo storage token = nftInfo[tokenId];
+            _updateTokenReward(tokenId, false); //H-2 FIXME udpateTokenReward added here so APYs are "reset" for consolidation
             uint256 stakeAmount = token.amount;
             token.apy = calculateEffectiveAPY(_pid, stakeAmount, memX);
             memX += token.xDelta;

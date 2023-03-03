@@ -29,13 +29,6 @@ contract SaloonCommon is SaloonStorage {
         ) -
             pool.premiumInfo.premiumBalance +
             _pending;
-        // H-1 FIXME how to fix?
-        /// premiumBalance perhaps should never be less than weeklyPremium but could be more.
-        /// premium charged always top up weeklyPremium + totalPending, so we are always one full week in surplus
-
-        /// - Dont substract pending
-        /// - Update premiumBalance in a different order?
-        /// - bill totalPending(_pending here) every time?
 
         IERC20(pool.generalInfo.token).safeTransferFrom(
             pool.generalInfo.projectWallet,
