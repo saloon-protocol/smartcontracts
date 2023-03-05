@@ -21,6 +21,9 @@ contract SaloonManager is
     ///////////////////////////////////////////////////////////////////////////////
     //                           SALOON OWNER FUNCTIONS                          //
     ///////////////////////////////////////////////////////////////////////////////
+    function initialize() public initializer {
+        __Ownable_init();
+    }
 
     function setImplementations(
         ISaloonManager _saloonManager,
@@ -47,16 +50,16 @@ contract SaloonManager is
         bool _whitelisted,
         uint256 _minStakeAmount
     ) external onlyOwner returns (bool) {
-        require(
-            tokenWhitelist[_token] == !_whitelisted,
-            "no change to whitelist"
-        );
+        // require(
+        //     tokenWhitelist[_token] == !_whitelisted,
+        //     "no change to whitelist"
+        // );
         tokenWhitelist[_token] = _whitelisted;
         emit tokenWhitelistUpdated(_token, _whitelisted);
-
         if (_whitelisted) {
             activeTokens.push(_token);
             minTokenStakeAmount[_token] = _minStakeAmount;
+            return true;
         } else {
             uint256 activeTokenLength = activeTokens.length;
             for (uint256 i; i < activeTokenLength; ++i) {
@@ -68,8 +71,6 @@ contract SaloonManager is
                 }
             }
         }
-
-        return true;
     }
 
     /// @notice Adds a new bounty pool.

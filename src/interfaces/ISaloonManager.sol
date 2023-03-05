@@ -114,6 +114,8 @@ interface ISaloonManager {
 
     function extendReferralPeriod(uint256 _pid, uint256 _endTime) external;
 
+    function initialize() external;
+
     function minTokenStakeAmount(address) external view returns (uint256);
 
     function nftInfo(uint256)

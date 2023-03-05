@@ -12,13 +12,19 @@ import "./interfaces/ISaloon.sol";
 import "./interfaces/ISaloonManager.sol";
 import "./interfaces/ISaloonProjectPortal.sol";
 import "./interfaces/ISaloonBounty.sol";
+import "./interfaces/ISaloonView.sol";
+
+// import "./SaloonBounty.sol";
+// import "./SaloonManager.sol";
+// import "./SaloonProjectPortal.sol";
 
 abstract contract SaloonStorage is ISaloon {
     ISaloonManager public saloonManager;
     ISaloonProjectPortal public saloonProjectPortal;
     ISaloonBounty public saloonBounty;
+    ISaloonView public saloonView;
 
-    uint256 constant YEAR = 365 days;
+    uint256 public constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
     uint256 constant saloonFee = 1000; // 10%
     uint256 constant DEFAULT_APY = 1.06 ether; //NOTE is this ever used?
@@ -40,7 +46,7 @@ abstract contract SaloonStorage is ISaloon {
     mapping(address => mapping(address => uint256)) public referralBalances; // referrer => token => amount
 
     // Strategy factory to deploy unique strategies for each pid. No co-mingling.
-    IStrategyFactory strategyFactory;
+    IStrategyFactory public strategyFactory;
 
     // Mapping of all strategies for pid
     // pid => keccak256(abi.encode(strategyName)) => strategy address

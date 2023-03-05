@@ -140,7 +140,7 @@ interface ISaloonBounty {
 
     function index() external view returns (uint256);
 
-    function initialize(address _strategyFactory) external;
+    function initialize() external;
 
     function isApprovedForAll(address owner, address operator)
         external

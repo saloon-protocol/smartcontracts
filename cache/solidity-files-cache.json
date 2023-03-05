@@ -2225,8 +2225,8 @@
       }
     },
     "src/SaloonBounty.sol": {
-      "lastModificationDate": 1677825478529,
-      "contentHash": "bd5f4011bfc88be6126ea3eb155117c8",
+      "lastModificationDate": 1677980914095,
+      "contentHash": "e186129c7b076570e52b475b23d0f2ea",
       "sourceName": "src/SaloonBounty.sol",
       "solcConfig": {
         "settings": {
@@ -2291,6 +2291,7 @@
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonManager.sol",
         "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
@@ -2309,7 +2310,7 @@
       }
     },
     "src/SaloonCommon.sol": {
-      "lastModificationDate": 1677821576276,
+      "lastModificationDate": 1677981413238,
       "contentHash": "dcb193d83d602bad621e0352eb340a5e",
       "sourceName": "src/SaloonCommon.sol",
       "solcConfig": {
@@ -2374,6 +2375,7 @@
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonManager.sol",
         "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
@@ -2392,8 +2394,8 @@
       }
     },
     "src/SaloonManager.sol": {
-      "lastModificationDate": 1677823520049,
-      "contentHash": "31147ecd925c70aa2f2063ed71f8e0a6",
+      "lastModificationDate": 1677989965711,
+      "contentHash": "4a78e6f66b45172eb340feaa4950d842",
       "sourceName": "src/SaloonManager.sol",
       "solcConfig": {
         "settings": {
@@ -2462,6 +2464,7 @@
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonManager.sol",
         "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
@@ -2480,8 +2483,8 @@
       }
     },
     "src/SaloonProjectPortal.sol": {
-      "lastModificationDate": 1677808580202,
-      "contentHash": "da559425ad4ee7aa05e400a44f467063",
+      "lastModificationDate": 1677894781470,
+      "contentHash": "576f3bd3359e1ce33db7613d0b63e34b",
       "sourceName": "src/SaloonProjectPortal.sol",
       "solcConfig": {
         "settings": {
@@ -2546,6 +2549,7 @@
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonManager.sol",
         "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
@@ -2616,8 +2620,8 @@
       }
     },
     "src/SaloonRelay.sol": {
-      "lastModificationDate": 1677734002525,
-      "contentHash": "41f4f32cc88c3ea3d1d6cad19b41d742",
+      "lastModificationDate": 1677989388120,
+      "contentHash": "8428e58bd09eeb011f829e9f391980b7",
       "sourceName": "src/SaloonRelay.sol",
       "solcConfig": {
         "settings": {
@@ -2675,6 +2679,7 @@
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonManager.sol",
         "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
@@ -2693,8 +2698,8 @@
       }
     },
     "src/SaloonStorage.sol": {
-      "lastModificationDate": 1677716646334,
-      "contentHash": "21d766e30b0069fdeb2f98373bcd352f",
+      "lastModificationDate": 1677989082303,
+      "contentHash": "72590b932e95c8aab635736628b0707b",
       "sourceName": "src/SaloonStorage.sol",
       "solcConfig": {
         "settings": {
@@ -2738,6 +2743,7 @@
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonManager.sol",
         "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
         "src/interfaces/IStargateLPStaking.sol",
         "src/interfaces/IStargateLPToken.sol",
         "src/interfaces/IStargateRouter.sol",
@@ -2750,6 +2756,69 @@
       "artifacts": {
         "SaloonStorage": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonStorage.sol/SaloonStorage.json"
+        }
+      }
+    },
+    "src/SaloonView.sol": {
+      "lastModificationDate": 1677990351282,
+      "contentHash": "ba1db77e108545ab4840ec780ede8b3d",
+      "sourceName": "src/SaloonView.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/SaloonStorage.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "SaloonView": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonView.sol/SaloonView.json"
         }
       }
     },
@@ -2859,8 +2928,8 @@
       }
     },
     "src/interfaces/ISaloon.sol": {
-      "lastModificationDate": 1677823529055,
-      "contentHash": "6b8570bd0a676fed0ab5cf43b141a153",
+      "lastModificationDate": 1677983440696,
+      "contentHash": "761f42956a81fd8714cdcadad3f225f0",
       "sourceName": "src/interfaces/ISaloon.sol",
       "solcConfig": {
         "settings": {
@@ -2901,8 +2970,8 @@
       }
     },
     "src/interfaces/ISaloonBounty.sol": {
-      "lastModificationDate": 1677716903245,
-      "contentHash": "1aaaa66578fd6ad221d2744190e1af2b",
+      "lastModificationDate": 1677892477038,
+      "contentHash": "832948c9b8941fc82232713be6f14330",
       "sourceName": "src/interfaces/ISaloonBounty.sol",
       "solcConfig": {
         "settings": {
@@ -2943,9 +3012,56 @@
         }
       }
     },
+    "src/interfaces/ISaloonGlobal.sol": {
+      "lastModificationDate": 1677989214468,
+      "contentHash": "7e0bac1e4e8de3bab2aa493eddf9c473",
+      "sourceName": "src/interfaces/ISaloonGlobal.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ISaloonGlobal": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ISaloonGlobal.sol/ISaloonGlobal.json"
+        }
+      }
+    },
     "src/interfaces/ISaloonManager.sol": {
-      "lastModificationDate": 1677734216813,
-      "contentHash": "5be772b7f553fd315daa89c019a87412",
+      "lastModificationDate": 1677985945242,
+      "contentHash": "323d8a6cb2f90c87957b406cc7ff1096",
       "sourceName": "src/interfaces/ISaloonManager.sol",
       "solcConfig": {
         "settings": {
@@ -2989,8 +3105,8 @@
       }
     },
     "src/interfaces/ISaloonProjectPortal.sol": {
-      "lastModificationDate": 1677716896317,
-      "contentHash": "17dadd2257935393b5fa98789b75fa98",
+      "lastModificationDate": 1677892462319,
+      "contentHash": "acde134616696522106666dbef1a1cac",
       "sourceName": "src/interfaces/ISaloonProjectPortal.sol",
       "solcConfig": {
         "settings": {
@@ -3028,6 +3144,49 @@
       "artifacts": {
         "ISaloonProjectPortal": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "ISaloonProjectPortal.sol/ISaloonProjectPortal.json"
+        }
+      }
+    },
+    "src/interfaces/ISaloonView.sol": {
+      "lastModificationDate": 1677990415357,
+      "contentHash": "3c8574aebd79fffad434b4f54372e39e",
+      "sourceName": "src/interfaces/ISaloonView.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/interfaces/ISaloon.sol"
+      ],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "ISaloonView": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ISaloonView.sol/ISaloonView.json"
         }
       }
     },
@@ -3767,8 +3926,8 @@
       }
     },
     "src/test/Saloon.t.sol": {
-      "lastModificationDate": 1677304553712,
-      "contentHash": "77dc0f77c9dd90569f35bd26d2371aa7",
+      "lastModificationDate": 1677991177926,
+      "contentHash": "3dfd48e165939676e1173e739a386926",
       "sourceName": "src/test/Saloon.t.sol",
       "solcConfig": {
         "settings": {
@@ -3798,11 +3957,80 @@
           "libraries": {}
         }
       },
-      "imports": [],
-      "versionRequirement": null,
+      "imports": [
+        "lib/ds-test/src/test.sol",
+        "lib/forge-std/src/Script.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/BountyTokenNFT.sol",
+        "src/Saloon.sol",
+        "src/SaloonBounty.sol",
+        "src/SaloonCommon.sol",
+        "src/SaloonManager.sol",
+        "src/SaloonProjectPortal.sol",
+        "src/SaloonProxy.sol",
+        "src/SaloonRelay.sol",
+        "src/SaloonStorage.sol",
+        "src/SaloonView.sol",
+        "src/StargateStrategy.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonGlobal.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/DelegateCall.sol",
+        "src/lib/ERC20.sol",
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.0",
       "artifacts": {
-        "Saloon.t": {
-          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Saloon.t.sol/Saloon.t.json"
+        "SaloonTest": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Saloon.t.sol/SaloonTest.json"
         }
       }
     },

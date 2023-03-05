@@ -16,7 +16,7 @@ contract SaloonProjectPortal is
 {
     using SafeERC20 for IERC20;
 
-    function initialize(address _strategyFactory) public initializer {
+    function initialize() public initializer {
         __Ownable_init();
     }
 

@@ -1,9 +1,7 @@
 pragma solidity ^0.8.10;
 import "./ISaloon.sol";
 
-interface ISaloonProjectPortal {
-    event AdminChanged(address previousAdmin, address newAdmin);
-    event BeaconUpgraded(address indexed beacon);
+interface ISaloonView {
     event BountyBalanceChanged(
         uint256 indexed pid,
         uint256 oldAmount,
@@ -14,20 +12,14 @@ interface ISaloonProjectPortal {
         address indexed token,
         uint256 amount
     );
-    event Initialized(uint8 version);
     event NewBountyDeployed(
         uint256 indexed pid,
         address indexed token,
         uint256 tokenDecimals
     );
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
     event PremiumBilled(uint256 indexed pid, uint256 amount);
     event Staked(address indexed user, uint256 indexed pid, uint256 amount);
     event Unstaked(address indexed user, uint256 indexed pid, uint256 amount);
-    event Upgraded(address indexed implementation);
     event WithdrawalOrUnstakeScheduled(uint256 indexed pid, uint256 amount);
     event referralPaid(address indexed referrer, uint256 amount);
     event tokenWhitelistUpdated(
@@ -76,26 +68,11 @@ interface ISaloonProjectPortal {
         bool withdrawalExecuted;
     }
 
-    function acceptOwnershipTransfer() external;
+    function YEAR() external view returns (uint256);
 
     function activeStrategies(uint256) external view returns (bytes32);
 
     function activeTokens(uint256) external view returns (address);
-
-    function calcRequiredPremiumBalancePerPeriod(uint256 _poolCap, uint256 _apy)
-        external
-        pure
-        returns (uint256 requiredPremiumBalance);
-
-    function compoundYieldForPid(uint256 _pid) external;
-
-    function initialize() external;
-
-    function makeProjectDeposit(
-        uint256 _pid,
-        uint256 _deposit,
-        string memory _strategyName
-    ) external;
 
     function minTokenStakeAmount(address) external view returns (uint256);
 
@@ -110,10 +87,18 @@ interface ISaloonProjectPortal {
             uint256 unclaimed,
             uint256 lastClaimedTime,
             uint256 timelock,
-            uint256 timelimit
+            uint256 timelimit,
+            bool hasUnstaked
         );
 
-    function owner() external view returns (address);
+    function pendingPremium(uint256 _tokenId)
+        external
+        view
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        );
 
     function pidNFTList(uint256, uint256) external view returns (uint256);
 
@@ -129,58 +114,104 @@ interface ISaloonProjectPortal {
             ISaloon.TimelockInfo memory poolTimelock,
             ISaloon.CurveInfo memory curveInfo,
             ISaloon.ReferralInfo memory referralInfo,
+            uint256 assessmentPeriodEnd,
             uint256 freezeTime,
             bool isActive
         );
-
-    function projectDepositWithdrawal(uint256 _pid, uint256 _amount)
-        external
-        returns (bool);
-
-    function proxiableUUID() external view returns (bytes32);
 
     function receiveStrategyYield(address _token, uint256 _amount) external;
 
     function referralBalances(address, address) external view returns (uint256);
 
+    function saloonBounty() external view returns (address);
+
     function saloonBountyProfit(address) external view returns (uint256);
+
+    function saloonManager() external view returns (address);
 
     function saloonPremiumProfit(address) external view returns (uint256);
 
+    function saloonProjectPortal() external view returns (address);
+
     function saloonStrategyProfit(address) external view returns (uint256);
-
-    function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
-        external
-        returns (bool);
-
-    function setAPYandPoolCapAndDeposit(
-        uint256 _pid,
-        uint256 _poolCap,
-        uint16 _apy,
-        uint256 _deposit,
-        string memory _strategyName
-    ) external;
 
     function strategyAddressToPid(address) external view returns (uint256);
 
+    function strategyFactory() external view returns (address);
+
     function tokenWhitelist(address) external view returns (bool);
-
-    function transferOwnership(address newOwner) external;
-
-    function updateProjectWalletAddress(uint256 _pid, address _projectWallet)
-        external;
-
-    function upgradeTo(address newImplementation) external;
-
-    function upgradeToAndCall(address newImplementation, bytes memory data)
-        external
-        payable;
 
     function viewBountyBalance(uint256 _pid) external view returns (uint256);
 
-    function windDownBounty(uint256 _pid) external returns (bool);
-
-    function withdrawProjectYield(uint256 _pid)
+    function viewBountyInfo(uint256 _pid)
         external
-        returns (uint256 returnedAmount);
+        view
+        returns (
+            uint256 payout,
+            uint256 apy,
+            uint256 staked,
+            uint256 poolCap
+        );
+
+    function viewHackerPayout(uint256 _pid) external view returns (uint256);
+
+    function viewMinProjectDeposit(uint256 _pid)
+        external
+        view
+        returns (uint256);
+
+    function viewPoolAPY(uint256 _pid) external view returns (uint256);
+
+    function viewPoolCap(uint256 _pid) external view returns (uint256);
+
+    function viewPoolPremiumInfo(uint256 _pid)
+        external
+        view
+        returns (
+            uint256 requiredPremiumBalancePerPeriod,
+            uint256 premiumBalance,
+            uint256 premiumAvailable
+        );
+
+    function viewPoolTimelockInfo(uint256 _pid)
+        external
+        view
+        returns (
+            uint256 timelock,
+            uint256 timeLimit,
+            uint256 withdrawalScheduledAmount
+        );
+
+    function viewReferralBalance(address _referrer, address _token)
+        external
+        view
+        returns (uint256 referralBalance);
+
+    function viewSaloonProfitBalance(address _token)
+        external
+        view
+        returns (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        );
+
+    function viewTokenInfo(uint256 _tokenId)
+        external
+        view
+        returns (
+            uint256 amount,
+            uint256 apy,
+            uint256 actualPending,
+            uint256 unclaimed,
+            uint256 timelock
+        );
+
+    function viewTotalStaked(uint256 _pid) external view returns (uint256);
+
+    function viewTokenWhitelistStatus(address _token)
+        external
+        view
+        returns (bool);
 }
