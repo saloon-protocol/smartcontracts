@@ -12,9 +12,9 @@ import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 // import "./interfaces/ISaloon.sol";
 
 contract SaloonManager is
+    SaloonCommon,
     OwnableUpgradeable,
-    ReentrancyGuardUpgradeable,
-    SaloonCommon
+    ReentrancyGuardUpgradeable
 {
     using SafeERC20 for IERC20;
 
@@ -106,7 +106,7 @@ contract SaloonManager is
         newBounty.referralInfo.referrer = _referrer;
         newBounty.referralInfo.referralFee = _referralFee;
         newBounty.referralInfo.endTime = _referralEndTime;
-        poolInfo.push(newBounty);
+        poolInfo.push(newBounty); //FIXME Why isnt this working????
         // emit event
         return (poolInfo.length - 1);
     }

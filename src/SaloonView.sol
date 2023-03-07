@@ -3,11 +3,21 @@
 
 pragma solidity ^0.8.17;
 import "./SaloonStorage.sol";
+import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+import "./lib/OwnableUpgradeable.sol";
+import "./SaloonCommon.sol";
 
-contract SaloonView is SaloonStorage {
+contract SaloonView is
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    SaloonCommon
+{
     //===========================================================================||
     //                             VIEW FUNCTIONS                                ||
     //===========================================================================||
+    function viewAllPoolsInfo() public view returns (PoolInfo[] memory) {
+        return poolInfo;
+    }
 
     function pendingPremium(uint256 _tokenId)
         public
@@ -59,12 +69,12 @@ contract SaloonView is SaloonStorage {
         referralBalance = referralBalances[_referrer][_token];
     }
 
-    function viewBountyBalance(uint256 _pid) public view returns (uint256) {
-        PoolInfo memory pool = poolInfo[_pid];
-        return (pool.generalInfo.totalStaked +
-            (pool.depositInfo.projectDepositHeld +
-                pool.depositInfo.projectDepositInStrategy));
-    }
+    // function viewBountyBalance(uint256 _pid) public view returns (uint256) {
+    //     PoolInfo memory pool = poolInfo[_pid];
+    //     return (pool.generalInfo.totalStaked +
+    //         (pool.depositInfo.projectDepositHeld +
+    //             pool.depositInfo.projectDepositInStrategy));
+    // }
 
     function viewMinProjectDeposit(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
@@ -80,6 +90,11 @@ contract SaloonView is SaloonStorage {
     function viewPoolCap(uint256 _pid) public view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         return pool.generalInfo.poolCap;
+    }
+
+    function viewProjectWallet(uint256 _pid) public view returns (address) {
+        PoolInfo memory pool = poolInfo[_pid];
+        // return pool.generalInfo.projectWallet;
     }
 
     function viewPoolAPY(uint256 _pid) public view returns (uint256) {
@@ -125,13 +140,13 @@ contract SaloonView is SaloonStorage {
         premiumAvailable = pool.premiumInfo.premiumAvailable;
     }
 
-    function calcRequiredPremiumBalancePerPeriod(uint256 _poolCap, uint256 _apy)
-        internal
-        pure
-        returns (uint256 requiredPremiumBalance)
-    {
-        requiredPremiumBalance = (((_poolCap * _apy * PERIOD) / BPS) / YEAR);
-    }
+    // function calcRequiredPremiumBalancePerPeriod(uint256 _poolCap, uint256 _apy)
+    //     internal
+    //     pure
+    //     returns (uint256 requiredPremiumBalance)
+    // {
+    //     requiredPremiumBalance = (((_poolCap * _apy * PERIOD) / BPS) / YEAR);
+    // }
 
     function viewPoolTimelockInfo(uint256 _pid)
         public
@@ -168,10 +183,10 @@ contract SaloonView is SaloonStorage {
         poolCap = viewPoolCap(_pid);
     }
 
-    function receiveStrategyYield(address _token, uint256 _amount)
-        public
-        virtual
-    {}
+    // function receiveStrategyYield(address _token, uint256 _amount)
+    //     public
+    //     virtual
+    // {}
 
     function viewTokenWhitelistStatus(address _token)
         public

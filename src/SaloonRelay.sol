@@ -9,6 +9,7 @@ import "openzeppelin-contracts/contracts/proxy/Proxy.sol";
 import "./lib/OwnableUpgradeable.sol";
 import "./lib/DelegateCall.sol";
 import "./SaloonStorage.sol";
+import "./interfaces/ISaloonGlobal.sol";
 
 contract SaloonRelay is SaloonStorage, OwnableUpgradeable, UUPSUpgradeable {
     using DelegateCall for address;
@@ -29,12 +30,31 @@ contract SaloonRelay is SaloonStorage, OwnableUpgradeable, UUPSUpgradeable {
         );
     }
 
-    // NOTE SHOULD THIS FUNCTION ALSO BE INSIDE getRouterImplementation()????
+    // // NOTE SHOULD THIS FUNCTION ALSO BE INSIDE getRouterImplementation()????
     function initManager(ISaloonManager _saloonManager) public {
         address(_saloonManager).functionDelegateCall(
             abi.encodeWithSelector(ISaloonManager.initialize.selector)
         );
     }
+
+    // TODO NOTE: Function for testing purposes only, remove on deployment
+    function initSaloonBounty() public {
+        address(saloonBounty).functionDelegateCall(
+            abi.encodeWithSelector(ISaloonBounty.initialize.selector)
+        );
+    }
+
+    // function viewActiveTokens(address _token)
+    //     public
+    //     returns (
+    //         address[] memory,
+    //         bool,
+    //         uint256[] memory,
+    //         PoolInfo[] memory
+    //     )
+    // {
+    //     return (activeTokens, tokenWhitelist[_token], poolInfo);
+    // }
 
     function _authorizeUpgrade(address _newImplementation)
         internal
@@ -63,13 +83,14 @@ contract SaloonRelay is SaloonStorage, OwnableUpgradeable, UUPSUpgradeable {
         if (
             sig == ISaloonManager.setStrategyFactory.selector ||
             sig == ISaloonManager.updateTokenWhitelist.selector ||
-            sig == ISaloonManager.addNewBountyPool.selector ||
+            sig == ISaloonGlobal.addNewBountyPool.selector ||
             sig == ISaloonManager.extendReferralPeriod.selector ||
             sig == ISaloonManager.billPremium.selector ||
             sig == ISaloonManager.collectSaloonProfits.selector ||
             sig == ISaloonManager.collectAllSaloonProfits.selector ||
             sig == ISaloonManager.collectReferralProfit.selector ||
-            sig == ISaloonManager.collectAllReferralProfits.selector
+            sig == ISaloonManager.collectAllReferralProfits.selector ||
+            sig == ISaloonManager.viewBountyBalance.selector //FIXME
         ) {
             return address(saloonManager);
         } else if (
@@ -102,26 +123,9 @@ contract SaloonRelay is SaloonStorage, OwnableUpgradeable, UUPSUpgradeable {
         //TODO dont forget view function in Common
     }
 
-    /// @notice Callback function from strategies upon converting yield to underlying
-    /// @dev Anyone can call this but will result in lost funds for non-strategies. TODO ADD MODIFIER TO THIS?
-    /// - Tokens are transferred from msg.sender to this contract and saloonStrategyProfit and/or
-    ///   referralBalances are incremented.
-    /// @param _token Token being received
-    /// @param _amount Amount being received
-    function receiveStrategyYield(address _token, uint256 _amount) external {
-        address(saloonProjectPortal).functionDelegateCall(
-            abi.encodeWithSelector(
-                ISaloonProjectPortal.receiveStrategyYield.selector,
-                _token,
-                _amount
-            )
-        );
-    }
-
     /// @dev Delegates the current call to `implementation`.
     /// This function does not return to its internal call site, it will return directly to the external caller.
     function _delegate(address implementation) private {
-        // solhint-disable-next-line no-inline-assembly
         assembly {
             // Copy msg.data. We take full control of memory in this inline assembly
             // block because it will not return to Solidity code. We overwrite the
@@ -155,5 +159,21 @@ contract SaloonRelay is SaloonStorage, OwnableUpgradeable, UUPSUpgradeable {
 
     fallback() external payable {
         _delegate(getRouterImplementation(msg.sig));
+    }
+
+    /// @notice Callback function from strategies upon converting yield to underlying
+    /// @dev Anyone can call this but will result in lost funds for non-strategies. TODO ADD MODIFIER TO THIS?
+    /// - Tokens are transferred from msg.sender to this contract and saloonStrategyProfit and/or
+    ///   referralBalances are incremented.
+    /// @param _token Token being received
+    /// @param _amount Amount being received
+    function receiveStrategyYield(address _token, uint256 _amount) external {
+        address(saloonProjectPortal).functionDelegateCall(
+            abi.encodeWithSelector(
+                ISaloonProjectPortal.receiveStrategyYield.selector,
+                _token,
+                _amount
+            )
+        );
     }
 }

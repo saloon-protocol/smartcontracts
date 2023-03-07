@@ -106,5 +106,5 @@ interface ISaloon {
 
     event referralPaid(address indexed referrer, uint256 amount);
 
-    function receiveStrategyYield(address _token, uint256 _amount) external;
+    // function receiveStrategyYield(address _token, uint256 _amount) external;
 }

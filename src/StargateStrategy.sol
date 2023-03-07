@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./interfaces/ISaloon.sol";
+import "./interfaces/ISaloonGlobal.sol";
 import "./interfaces/IStrategy.sol";
 import "./interfaces/IStargateRouter.sol";
 import "./interfaces/IStargateLPStaking.sol";
@@ -18,7 +18,7 @@ contract StargateStrategy is IStrategy {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    ISaloon public saloon;
+    ISaloonGlobal public saloon;
     address public pendingOwner;
 
     address public depositToken;
@@ -70,7 +70,7 @@ contract StargateStrategy is IStrategy {
         );
         STG = IERC20(0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590);
 
-        saloon = ISaloon(_owner);
+        saloon = ISaloonGlobal(_owner);
         depositToken = _depositToken;
         IERC20(depositToken).approve(_owner, type(uint256).max);
 

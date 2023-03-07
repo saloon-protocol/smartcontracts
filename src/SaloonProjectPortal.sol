@@ -16,9 +16,9 @@ contract SaloonProjectPortal is
 {
     using SafeERC20 for IERC20;
 
-    function initialize() public initializer {
-        __Ownable_init();
-    }
+    // function initialize() public initializer {
+    //     __Ownable_init();
+    // }
 
     modifier onlyOwnerOrProject(uint256 _pid) {
         PoolInfo memory pool = poolInfo[_pid];
@@ -296,6 +296,8 @@ contract SaloonProjectPortal is
                     .projectDepositHeld;
                 pool.depositInfo.projectDepositHeld = 0;
                 // Subtract 1 wei due to precision loss when depositing into strategy if redeemed immediately
+                //      TODO NOTE FIXME: this will underflow when calling setAPYandPoolCapAndDeposit when deposit = 0
+                //          We should have a minimum deposit. lets say $100
                 pool.depositInfo.projectDepositInStrategy =
                     projectDepositHeld -
                     1;

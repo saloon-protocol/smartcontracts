@@ -5,6 +5,7 @@ import "./ISaloonManager.sol";
 import "./ISaloonProjectPortal.sol";
 import "./ISaloonBounty.sol";
 import "./ISaloonView.sol";
+import "./ISaloon.sol";
 
 interface ISaloonGlobal {
     // Info of each pool.
@@ -160,7 +161,11 @@ interface ISaloonGlobal {
             bool isActive
         );
 
+    // function poolInfo() external view returns (PoolInfo[] memory);
+
     function owner() external view returns (address);
+
+    function array(uint256) external view returns (uint256);
 
     function pidNFTList(uint256, uint256) external view returns (uint256);
 
@@ -190,6 +195,12 @@ interface ISaloonGlobal {
         returns (uint256 requiredPremiumBalance);
 
     function compoundYieldForPid(uint256 _pid) external;
+
+    function makeProjectDeposit(
+        uint256 _pid,
+        uint256 _deposit,
+        string memory _strategyName
+    ) external;
 
     function minTokenStakeAmount(address) external view returns (uint256);
 
@@ -239,6 +250,10 @@ interface ISaloonGlobal {
     function withdrawProjectYield(uint256 _pid)
         external
         returns (uint256 returnedAmount);
+
+    function viewAllPoolInfo() external view returns (PoolInfo[] memory);
+
+    function saloonView() external view returns (ISaloonView);
 
     function addNewBountyPool(
         address _token,
@@ -355,6 +370,19 @@ interface ISaloonGlobal {
 
     function YEAR() external view returns (uint256);
 
+    function testing() external view returns (uint256);
+
+    function testingArray() external view returns (uint256[] memory);
+
+    function viewActiveTokens(address _token)
+        external
+        returns (
+            address[] memory,
+            bool,
+            uint256[] memory,
+            PoolInfo[] memory
+        );
+
     function strategyFactory() external view returns (address);
 
     function viewBountyInfo(uint256 _pid)
@@ -424,6 +452,8 @@ interface ISaloonGlobal {
 
     function viewTotalStaked(uint256 _pid) external view returns (uint256);
 
+    function viewProjectWallet(uint256 _pid) external view returns (address);
+
     function setImplementations(
         ISaloonManager _saloonManager,
         ISaloonProjectPortal _saloonProjectPortal,
@@ -436,5 +466,5 @@ interface ISaloonGlobal {
     function initProjectPortal(ISaloonProjectPortal _saloonProjectPortal)
         external;
 
-    function initSaloonBounty(ISaloonBounty _saloonBounty) external;
+    function initSaloonBounty() external;
 }

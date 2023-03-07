@@ -66,16 +66,18 @@ contract SaloonTest is DSTest, Script {
 
         //Creates proxy and sets Relay Implementation
         saloonProxy = new SaloonProxy(address(saloonRelay), data);
+        // saloonProxy = new SaloonProxy(address(saloonManager), data);
 
         saloon = ISaloonGlobal(payable(address((saloonProxy))));
 
-        //Init relay and sets other implementations
+        // Init relay and sets other implementations
         saloon.initialize(
             ISaloonManager(address(saloonManager)),
             ISaloonProjectPortal(address(saloonProjectPortal)),
             ISaloonBounty(address(saloonBounty)),
             ISaloonView(address(saloonView))
         );
+        // saloon.initialize();
         // Initialize implementations - done in step above
         // saloon.initManager();
         // saloon.initProjectPortal();
@@ -105,32 +107,36 @@ contract SaloonTest is DSTest, Script {
 
         deployer = address(this);
 
+        // saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+
         // pid = saloon.addNewBountyPool(
         //     address(usdc),
         //     project,
-        //     "yeehaw",
+        //     "yeehay",
         //     address(0),
         //     0,
         //     0
         // );
+
         // vm.startPrank(project);
         // usdc.approve(address(saloon), 1000 * 10**6);
         // saloon.setAPYandPoolCapAndDeposit(
-        //     pid,
+        //     0, //pid
         //     poolCap, // $100
         //     apy, // 10%
         //     deposit, // $30
         //     "Stargate"
         // );
-        vm.stopPrank();
+        // vm.stopPrank();
     }
 
     // ============================
-    // Test Initialize
+    // Test Initialize Revert
     // ============================
     function testInitialize() external {
+        // Test if implementation can be initialized twice (should revert)
         vm.expectRevert("Initializable: contract is already initialized");
-        saloon.initSaloonBounty(ISaloonBounty(address(saloonBounty)));
+        saloon.initSaloonBounty();
     }
 
     // ============================
@@ -199,62 +205,72 @@ contract SaloonTest is DSTest, Script {
     }
 
     // ============================
-    // Test updateTokenWhitelist
+    // Test setAPYandPoolCapAndDeposit
     // ============================
-    // function testUpdateTokenWhitelist() external {
-    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
-    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
-    // }
+    function testSetAPYAndPoolCapAndDeposit() external {
+        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
 
-    //     // ============================
-    //     // Test addNewBountyPool
-    //     // ============================
-    //     function testAddNewBountyPool() external {
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-    //     }
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehuu",
+            address(0),
+            0,
+            0
+        );
+        emit log_uint(pid);
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaaa",
+            address(0),
+            0,
+            0
+        );
+        emit log_uint(pid); // Testing if pid increases correctly
 
-    //     // ============================
-    //     // Test setAPYandPoolCapAndDeposit
-    //     // ============================
-    //     function testSetAPYAndPoolCapAndDeposit() external {
-    //         // Test if APY and PoolCap can be set again (should revert)
-    //         vm.expectRevert("Pool already initialized");
-    //         saloon.setAPYandPoolCapAndDeposit(
-    //             pid,
-    //             100 * 10**6,
-    //             1000,
-    //             0,
-    //             "Stargate"
-    //         );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 100000 * 10**6);
+        // Test setAPYandPoolCapAndDeposit
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            1000 * 10**6,
+            1000,
+            10,
+            "Stargate"
+        );
 
-    //         // todo Test if poolCap can be exceeded by stakers
-    //     }
+        // Test if APY and PoolCap can be set again (should revert)
+        vm.expectRevert("Pool already initialized");
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            100 * 10**6,
+            1000,
+            10,
+            "Stargate"
+        );
+        // todo Test if poolCap can be exceeded by stakers
+    }
 
-    //     // ============================
-    //     // Test makeProjectDeposit
-    //     // ============================
-    //     function testMakeProjectDeposit() external {
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-    //         vm.startPrank(project);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
-    //         uint256 bountyBalance = saloon.viewBountyBalance(pid);
-    //         assertEq(bountyBalance, 10 * 10**6 - 1);
-    //     }
+    // ============================
+    // Test makeProjectDeposit
+    // ============================
+    function testMakeProjectDeposit() external {
+        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
+        uint256 bountyBalance = saloon.viewBountyBalance(pid);
+        assertEq(bountyBalance, 10 * 10**6 - 1);
+    }
 
     //     // ============================
     //     // Test scheduleProjectDepositWithdrawal
@@ -329,21 +345,38 @@ contract SaloonTest is DSTest, Script {
     //         assert(strategyProfit > 0);
     //     }
 
-    //     // ============================
-    //     // Test stake
-    //     // ============================
-    //     function testStake() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
+    // ============================
+    // Test stake
+    // ============================
+    function testStake() external {
+        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10**6);
+        saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
+        uint256 bountyBalance = saloon.viewBountyBalance(pid);
+        assertEq(bountyBalance, 10 * 10**6 - 1);
+        vm.stopPrank();
 
-    //         vm.expectRevert("Min stake not met");
-    //         saloon.stake(pid, 5 * 10**6);
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10**6);
 
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
-    //         assertEq(saloon.ownerOf(tokenId), staker);
-    //     }
+        vm.expectRevert("Min stake not met");
+        saloon.stake(pid, 5 * 10**6);
+
+        uint256 tokenId = saloon.stake(pid, 10 * 10**6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10**6);
+        assertEq(saloon.ownerOf(tokenId), staker);
+        vm.stopPrank();
+    }
 
     //     // ============================
     //     // Test pendingPremium

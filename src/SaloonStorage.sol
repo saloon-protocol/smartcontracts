@@ -18,7 +18,7 @@ import "./interfaces/ISaloonView.sol";
 // import "./SaloonManager.sol";
 // import "./SaloonProjectPortal.sol";
 
-abstract contract SaloonStorage is ISaloon {
+contract SaloonStorage is ISaloon {
     ISaloonManager public saloonManager;
     ISaloonProjectPortal public saloonProjectPortal;
     ISaloonBounty public saloonBounty;

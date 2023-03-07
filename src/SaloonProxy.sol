@@ -4,7 +4,6 @@
 pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import "./lib/OwnableUpgradeable.sol";
 
 /**
  * @dev This contract implements an upgradeable proxy. It is upgradeable because calls are delegated to an
@@ -25,5 +24,9 @@ contract SaloonProxy is ERC1967Proxy {
 
     function getImplementation() external view returns (address) {
         return _getImplementation();
+    }
+
+    function receiveStrategyYield(address _token, uint256 _amount) external {
+        _delegate(_getImplementation());
     }
 }

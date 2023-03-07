@@ -38,8 +38,8 @@ which my differ from the standard 1.06%
 */
 
 contract SaloonBounty is
-    ERC721Upgradeable,
     SaloonCommon,
+    ERC721Upgradeable,
     OwnableUpgradeable,
     ReentrancyGuardUpgradeable
 {
