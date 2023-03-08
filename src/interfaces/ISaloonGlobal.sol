@@ -179,7 +179,7 @@ interface ISaloonGlobal {
 
     function activeTokens(uint256) external view returns (address);
 
-    function initialize() external;
+    function initialize(address) external;
 
     function initialize(
         //SaloonRelay

@@ -1,0 +1,2317 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205340d8ac560100096bddbf8153da857318785e6f10db359a021b0f774a972d6164736f6c63430008110033",
+    "sourceMap": "863:2754:74:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;863:2754:74;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205340d8ac560100096bddbf8153da857318785e6f10db359a021b0f774a972d6164736f6c63430008110033",
+    "sourceMap": "863:2754:74:-:0;;;;;;;;",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {},
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"author\":\"Matter Labs\",\"details\":\"The library provides the API to interact with the priority queue containerOrder of processing operations from queue - FIFO (Fist in - first out)\",\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/lib/PriorityQueue.sol\":\"PriorityQueue\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@prb/test/=lib/prb-math/lib/prb-test/src/\",\":decimath/=lib/decimath/contracts/\",\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":prb-math/=lib/prb-math/src/\",\":prb-test/=lib/prb-math/lib/prb-test/src/\",\":solmate/=lib/solmate/src/\",\":src/=src/\"]},\"sources\":{\"src/lib/PriorityQueue.sol\":{\"keccak256\":\"0x2d24772a776ae7c6e979274b745e67430d85ed3fa5891c46c82a1ea280822fd7\",\"license\":\"MIT OR Apache-2.0\",\"urls\":[\"bzz-raw://eccc98d8643a0e0b410a45e7e8e8c992de300abdf7bcc774fa1dc36e0e3a3ff6\",\"dweb:/ipfs/QmegrDorsYoToQPhsSLe2vwMgjvUn5GZCvzd9GY2T3qfYS\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.17+commit.8df45f5f"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@prb/test/=lib/prb-math/lib/prb-test/src/",
+        ":decimath/=lib/decimath/contracts/",
+        ":ds-test/=lib/ds-test/src/",
+        ":forge-std/=lib/forge-std/src/",
+        ":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/",
+        ":openzeppelin-contracts/=lib/openzeppelin-contracts/",
+        ":prb-math/=lib/prb-math/src/",
+        ":prb-test/=lib/prb-math/lib/prb-test/src/",
+        ":solmate/=lib/solmate/src/",
+        ":src/=src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/lib/PriorityQueue.sol": "PriorityQueue"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/lib/PriorityQueue.sol": {
+        "keccak256": "0x2d24772a776ae7c6e979274b745e67430d85ed3fa5891c46c82a1ea280822fd7",
+        "urls": [
+          "bzz-raw://eccc98d8643a0e0b410a45e7e8e8c992de300abdf7bcc774fa1dc36e0e3a3ff6",
+          "dweb:/ipfs/QmegrDorsYoToQPhsSLe2vwMgjvUn5GZCvzd9GY2T3qfYS"
+        ],
+        "license": "MIT OR Apache-2.0"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/lib/PriorityQueue.sol",
+    "id": 38010,
+    "exportedSymbols": {
+      "PriorityOperation": [
+        37830
+      ],
+      "PriorityQueue": [
+        38009
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "47:3571:74",
+    "nodes": [
+      {
+        "id": 37823,
+        "nodeType": "PragmaDirective",
+        "src": "47:23:74",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 37830,
+        "nodeType": "StructDefinition",
+        "src": "565:108:74",
+        "nodes": [],
+        "canonicalName": "PriorityOperation",
+        "members": [
+          {
+            "constant": false,
+            "id": 37825,
+            "mutability": "mutable",
+            "name": "canonicalTxHash",
+            "nameLocation": "604:15:74",
+            "nodeType": "VariableDeclaration",
+            "scope": 37830,
+            "src": "596:23:74",
+            "stateVariable": false,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 37824,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "596:7:74",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 37827,
+            "mutability": "mutable",
+            "name": "expirationBlock",
+            "nameLocation": "632:15:74",
+            "nodeType": "VariableDeclaration",
+            "scope": 37830,
+            "src": "625:22:74",
+            "stateVariable": false,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint64",
+              "typeString": "uint64"
+            },
+            "typeName": {
+              "id": 37826,
+              "name": "uint64",
+              "nodeType": "ElementaryTypeName",
+              "src": "625:6:74",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint64",
+                "typeString": "uint64"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 37829,
+            "mutability": "mutable",
+            "name": "layer2Tip",
+            "nameLocation": "661:9:74",
+            "nodeType": "VariableDeclaration",
+            "scope": 37830,
+            "src": "653:17:74",
+            "stateVariable": false,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint192",
+              "typeString": "uint192"
+            },
+            "typeName": {
+              "id": 37828,
+              "name": "uint192",
+              "nodeType": "ElementaryTypeName",
+              "src": "653:7:74",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint192",
+                "typeString": "uint192"
+              }
+            },
+            "visibility": "internal"
+          }
+        ],
+        "name": "PriorityOperation",
+        "nameLocation": "572:17:74",
+        "scope": 38010,
+        "visibility": "public"
+      },
+      {
+        "id": 38009,
+        "nodeType": "ContractDefinition",
+        "src": "863:2754:74",
+        "nodes": [
+          {
+            "id": 37835,
+            "nodeType": "UsingForDirective",
+            "src": "891:30:74",
+            "nodes": [],
+            "global": false,
+            "libraryName": {
+              "id": 37832,
+              "name": "PriorityQueue",
+              "nameLocations": [
+                "897:13:74"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 38009,
+              "src": "897:13:74"
+            },
+            "typeName": {
+              "id": 37834,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 37833,
+                "name": "Queue",
+                "nameLocations": [
+                  "915:5:74"
+                ],
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 37845,
+                "src": "915:5:74"
+              },
+              "referencedDeclaration": 37845,
+              "src": "915:5:74",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                "typeString": "struct PriorityQueue.Queue"
+              }
+            }
+          },
+          {
+            "id": 37845,
+            "nodeType": "StructDefinition",
+            "src": "1211:116:74",
+            "nodes": [],
+            "canonicalName": "PriorityQueue.Queue",
+            "members": [
+              {
+                "constant": false,
+                "id": 37840,
+                "mutability": "mutable",
+                "name": "data",
+                "nameLocation": "1272:4:74",
+                "nodeType": "VariableDeclaration",
+                "scope": 37845,
+                "src": "1234:42:74",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_PriorityOperation_$37830_storage_$",
+                  "typeString": "mapping(uint256 => struct PriorityOperation)"
+                },
+                "typeName": {
+                  "id": 37839,
+                  "keyType": {
+                    "id": 37836,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1242:7:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "Mapping",
+                  "src": "1234:37:74",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_PriorityOperation_$37830_storage_$",
+                    "typeString": "mapping(uint256 => struct PriorityOperation)"
+                  },
+                  "valueType": {
+                    "id": 37838,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37837,
+                      "name": "PriorityOperation",
+                      "nameLocations": [
+                        "1253:17:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37830,
+                      "src": "1253:17:74"
+                    },
+                    "referencedDeclaration": 37830,
+                    "src": "1253:17:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage_ptr",
+                      "typeString": "struct PriorityOperation"
+                    }
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 37842,
+                "mutability": "mutable",
+                "name": "tail",
+                "nameLocation": "1294:4:74",
+                "nodeType": "VariableDeclaration",
+                "scope": 37845,
+                "src": "1286:12:74",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 37841,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1286:7:74",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 37844,
+                "mutability": "mutable",
+                "name": "head",
+                "nameLocation": "1316:4:74",
+                "nodeType": "VariableDeclaration",
+                "scope": 37845,
+                "src": "1308:12:74",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 37843,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1308:7:74",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Queue",
+            "nameLocation": "1218:5:74",
+            "scope": 38009,
+            "visibility": "public"
+          },
+          {
+            "id": 37858,
+            "nodeType": "FunctionDefinition",
+            "src": "1502:156:74",
+            "nodes": [],
+            "body": {
+              "id": 37857,
+              "nodeType": "Block",
+              "src": "1623:35:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 37854,
+                      "name": "_queue",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 37849,
+                      "src": "1640:6:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                        "typeString": "struct PriorityQueue.Queue storage pointer"
+                      }
+                    },
+                    "id": 37855,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "1647:4:74",
+                    "memberName": "head",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 37844,
+                    "src": "1640:11:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 37853,
+                  "id": 37856,
+                  "nodeType": "Return",
+                  "src": "1633:18:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37846,
+              "nodeType": "StructuredDocumentation",
+              "src": "1333:164:74",
+              "text": "@notice Returns zero if and only if no operations were processed from the queue\n @return Index of the oldest priority operation that wasn't processed yet"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getFirstUnprocessedPriorityTx",
+            "nameLocation": "1511:29:74",
+            "parameters": {
+              "id": 37850,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37849,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "1555:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37858,
+                  "src": "1541:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37848,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37847,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "1541:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "1541:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "1541:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1540:22:74"
+            },
+            "returnParameters": {
+              "id": 37853,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37852,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37858,
+                  "src": "1610:7:74",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 37851,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1610:7:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1609:9:74"
+            },
+            "scope": 38009,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 37871,
+            "nodeType": "FunctionDefinition",
+            "src": "1788:146:74",
+            "nodes": [],
+            "body": {
+              "id": 37870,
+              "nodeType": "Block",
+              "src": "1899:35:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 37867,
+                      "name": "_queue",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 37862,
+                      "src": "1916:6:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                        "typeString": "struct PriorityQueue.Queue storage pointer"
+                      }
+                    },
+                    "id": 37868,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "1923:4:74",
+                    "memberName": "tail",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 37842,
+                    "src": "1916:11:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 37866,
+                  "id": 37869,
+                  "nodeType": "Return",
+                  "src": "1909:18:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37859,
+              "nodeType": "StructuredDocumentation",
+              "src": "1664:119:74",
+              "text": "@return The total number of priority operations that were added to the priority queue, including all processed ones"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTotalPriorityTxs",
+            "nameLocation": "1797:19:74",
+            "parameters": {
+              "id": 37863,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37862,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "1831:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37871,
+                  "src": "1817:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37861,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37860,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "1817:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "1817:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "1817:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1816:22:74"
+            },
+            "returnParameters": {
+              "id": 37866,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37865,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37871,
+                  "src": "1886:7:74",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 37864,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1886:7:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1885:9:74"
+            },
+            "scope": 38009,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 37890,
+            "nodeType": "FunctionDefinition",
+            "src": "2028:129:74",
+            "nodes": [],
+            "body": {
+              "id": 37889,
+              "nodeType": "Block",
+              "src": "2099:58:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 37886,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "expression": {
+                            "id": 37882,
+                            "name": "_queue",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 37875,
+                            "src": "2124:6:74",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                              "typeString": "struct PriorityQueue.Queue storage pointer"
+                            }
+                          },
+                          "id": 37883,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "2131:4:74",
+                          "memberName": "tail",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 37842,
+                          "src": "2124:11:74",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "-",
+                        "rightExpression": {
+                          "expression": {
+                            "id": 37884,
+                            "name": "_queue",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 37875,
+                            "src": "2138:6:74",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                              "typeString": "struct PriorityQueue.Queue storage pointer"
+                            }
+                          },
+                          "id": 37885,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "2145:4:74",
+                          "memberName": "head",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 37844,
+                          "src": "2138:11:74",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "2124:25:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 37881,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "lValueRequested": false,
+                      "nodeType": "ElementaryTypeNameExpression",
+                      "src": "2116:7:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_uint256_$",
+                        "typeString": "type(uint256)"
+                      },
+                      "typeName": {
+                        "id": 37880,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2116:7:74",
+                        "typeDescriptions": {}
+                      }
+                    },
+                    "id": 37887,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "typeConversion",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2116:34:74",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 37879,
+                  "id": 37888,
+                  "nodeType": "Return",
+                  "src": "2109:41:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37872,
+              "nodeType": "StructuredDocumentation",
+              "src": "1940:83:74",
+              "text": "@return The total number of unprocessed priority operations in a priority queue"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getSize",
+            "nameLocation": "2037:7:74",
+            "parameters": {
+              "id": 37876,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37875,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "2059:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37890,
+                  "src": "2045:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37874,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37873,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "2045:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "2045:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "2045:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2044:22:74"
+            },
+            "returnParameters": {
+              "id": 37879,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37878,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37890,
+                  "src": "2090:7:74",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 37877,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2090:7:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2089:9:74"
+            },
+            "scope": 38009,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 37906,
+            "nodeType": "FunctionDefinition",
+            "src": "2229:118:74",
+            "nodes": [],
+            "body": {
+              "id": 37905,
+              "nodeType": "Block",
+              "src": "2297:50:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 37903,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "expression": {
+                        "id": 37899,
+                        "name": "_queue",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37894,
+                        "src": "2314:6:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                          "typeString": "struct PriorityQueue.Queue storage pointer"
+                        }
+                      },
+                      "id": 37900,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "2321:4:74",
+                      "memberName": "tail",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37842,
+                      "src": "2314:11:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "==",
+                    "rightExpression": {
+                      "expression": {
+                        "id": 37901,
+                        "name": "_queue",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37894,
+                        "src": "2329:6:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                          "typeString": "struct PriorityQueue.Queue storage pointer"
+                        }
+                      },
+                      "id": 37902,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "2336:4:74",
+                      "memberName": "head",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37844,
+                      "src": "2329:11:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "2314:26:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 37898,
+                  "id": 37904,
+                  "nodeType": "Return",
+                  "src": "2307:33:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37891,
+              "nodeType": "StructuredDocumentation",
+              "src": "2163:61:74",
+              "text": "@return Whether the priority queue contains no operations"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isEmpty",
+            "nameLocation": "2238:7:74",
+            "parameters": {
+              "id": 37895,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37894,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "2260:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37906,
+                  "src": "2246:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37893,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37892,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "2246:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "2246:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "2246:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2245:22:74"
+            },
+            "returnParameters": {
+              "id": 37898,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37897,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37906,
+                  "src": "2291:4:74",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 37896,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2291:4:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2290:6:74"
+            },
+            "scope": 38009,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 37938,
+            "nodeType": "FunctionDefinition",
+            "src": "2429:292:74",
+            "nodes": [],
+            "body": {
+              "id": 37937,
+              "nodeType": "Block",
+              "src": "2527:194:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "assignments": [
+                    37917
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 37917,
+                      "mutability": "mutable",
+                      "name": "tail",
+                      "nameLocation": "2623:4:74",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 37937,
+                      "src": "2615:12:74",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 37916,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2615:7:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 37920,
+                  "initialValue": {
+                    "expression": {
+                      "id": 37918,
+                      "name": "_queue",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 37910,
+                      "src": "2630:6:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                        "typeString": "struct PriorityQueue.Queue storage pointer"
+                      }
+                    },
+                    "id": 37919,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "2637:4:74",
+                    "memberName": "tail",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 37842,
+                    "src": "2630:11:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2615:26:74"
+                },
+                {
+                  "expression": {
+                    "id": 37927,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "baseExpression": {
+                        "expression": {
+                          "id": 37921,
+                          "name": "_queue",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 37910,
+                          "src": "2652:6:74",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                            "typeString": "struct PriorityQueue.Queue storage pointer"
+                          }
+                        },
+                        "id": 37924,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "2659:4:74",
+                        "memberName": "data",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 37840,
+                        "src": "2652:11:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_PriorityOperation_$37830_storage_$",
+                          "typeString": "mapping(uint256 => struct PriorityOperation storage ref)"
+                        }
+                      },
+                      "id": 37925,
+                      "indexExpression": {
+                        "id": 37923,
+                        "name": "tail",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37917,
+                        "src": "2664:4:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "2652:17:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage",
+                        "typeString": "struct PriorityOperation storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 37926,
+                      "name": "_operation",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 37913,
+                      "src": "2672:10:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PriorityOperation_$37830_memory_ptr",
+                        "typeString": "struct PriorityOperation memory"
+                      }
+                    },
+                    "src": "2652:30:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage",
+                      "typeString": "struct PriorityOperation storage ref"
+                    }
+                  },
+                  "id": 37928,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2652:30:74"
+                },
+                {
+                  "expression": {
+                    "id": 37935,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 37929,
+                        "name": "_queue",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37910,
+                        "src": "2692:6:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                          "typeString": "struct PriorityQueue.Queue storage pointer"
+                        }
+                      },
+                      "id": 37931,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "2699:4:74",
+                      "memberName": "tail",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37842,
+                      "src": "2692:11:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 37934,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "id": 37932,
+                        "name": "tail",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37917,
+                        "src": "2706:4:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "+",
+                      "rightExpression": {
+                        "hexValue": "31",
+                        "id": 37933,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2713:1:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_1_by_1",
+                          "typeString": "int_const 1"
+                        },
+                        "value": "1"
+                      },
+                      "src": "2706:8:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "2692:22:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 37936,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2692:22:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37907,
+              "nodeType": "StructuredDocumentation",
+              "src": "2353:71:74",
+              "text": "@notice Add the priority operation to the end of the priority queue"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pushBack",
+            "nameLocation": "2438:8:74",
+            "parameters": {
+              "id": 37914,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37910,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "2461:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37938,
+                  "src": "2447:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37909,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37908,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "2447:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "2447:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "2447:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 37913,
+                  "mutability": "mutable",
+                  "name": "_operation",
+                  "nameLocation": "2494:10:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37938,
+                  "src": "2469:35:74",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_PriorityOperation_$37830_memory_ptr",
+                    "typeString": "struct PriorityOperation"
+                  },
+                  "typeName": {
+                    "id": 37912,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37911,
+                      "name": "PriorityOperation",
+                      "nameLocations": [
+                        "2469:17:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37830,
+                      "src": "2469:17:74"
+                    },
+                    "referencedDeclaration": 37830,
+                    "src": "2469:17:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage_ptr",
+                      "typeString": "struct PriorityOperation"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2446:59:74"
+            },
+            "returnParameters": {
+              "id": 37915,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2527:0:74"
+            },
+            "scope": 38009,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 37963,
+            "nodeType": "FunctionDefinition",
+            "src": "2799:231:74",
+            "nodes": [],
+            "body": {
+              "id": 37962,
+              "nodeType": "Block",
+              "src": "2913:117:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 37952,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "2931:17:74",
+                        "subExpression": {
+                          "arguments": [],
+                          "expression": {
+                            "argumentTypes": [],
+                            "expression": {
+                              "id": 37949,
+                              "name": "_queue",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 37942,
+                              "src": "2932:6:74",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                                "typeString": "struct PriorityQueue.Queue storage pointer"
+                              }
+                            },
+                            "id": 37950,
+                            "isConstant": false,
+                            "isLValue": true,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "2939:7:74",
+                            "memberName": "isEmpty",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 37906,
+                            "src": "2932:14:74",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_struct$_Queue_$37845_storage_ptr_$returns$_t_bool_$bound_to$_t_struct$_Queue_$37845_storage_ptr_$",
+                              "typeString": "function (struct PriorityQueue.Queue storage pointer) view returns (bool)"
+                            }
+                          },
+                          "id": 37951,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "2932:16:74",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "44",
+                        "id": 37953,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2950:3:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_6c3fd336b49dcb1c57dd4fbeaf5f898320b0da06a5ef64e798c6497600bb79f2",
+                          "typeString": "literal_string \"D\""
+                        },
+                        "value": "D"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_6c3fd336b49dcb1c57dd4fbeaf5f898320b0da06a5ef64e798c6497600bb79f2",
+                          "typeString": "literal_string \"D\""
+                        }
+                      ],
+                      "id": 37948,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "2923:7:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 37954,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2923:31:74",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 37955,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2923:31:74"
+                },
+                {
+                  "expression": {
+                    "baseExpression": {
+                      "expression": {
+                        "id": 37956,
+                        "name": "_queue",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37942,
+                        "src": "2999:6:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                          "typeString": "struct PriorityQueue.Queue storage pointer"
+                        }
+                      },
+                      "id": 37957,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "3006:4:74",
+                      "memberName": "data",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37840,
+                      "src": "2999:11:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_PriorityOperation_$37830_storage_$",
+                        "typeString": "mapping(uint256 => struct PriorityOperation storage ref)"
+                      }
+                    },
+                    "id": 37960,
+                    "indexExpression": {
+                      "expression": {
+                        "id": 37958,
+                        "name": "_queue",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37942,
+                        "src": "3011:6:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                          "typeString": "struct PriorityQueue.Queue storage pointer"
+                        }
+                      },
+                      "id": 37959,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "3018:4:74",
+                      "memberName": "head",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37844,
+                      "src": "3011:11:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "2999:24:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage",
+                      "typeString": "struct PriorityOperation storage ref"
+                    }
+                  },
+                  "functionReturnParameters": 37947,
+                  "id": 37961,
+                  "nodeType": "Return",
+                  "src": "2992:31:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37939,
+              "nodeType": "StructuredDocumentation",
+              "src": "2727:67:74",
+              "text": "@return The first unprocessed priority operation from the queue"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "front",
+            "nameLocation": "2808:5:74",
+            "parameters": {
+              "id": 37943,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37942,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "2828:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37963,
+                  "src": "2814:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37941,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37940,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "2814:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "2814:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "2814:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2813:22:74"
+            },
+            "returnParameters": {
+              "id": 37947,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37946,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 37963,
+                  "src": "2883:24:74",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_PriorityOperation_$37830_memory_ptr",
+                    "typeString": "struct PriorityOperation"
+                  },
+                  "typeName": {
+                    "id": 37945,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37944,
+                      "name": "PriorityOperation",
+                      "nameLocations": [
+                        "2883:17:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37830,
+                      "src": "2883:17:74"
+                    },
+                    "referencedDeclaration": 37830,
+                    "src": "2883:17:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage_ptr",
+                      "typeString": "struct PriorityOperation"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2882:26:74"
+            },
+            "scope": 38009,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 38008,
+            "nodeType": "FunctionDefinition",
+            "src": "3189:426:74",
+            "nodes": [],
+            "body": {
+              "id": 38007,
+              "nodeType": "Block",
+              "src": "3311:304:74",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 37977,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "3329:17:74",
+                        "subExpression": {
+                          "arguments": [],
+                          "expression": {
+                            "argumentTypes": [],
+                            "expression": {
+                              "id": 37974,
+                              "name": "_queue",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 37967,
+                              "src": "3330:6:74",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                                "typeString": "struct PriorityQueue.Queue storage pointer"
+                              }
+                            },
+                            "id": 37975,
+                            "isConstant": false,
+                            "isLValue": true,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "3337:7:74",
+                            "memberName": "isEmpty",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 37906,
+                            "src": "3330:14:74",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_struct$_Queue_$37845_storage_ptr_$returns$_t_bool_$bound_to$_t_struct$_Queue_$37845_storage_ptr_$",
+                              "typeString": "function (struct PriorityQueue.Queue storage pointer) view returns (bool)"
+                            }
+                          },
+                          "id": 37976,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "3330:16:74",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "73",
+                        "id": 37978,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "3348:3:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_60a73bfb121a98fb6b52dfb29eb0defd76b60065b8cf07902baf28c167d24daf",
+                          "typeString": "literal_string \"s\""
+                        },
+                        "value": "s"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_60a73bfb121a98fb6b52dfb29eb0defd76b60065b8cf07902baf28c167d24daf",
+                          "typeString": "literal_string \"s\""
+                        }
+                      ],
+                      "id": 37973,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "3321:7:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 37979,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3321:31:74",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 37980,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3321:31:74"
+                },
+                {
+                  "assignments": [
+                    37982
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 37982,
+                      "mutability": "mutable",
+                      "name": "head",
+                      "nameLocation": "3476:4:74",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 38007,
+                      "src": "3468:12:74",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 37981,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3468:7:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 37985,
+                  "initialValue": {
+                    "expression": {
+                      "id": 37983,
+                      "name": "_queue",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 37967,
+                      "src": "3483:6:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                        "typeString": "struct PriorityQueue.Queue storage pointer"
+                      }
+                    },
+                    "id": 37984,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "3490:4:74",
+                    "memberName": "head",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 37844,
+                    "src": "3483:11:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3468:26:74"
+                },
+                {
+                  "expression": {
+                    "id": 37991,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 37986,
+                      "name": "priorityOperation",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 37971,
+                      "src": "3505:17:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PriorityOperation_$37830_memory_ptr",
+                        "typeString": "struct PriorityOperation memory"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "baseExpression": {
+                        "expression": {
+                          "id": 37987,
+                          "name": "_queue",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 37967,
+                          "src": "3525:6:74",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                            "typeString": "struct PriorityQueue.Queue storage pointer"
+                          }
+                        },
+                        "id": 37988,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "3532:4:74",
+                        "memberName": "data",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 37840,
+                        "src": "3525:11:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_PriorityOperation_$37830_storage_$",
+                          "typeString": "mapping(uint256 => struct PriorityOperation storage ref)"
+                        }
+                      },
+                      "id": 37990,
+                      "indexExpression": {
+                        "id": 37989,
+                        "name": "head",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37982,
+                        "src": "3537:4:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "3525:17:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage",
+                        "typeString": "struct PriorityOperation storage ref"
+                      }
+                    },
+                    "src": "3505:37:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_memory_ptr",
+                      "typeString": "struct PriorityOperation memory"
+                    }
+                  },
+                  "id": 37992,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3505:37:74"
+                },
+                {
+                  "expression": {
+                    "id": 37997,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "delete",
+                    "prefix": true,
+                    "src": "3552:24:74",
+                    "subExpression": {
+                      "baseExpression": {
+                        "expression": {
+                          "id": 37993,
+                          "name": "_queue",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 37967,
+                          "src": "3559:6:74",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                            "typeString": "struct PriorityQueue.Queue storage pointer"
+                          }
+                        },
+                        "id": 37994,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "3566:4:74",
+                        "memberName": "data",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 37840,
+                        "src": "3559:11:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_PriorityOperation_$37830_storage_$",
+                          "typeString": "mapping(uint256 => struct PriorityOperation storage ref)"
+                        }
+                      },
+                      "id": 37996,
+                      "indexExpression": {
+                        "id": 37995,
+                        "name": "head",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37982,
+                        "src": "3571:4:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "3559:17:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage",
+                        "typeString": "struct PriorityOperation storage ref"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 37998,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3552:24:74"
+                },
+                {
+                  "expression": {
+                    "id": 38005,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 37999,
+                        "name": "_queue",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37967,
+                        "src": "3586:6:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                          "typeString": "struct PriorityQueue.Queue storage pointer"
+                        }
+                      },
+                      "id": 38001,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "3593:4:74",
+                      "memberName": "head",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37844,
+                      "src": "3586:11:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 38004,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "id": 38002,
+                        "name": "head",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 37982,
+                        "src": "3600:4:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "+",
+                      "rightExpression": {
+                        "hexValue": "31",
+                        "id": 38003,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "3607:1:74",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_1_by_1",
+                          "typeString": "int_const 1"
+                        },
+                        "value": "1"
+                      },
+                      "src": "3600:8:74",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "3586:22:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 38006,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3586:22:74"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 37964,
+              "nodeType": "StructuredDocumentation",
+              "src": "3036:148:74",
+              "text": "@notice Remove the first unprocessed priority operation from the queue\n @return priorityOperation that was popped from the priority queue"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "popFront",
+            "nameLocation": "3198:8:74",
+            "parameters": {
+              "id": 37968,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37967,
+                  "mutability": "mutable",
+                  "name": "_queue",
+                  "nameLocation": "3221:6:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 38008,
+                  "src": "3207:20:74",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                    "typeString": "struct PriorityQueue.Queue"
+                  },
+                  "typeName": {
+                    "id": 37966,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37965,
+                      "name": "Queue",
+                      "nameLocations": [
+                        "3207:5:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37845,
+                      "src": "3207:5:74"
+                    },
+                    "referencedDeclaration": 37845,
+                    "src": "3207:5:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Queue_$37845_storage_ptr",
+                      "typeString": "struct PriorityQueue.Queue"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3206:22:74"
+            },
+            "returnParameters": {
+              "id": 37972,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 37971,
+                  "mutability": "mutable",
+                  "name": "priorityOperation",
+                  "nameLocation": "3288:17:74",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 38008,
+                  "src": "3263:42:74",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_PriorityOperation_$37830_memory_ptr",
+                    "typeString": "struct PriorityOperation"
+                  },
+                  "typeName": {
+                    "id": 37970,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 37969,
+                      "name": "PriorityOperation",
+                      "nameLocations": [
+                        "3263:17:74"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 37830,
+                      "src": "3263:17:74"
+                    },
+                    "referencedDeclaration": 37830,
+                    "src": "3263:17:74",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PriorityOperation_$37830_storage_ptr",
+                      "typeString": "struct PriorityOperation"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3262:44:74"
+            },
+            "scope": 38009,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "PriorityQueue",
+        "contractDependencies": [],
+        "contractKind": "library",
+        "documentation": {
+          "id": 37831,
+          "nodeType": "StructuredDocumentation",
+          "src": "675:188:74",
+          "text": "@author Matter Labs\n @dev The library provides the API to interact with the priority queue container\n @dev Order of processing operations from queue - FIFO (Fist in - first out)"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          38009
+        ],
+        "name": "PriorityQueue",
+        "nameLocation": "871:13:74",
+        "scope": 38010,
+        "usedErrors": []
+      }
+    ],
+    "license": "MIT OR Apache-2.0"
+  },
+  "id": 74
+}

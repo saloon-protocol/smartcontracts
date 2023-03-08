@@ -2089,6 +2089,51 @@
         }
       }
     },
+    "src/Base.sol": {
+      "lastModificationDate": 1678179796153,
+      "contentHash": "5ef6a5a7cce7ea6e2c56f682c06bb656",
+      "sourceName": "src/Base.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/ReentrancyGuard.sol",
+        "src/Storage.sol",
+        "src/interfaces/IStrategyFactory.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "Base": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Base.sol/Base.json"
+        }
+      }
+    },
     "src/BountyTokenNFT.sol": {
       "lastModificationDate": 1677646827630,
       "contentHash": "37fb946c39fcd5401453eba903b50d15",
@@ -2159,6 +2204,323 @@
       "artifacts": {
         "BountyTokenNFT": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "BountyTokenNFT.sol/BountyTokenNFT.json"
+        }
+      }
+    },
+    "src/Config.sol": {
+      "lastModificationDate": 1678182090387,
+      "contentHash": "7c7bccd1a593d9df08d6c2cb57ef8acd",
+      "sourceName": "src/Config.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "Config": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Config.sol/Config.json"
+        }
+      }
+    },
+    "src/DiamondCut.sol": {
+      "lastModificationDate": 1678182366742,
+      "contentHash": "3704ddb212d4a7ce2243e531d39725de",
+      "sourceName": "src/DiamondCut.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/Base.sol",
+        "src/Config.sol",
+        "src/ReentrancyGuard.sol",
+        "src/Storage.sol",
+        "src/interfaces/IDiamondCut.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/lib/Diamond.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "DiamondCutFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "DiamondCut.sol/DiamondCutFacet.json"
+        }
+      }
+    },
+    "src/DiamondInit.sol": {
+      "lastModificationDate": 1678181136185,
+      "contentHash": "689c9be75ca8774a80c69d84d1e012de",
+      "sourceName": "src/DiamondInit.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/Base.sol",
+        "src/ReentrancyGuard.sol",
+        "src/Storage.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/lib/Diamond.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "DiamondInit": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "DiamondInit.sol/DiamondInit.json"
+        }
+      }
+    },
+    "src/DiamondProxy.sol": {
+      "lastModificationDate": 1678182397705,
+      "contentHash": "e6305dc755e2a9d7b50e48b7a68e9940",
+      "sourceName": "src/DiamondProxy.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/lib/Diamond.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "DiamondProxy": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "DiamondProxy.sol/DiamondProxy.json"
+        }
+      }
+    },
+    "src/Getters.sol": {
+      "lastModificationDate": 1678257401015,
+      "contentHash": "223ecc17b6a39976056027e1eb8a84ee",
+      "sourceName": "src/Getters.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/Base.sol",
+        "src/ReentrancyGuard.sol",
+        "src/Storage.sol",
+        "src/interfaces/IGetters.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/lib/Diamond.sol",
+        "src/lib/PriorityQueue.sol",
+        "src/lib/UncheckedMath.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "GettersFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Getters.sol/GettersFacet.json"
+        }
+      }
+    },
+    "src/ManagerFacet.sol": {
+      "lastModificationDate": 1678181238903,
+      "contentHash": "82420baa69da709252e38948fb4382f9",
+      "sourceName": "src/ManagerFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "src/Base.sol",
+        "src/ReentrancyGuard.sol",
+        "src/Storage.sol",
+        "src/interfaces/IStrategyFactory.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "ManagerFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ManagerFacet.sol/ManagerFacet.json"
+        }
+      }
+    },
+    "src/ReentrancyGuard.sol": {
+      "lastModificationDate": 1678179431532,
+      "contentHash": "26294d991b47cbcb6e95c7e67e751241",
+      "sourceName": "src/ReentrancyGuard.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ReentrancyGuard": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ReentrancyGuard.sol/ReentrancyGuard.json"
         }
       }
     },
@@ -2245,7 +2607,7 @@
       }
     },
     "src/SaloonBounty.sol": {
-      "lastModificationDate": 1678162946859,
+      "lastModificationDate": 1678173671137,
       "contentHash": "e1343905203805f776d02e05609da5ed",
       "sourceName": "src/SaloonBounty.sol",
       "solcConfig": {
@@ -2719,8 +3081,8 @@
       }
     },
     "src/SaloonStorage.sol": {
-      "lastModificationDate": 1678072972886,
-      "contentHash": "15f158251d68e5c2fdbc71342b53a0f0",
+      "lastModificationDate": 1678179158006,
+      "contentHash": "b0459b05c2ee5323356b9732e6ebb36a",
       "sourceName": "src/SaloonStorage.sol",
       "solcConfig": {
         "settings": {
@@ -2924,6 +3286,49 @@
         }
       }
     },
+    "src/Storage.sol": {
+      "lastModificationDate": 1678250585030,
+      "contentHash": "f9a3ff49c628ee20eefd67591e849581",
+      "sourceName": "src/Storage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "src/interfaces/IStrategyFactory.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "Storage": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Storage.sol/Storage.json"
+        }
+      }
+    },
     "src/StrategyFactory.sol": {
       "lastModificationDate": 1676428766378,
       "contentHash": "b514d0f1d101f0cd75ef3b8bf681ffba",
@@ -2979,6 +3384,90 @@
       "artifacts": {
         "StrategyFactory": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "StrategyFactory.sol/StrategyFactory.json"
+        }
+      }
+    },
+    "src/interfaces/IDiamondCut.sol": {
+      "lastModificationDate": 1678181872095,
+      "contentHash": "64451e764f705cffa688b64d7a63d228",
+      "sourceName": "src/interfaces/IDiamondCut.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/lib/Diamond.sol"
+      ],
+      "versionRequirement": "^0.8",
+      "artifacts": {
+        "IDiamondCut": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IDiamondCut.sol/IDiamondCut.json"
+        }
+      }
+    },
+    "src/interfaces/IGetters.sol": {
+      "lastModificationDate": 1678258324506,
+      "contentHash": "7101dc62fdfbaea291d5a8886876607e",
+      "sourceName": "src/interfaces/IGetters.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/lib/PriorityQueue.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IGetters": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IGetters.sol/IGetters.json"
         }
       }
     },
@@ -3068,8 +3557,8 @@
       }
     },
     "src/interfaces/ISaloonGlobal.sol": {
-      "lastModificationDate": 1678160216966,
-      "contentHash": "6ff3ebb2bf2d7a034f5e649b552afadc",
+      "lastModificationDate": 1678250635240,
+      "contentHash": "64d1dd4618ec3caf3b32aaec040153b3",
       "sourceName": "src/interfaces/ISaloonGlobal.sol",
       "solcConfig": {
         "settings": {
@@ -3691,6 +4180,46 @@
         }
       }
     },
+    "src/lib/Diamond.sol": {
+      "lastModificationDate": 1678181669826,
+      "contentHash": "12f37e7c5255af71f65d5156d992997b",
+      "sourceName": "src/lib/Diamond.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "Diamond": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Diamond.sol/Diamond.json"
+        }
+      }
+    },
     "src/lib/ERC20.sol": {
       "lastModificationDate": 1674801247147,
       "contentHash": "2958dcb79a921b54ffcd19542f514a71",
@@ -3830,6 +4359,46 @@
         }
       }
     },
+    "src/lib/PriorityQueue.sol": {
+      "lastModificationDate": 1678254803601,
+      "contentHash": "f09e8d5adde2f97d4046155c707a4da4",
+      "sourceName": "src/lib/PriorityQueue.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "PriorityQueue": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "PriorityQueue.sol/PriorityQueue.json"
+        }
+      }
+    },
     "src/lib/SaloonLib.sol": {
       "lastModificationDate": 1677815623648,
       "contentHash": "2d57021080eebf7af33020ab6804d5a7",
@@ -3888,6 +4457,46 @@
       "artifacts": {
         "SaloonLib": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonLib.sol/SaloonLib.json"
+        }
+      }
+    },
+    "src/lib/UncheckedMath.sol": {
+      "lastModificationDate": 1678254765264,
+      "contentHash": "dfbd182b63e6e75697e402a927f7e27c",
+      "sourceName": "src/lib/UncheckedMath.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "UncheckedMath": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "UncheckedMath.sol/UncheckedMath.json"
         }
       }
     },
@@ -4139,6 +4748,124 @@
       "artifacts": {
         "SaloonTest": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "Saloon.t.sol/SaloonTest.json"
+        }
+      }
+    },
+    "src/test/SaloonDiamondTest.t.sol": {
+      "lastModificationDate": 1678260561035,
+      "contentHash": "c428170d03ca9e37d1963eacb459d395",
+      "sourceName": "src/test/SaloonDiamondTest.t.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/ds-test/src/test.sol",
+        "lib/forge-std/src/Script.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+        "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/Base.sol",
+        "src/BountyTokenNFT.sol",
+        "src/Config.sol",
+        "src/DiamondCut.sol",
+        "src/DiamondInit.sol",
+        "src/DiamondProxy.sol",
+        "src/Getters.sol",
+        "src/ManagerFacet.sol",
+        "src/ReentrancyGuard.sol",
+        "src/SaloonCommon.sol",
+        "src/SaloonProjectPortal.sol",
+        "src/SaloonRelay.sol",
+        "src/SaloonStorage.sol",
+        "src/SaloonView.sol",
+        "src/StargateStrategy.sol",
+        "src/Storage.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/IDiamondCut.sol",
+        "src/interfaces/IGetters.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonGlobal.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/DelegateCall.sol",
+        "src/lib/Diamond.sol",
+        "src/lib/ERC20.sol",
+        "src/lib/ERC721Upgradeable.sol",
+        "src/lib/OwnableUpgradeable.sol",
+        "src/lib/PriorityQueue.sol",
+        "src/lib/SaloonLib.sol",
+        "src/lib/UncheckedMath.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "SaloonDiamondTest": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "SaloonDiamondTest.t.sol/SaloonDiamondTest.json"
         }
       }
     },

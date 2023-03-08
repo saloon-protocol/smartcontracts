@@ -24,7 +24,7 @@ contract SaloonStorage is ISaloon {
     ISaloonBounty public saloonBounty;
     ISaloonView public saloonView;
 
-    uint256 public constant YEAR = 365 days;
+    uint256 constant YEAR = 365 days;
     uint256 constant PERIOD = 1 weeks;
     uint256 constant saloonFee = 1000; // 10%
     uint256 constant DEFAULT_APY = 1.06 ether; //NOTE is this ever used?

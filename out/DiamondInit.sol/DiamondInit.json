@@ -1,0 +1,578 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b5061001961001e565b610080565b7f8e94fed44239eb2314ab7a406345e6c5a8f0ccedf3b600de3d004e672c33abf480546001909155801561007d5760405162461bcd60e51b815260206004820152600260248201526118a160f11b604482015260640160405180910390fd5b50565b61016b8061008f6000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c4d66de814610030575b600080fd5b61004361003e366004610105565b610055565b60405190815260200160405180910390f35b600061005f6100a3565b50600780546001600160a01b0383166001600160a01b03199091161790557f33774e659306e47509050e97cb651e731180a42d458212294d30751925c551a2919050565b7f8e94fed44239eb2314ab7a406345e6c5a8f0ccedf3b600de3d004e672c33abf48054600190915580156101025760405162461bcd60e51b815260206004820152600260248201526118a160f11b604482015260640160405180910390fd5b50565b60006020828403121561011757600080fd5b81356001600160a01b038116811461012e57600080fd5b939250505056fea2646970667358221220b7d4c1361226bc4b80977365d015629ce16bbd53c1b6de23260fb17f45f4deee64736f6c63430008110033",
+    "sourceMap": "297:528:48:-:0;;;332:43;;;;;;;;;-1:-1:-1;1966:28:51;:26;:28::i;:::-;297:528:48;;2018:544:51;2323:17;2317:24;;2380:12;2354:39;;;2527:21;;2519:36;;;;-1:-1:-1;;;2519:36:51;;216:2:87;2519:36:51;;;198:21:87;255:1;235:18;;;228:29;-1:-1:-1;;;273:18:87;;;266:32;315:18;;2519:36:51;;;;;;;;2064:498;2018:544::o;14:325:87:-;297:528:48;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c4d66de814610030575b600080fd5b61004361003e366004610105565b610055565b60405190815260200160405180910390f35b600061005f6100a3565b50600780546001600160a01b0383166001600160a01b03199091161790557f33774e659306e47509050e97cb651e731180a42d458212294d30751925c551a2919050565b7f8e94fed44239eb2314ab7a406345e6c5a8f0ccedf3b600de3d004e672c33abf48054600190915580156101025760405162461bcd60e51b815260206004820152600260248201526118a160f11b604482015260640160405180910390fd5b50565b60006020828403121561011757600080fd5b81356001600160a01b038116811461012e57600080fd5b939250505056fea2646970667358221220b7d4c1361226bc4b80977365d015629ce16bbd53c1b6de23260fb17f45f4deee64736f6c63430008110033",
+    "sourceMap": "297:528:48:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;613:210;;;;;;:::i;:::-;;:::i;:::-;;;451:25:87;;;439:2;424:18;613:210:48;;;;;;;;718:7;1966:28:51;:26;:28::i;:::-;-1:-1:-1;741:7:48::1;:16:::0;;-1:-1:-1;;;;;741:16:48;::::1;-1:-1:-1::0;;;;;;741:16:48;;::::1;;::::0;;509:66:78::1;613:210:48::0;;;:::o;2018:544:51:-;2323:17;2317:24;;2380:12;2354:39;;;2527:21;;2519:36;;;;-1:-1:-1;;;2519:36:51;;689:2:87;2519:36:51;;;671:21:87;728:1;708:18;;;701:29;-1:-1:-1;;;746:18:87;;;739:32;788:18;;2519:36:51;;;;;;;;2064:498;2018:544::o;14:286:87:-;73:6;126:2;114:9;105:7;101:23;97:32;94:52;;;142:1;139;132:12;94:52;168:23;;-1:-1:-1;;;;;220:31:87;;210:42;;200:70;;266:1;263;256:12;200:70;289:5;14:286;-1:-1:-1;;;14:286:87:o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "initialize(address)": "c4d66de8"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Matter Labs\",\"details\":\"The contract is used only once to initialize the diamond proxy.The deployment process takes care of this contract's initialization.\",\"kind\":\"dev\",\"methods\":{\"initialize(address)\":{\"returns\":{\"_0\":\"Magic 32 bytes, which indicates that the contract logic is expected to be used as a diamond proxy initializer\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/DiamondInit.sol\":\"DiamondInit\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@prb/test/=lib/prb-math/lib/prb-test/src/\",\":decimath/=lib/decimath/contracts/\",\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":prb-math/=lib/prb-math/src/\",\":prb-test/=lib/prb-math/lib/prb-test/src/\",\":solmate/=lib/solmate/src/\",\":src/=src/\"]},\"sources\":{\"lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34\",\"dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr\"]},\"src/Base.sol\":{\"keccak256\":\"0x67d1f8b9901ba43eae2ba4c8fc9f1194d9977fac1c88a53e0625e17037f0da6a\",\"license\":\"MIT OR Apache-2.0\",\"urls\":[\"bzz-raw://eb08b27b09aa6aa142294fd6ec63c5050c023cb49dfaff5132640b81fa556f59\",\"dweb:/ipfs/QmX3MaeGtimBbSogQCXmMeYYe4jyyV2BFd2YfMiJBRD7Hg\"]},\"src/DiamondInit.sol\":{\"keccak256\":\"0x8787bd803908d3be801e1dffca193580fcdaf878d1683f2bd21118b19e463a80\",\"license\":\"MIT OR Apache-2.0\",\"urls\":[\"bzz-raw://54a94c2a3e0044c7b0e81ff700bab4c4b9962d934a000a68a40bd1684fd722fa\",\"dweb:/ipfs/QmUfUYkuaBugZVHdLwQw3ffPw8Wi4Qwvz6TtftMopQX76R\"]},\"src/ReentrancyGuard.sol\":{\"keccak256\":\"0xf37881536e58dc90070da8ffb6dca11e2286c9ead1443a4dee8e628efca26dac\",\"license\":\"MIT OR Apache-2.0\",\"urls\":[\"bzz-raw://cf81ff4c10c82287e067b314e9fd9b930eec370cae6387aa8e7503c31701415d\",\"dweb:/ipfs/QmSjmg633JkWtbLbcQwo2PSq3oWcNAm3fAGmVbRnrnGRmt\"]},\"src/Storage.sol\":{\"keccak256\":\"0xdbd1d753fb25b08f2c9b0f3c3f306618e0d20bed0e11d84c77e0a8c8b178f7eb\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7fe25f3e38bee76c4ca2793079cc07a35f22777ccbbb137b692c479464689886\",\"dweb:/ipfs/QmVZpVVaF9HxnZ1LdRagTW59EmycYMiVZYxj4mzbRzDUUF\"]},\"src/interfaces/IStrategyFactory.sol\":{\"keccak256\":\"0x053b70c802f8ff3d446dbb1fe4dad88f6af977959d7253b488e0862759381375\",\"license\":\"Unlicense\",\"urls\":[\"bzz-raw://fdaec0ba085431307e27883728914ca26812547e70c033501e1800a33bbf8729\",\"dweb:/ipfs/QmfQa3gdT7RdC9wejgXTK16h5LpE2t34drxkR71Q3G4Yod\"]},\"src/lib/Diamond.sol\":{\"keccak256\":\"0xded900704652c2ba02649cea01c416dc16c494bfc083c55485844471095510a5\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f2a068d692367c3ba5bd17a97b363a75540b7bdb7fbc2821c17c71ba3ea04fea\",\"dweb:/ipfs/QmS3f7pgAQY7yjNNr3CePSkVh1CV4kR16jycQ3sRR6GGPo\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.17+commit.8df45f5f"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_owner",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "initialize",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "initialize(address)": {
+            "returns": {
+              "_0": "Magic 32 bytes, which indicates that the contract logic is expected to be used as a diamond proxy initializer"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@prb/test/=lib/prb-math/lib/prb-test/src/",
+        ":decimath/=lib/decimath/contracts/",
+        ":ds-test/=lib/ds-test/src/",
+        ":forge-std/=lib/forge-std/src/",
+        ":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/",
+        ":openzeppelin-contracts/=lib/openzeppelin-contracts/",
+        ":prb-math/=lib/prb-math/src/",
+        ":prb-test/=lib/prb-math/lib/prb-test/src/",
+        ":solmate/=lib/solmate/src/",
+        ":src/=src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/DiamondInit.sol": "DiamondInit"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b",
+        "urls": [
+          "bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34",
+          "dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr"
+        ],
+        "license": "MIT"
+      },
+      "src/Base.sol": {
+        "keccak256": "0x67d1f8b9901ba43eae2ba4c8fc9f1194d9977fac1c88a53e0625e17037f0da6a",
+        "urls": [
+          "bzz-raw://eb08b27b09aa6aa142294fd6ec63c5050c023cb49dfaff5132640b81fa556f59",
+          "dweb:/ipfs/QmX3MaeGtimBbSogQCXmMeYYe4jyyV2BFd2YfMiJBRD7Hg"
+        ],
+        "license": "MIT OR Apache-2.0"
+      },
+      "src/DiamondInit.sol": {
+        "keccak256": "0x8787bd803908d3be801e1dffca193580fcdaf878d1683f2bd21118b19e463a80",
+        "urls": [
+          "bzz-raw://54a94c2a3e0044c7b0e81ff700bab4c4b9962d934a000a68a40bd1684fd722fa",
+          "dweb:/ipfs/QmUfUYkuaBugZVHdLwQw3ffPw8Wi4Qwvz6TtftMopQX76R"
+        ],
+        "license": "MIT OR Apache-2.0"
+      },
+      "src/ReentrancyGuard.sol": {
+        "keccak256": "0xf37881536e58dc90070da8ffb6dca11e2286c9ead1443a4dee8e628efca26dac",
+        "urls": [
+          "bzz-raw://cf81ff4c10c82287e067b314e9fd9b930eec370cae6387aa8e7503c31701415d",
+          "dweb:/ipfs/QmSjmg633JkWtbLbcQwo2PSq3oWcNAm3fAGmVbRnrnGRmt"
+        ],
+        "license": "MIT OR Apache-2.0"
+      },
+      "src/Storage.sol": {
+        "keccak256": "0xdbd1d753fb25b08f2c9b0f3c3f306618e0d20bed0e11d84c77e0a8c8b178f7eb",
+        "urls": [
+          "bzz-raw://7fe25f3e38bee76c4ca2793079cc07a35f22777ccbbb137b692c479464689886",
+          "dweb:/ipfs/QmVZpVVaF9HxnZ1LdRagTW59EmycYMiVZYxj4mzbRzDUUF"
+        ],
+        "license": "MIT"
+      },
+      "src/interfaces/IStrategyFactory.sol": {
+        "keccak256": "0x053b70c802f8ff3d446dbb1fe4dad88f6af977959d7253b488e0862759381375",
+        "urls": [
+          "bzz-raw://fdaec0ba085431307e27883728914ca26812547e70c033501e1800a33bbf8729",
+          "dweb:/ipfs/QmfQa3gdT7RdC9wejgXTK16h5LpE2t34drxkR71Q3G4Yod"
+        ],
+        "license": "Unlicense"
+      },
+      "src/lib/Diamond.sol": {
+        "keccak256": "0xded900704652c2ba02649cea01c416dc16c494bfc083c55485844471095510a5",
+        "urls": [
+          "bzz-raw://f2a068d692367c3ba5bd17a97b363a75540b7bdb7fbc2821c17c71ba3ea04fea",
+          "dweb:/ipfs/QmS3f7pgAQY7yjNNr3CePSkVh1CV4kR16jycQ3sRR6GGPo"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/DiamondInit.sol",
+    "id": 28562,
+    "exportedSymbols": {
+      "AppStorage": [
+        37104
+      ],
+      "Base": [
+        27376
+      ],
+      "CurveInfo": [
+        36990
+      ],
+      "DepositInfo": [
+        36966
+      ],
+      "Diamond": [
+        41380
+      ],
+      "DiamondCutStorage": [
+        37016
+      ],
+      "DiamondInit": [
+        28561
+      ],
+      "GeneralInfo": [
+        36942
+      ],
+      "IERC20": [
+        22788
+      ],
+      "IStrategyFactory": [
+        40237
+      ],
+      "NFTInfo": [
+        36961
+      ],
+      "PoolInfo": [
+        36924
+      ],
+      "PremiumInfo": [
+        36971
+      ],
+      "ReentrancyGuard": [
+        28877
+      ],
+      "ReferralInfo": [
+        36997
+      ],
+      "TimelockInfo": [
+        36980
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "47:779:48",
+    "nodes": [
+      {
+        "id": 28529,
+        "nodeType": "PragmaDirective",
+        "src": "47:23:48",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 28530,
+        "nodeType": "ImportDirective",
+        "src": "72:27:48",
+        "nodes": [],
+        "absolutePath": "src/lib/Diamond.sol",
+        "file": "./lib/Diamond.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 28562,
+        "sourceUnit": 41381,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 28531,
+        "nodeType": "ImportDirective",
+        "src": "100:20:48",
+        "nodes": [],
+        "absolutePath": "src/Base.sol",
+        "file": "./Base.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 28562,
+        "sourceUnit": 27377,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 28561,
+        "nodeType": "ContractDefinition",
+        "src": "297:528:48",
+        "nodes": [
+          {
+            "id": 28540,
+            "nodeType": "FunctionDefinition",
+            "src": "332:43:48",
+            "nodes": [],
+            "body": {
+              "id": 28539,
+              "nodeType": "Block",
+              "src": "373:2:48",
+              "nodes": [],
+              "statements": []
+            },
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "id": 28537,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 28536,
+                  "name": "reentrancyGuardInitializer",
+                  "nameLocations": [
+                    "346:26:48"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 28843,
+                  "src": "346:26:48"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "346:26:48"
+              }
+            ],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "parameters": {
+              "id": 28535,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "343:2:48"
+            },
+            "returnParameters": {
+              "id": 28538,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "373:0:48"
+            },
+            "scope": 28561,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 28560,
+            "nodeType": "FunctionDefinition",
+            "src": "613:210:48",
+            "nodes": [],
+            "body": {
+              "id": 28559,
+              "nodeType": "Block",
+              "src": "731:92:48",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "id": 28554,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 28550,
+                        "name": "s",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 27361,
+                        "src": "741:1:48",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_AppStorage_$37104_storage",
+                          "typeString": "struct AppStorage storage ref"
+                        }
+                      },
+                      "id": 28552,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "743:5:48",
+                      "memberName": "owner",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 37021,
+                      "src": "741:7:48",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 28553,
+                      "name": "_owner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 28543,
+                      "src": "751:6:48",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "741:16:48",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 28555,
+                  "nodeType": "ExpressionStatement",
+                  "src": "741:16:48"
+                },
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 28556,
+                      "name": "Diamond",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 41380,
+                      "src": "775:7:48",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_contract$_Diamond_$41380_$",
+                        "typeString": "type(library Diamond)"
+                      }
+                    },
+                    "id": 28557,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "lValueRequested": false,
+                    "memberLocation": "783:33:48",
+                    "memberName": "DIAMOND_INIT_SUCCESS_RETURN_VALUE",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 40574,
+                    "src": "775:41:48",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "functionReturnParameters": 28549,
+                  "id": 28558,
+                  "nodeType": "Return",
+                  "src": "768:48:48"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 28541,
+              "nodeType": "StructuredDocumentation",
+              "src": "487:121:48",
+              "text": "@return Magic 32 bytes, which indicates that the contract logic is expected to be used as a diamond proxy initializer"
+            },
+            "functionSelector": "c4d66de8",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 28546,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 28545,
+                  "name": "reentrancyGuardInitializer",
+                  "nameLocations": [
+                    "674:26:48"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 28843,
+                  "src": "674:26:48"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "674:26:48"
+              }
+            ],
+            "name": "initialize",
+            "nameLocation": "622:10:48",
+            "parameters": {
+              "id": 28544,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 28543,
+                  "mutability": "mutable",
+                  "name": "_owner",
+                  "nameLocation": "641:6:48",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 28560,
+                  "src": "633:14:48",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 28542,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "633:7:48",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "632:16:48"
+            },
+            "returnParameters": {
+              "id": 28549,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 28548,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 28560,
+                  "src": "718:7:48",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 28547,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "718:7:48",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "717:9:48"
+            },
+            "scope": 28561,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 28533,
+              "name": "Base",
+              "nameLocations": [
+                "321:4:48"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 27376,
+              "src": "321:4:48"
+            },
+            "id": 28534,
+            "nodeType": "InheritanceSpecifier",
+            "src": "321:4:48"
+          }
+        ],
+        "canonicalName": "DiamondInit",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 28532,
+          "nodeType": "StructuredDocumentation",
+          "src": "122:175:48",
+          "text": "@author Matter Labs\n @dev The contract is used only once to initialize the diamond proxy.\n @dev The deployment process takes care of this contract's initialization."
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          28561,
+          27376,
+          28877
+        ],
+        "name": "DiamondInit",
+        "nameLocation": "306:11:48",
+        "scope": 28562,
+        "usedErrors": []
+      }
+    ],
+    "license": "MIT OR Apache-2.0"
+  },
+  "id": 48
+}
