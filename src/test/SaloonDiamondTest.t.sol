@@ -168,8 +168,7 @@ contract SaloonDiamondTest is DSTest, Script {
 
         //Creates proxy and sets Init/DiamontCut Implementation
         saloonProxy = new DiamondProxy(_diamondCut);
-
-        // saloonProxy = new SaloonProxy(address(saloonManager), data);
+        saloon = ISaloonGlobal(address(saloonProxy));
 
         ///////////////////// Deploy Facets ///////////////////////////////////
 
@@ -179,7 +178,29 @@ contract SaloonDiamondTest is DSTest, Script {
         managerFacet.action = Diamond.Action.Add;
         managerFacet.isFreezable = false;
         managerFacet.selectors.push(IManagerFacet.addNewBountyPool.selector);
-        managerFacet.selectors.push(IManagerFacet.viewBountyBalance.selector);
+        managerFacet.selectors.push(IManagerFacet.billPremium.selector);
+        managerFacet.selectors.push(
+            IManagerFacet.collectAllReferralProfits.selector
+        );
+        managerFacet.selectors.push(
+            IManagerFacet.collectAllSaloonProfits.selector
+        );
+        managerFacet.selectors.push(
+            IManagerFacet.collectReferralProfit.selector
+        );
+        managerFacet.selectors.push(
+            IManagerFacet.collectSaloonProfits.selector
+        );
+        managerFacet.selectors.push(
+            IManagerFacet.extendReferralPeriod.selector
+        );
+        managerFacet.selectors.push(IManagerFacet.setStrategyFactory.selector);
+        managerFacet.selectors.push(
+            IManagerFacet.startAssessmentPeriod.selector
+        );
+        managerFacet.selectors.push(
+            IManagerFacet.updateTokenWhitelist.selector
+        );
 
         proposeFacets.push(managerFacet);
 
@@ -204,7 +225,7 @@ contract SaloonDiamondTest is DSTest, Script {
     // ============================
     //        Test Deploy
     // ============================
-    function testDeploy() external {
+    function testManager() external {
         pid = IManagerFacet(address(saloonProxy)).addNewBountyPool(
             address(usdc),
             project,
@@ -213,8 +234,17 @@ contract SaloonDiamondTest is DSTest, Script {
             0,
             0
         );
-
-        IManagerFacet(address(saloonProxy)).viewBountyBalance(pid);
+        vm.startPrank(staker);
+        vm.expectRevert();
+        IManagerFacet(address(saloonProxy)).addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        vm.stopPrank();
     }
 
     // // ============================
@@ -247,49 +277,49 @@ contract SaloonDiamondTest is DSTest, Script {
     //     vm.stopPrank();
     // }
 
-    // // ============================
-    // // Test addNewBountyPool with non-whitelisted token
-    // // ============================
-    // function testaddNewBountyPoolBadToken() external {
-    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
-    //     bool whitelisted = saloon.tokenWhitelist(address(usdc));
+    // ============================
+    // Test addNewBountyPool with non-whitelisted token
+    // ============================
+    function testaddNewBountyPoolBadToken() external {
+        saloon.updateTokenWhitelist(address(usdc), false, 10 * 10 ** 6);
+        // bool whitelisted = saloon.tokenWhitelist(address(usdc));
 
-    //     vm.expectRevert("token not whitelisted");
-    //     pid = saloon.addNewBountyPool(
-    //         address(usdc),
-    //         project,
-    //         "yeehaw",
-    //         address(0),
-    //         0,
-    //         0
-    //     );
+        vm.expectRevert("token not whitelisted");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
 
-    //     // Test is approving works again
-    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+        // Test is approving works again
+        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
 
-    //     pid = saloon.addNewBountyPool(
-    //         address(usdc),
-    //         project,
-    //         "yeehuu",
-    //         address(0),
-    //         0,
-    //         0
-    //     );
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehuu",
+            address(0),
+            0,
+            0
+        );
 
-    //     // One more check to test disapproving works after approving
-    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
-    //     bool whitelistedF = saloon.tokenWhitelist(address(usdc));
+        // One more check to test disapproving works after approving
+        saloon.updateTokenWhitelist(address(usdc), false, 10 * 10 ** 6);
+        // bool whitelistedF = saloon.tokenWhitelist(address(usdc));
 
-    //     vm.expectRevert("token not whitelisted");
-    //     pid = saloon.addNewBountyPool(
-    //         address(usdc),
-    //         project,
-    //         "yeehee",
-    //         address(0),
-    //         0,
-    //         0
-    //     );
-    // }
+        vm.expectRevert("token not whitelisted");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehee",
+            address(0),
+            0,
+            0
+        );
+    }
 
     // // ============================
     // // Test setAPYandPoolCapAndDeposit

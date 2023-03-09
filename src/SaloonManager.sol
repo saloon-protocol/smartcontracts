@@ -21,10 +21,11 @@ contract SaloonManager is
     ///////////////////////////////////////////////////////////////////////////////
     //                           SALOON OWNER FUNCTIONS                          //
     ///////////////////////////////////////////////////////////////////////////////
-    function initialize() public initializer {
-        __Ownable_init();
-    }
+    // function initialize() public initializer {
+    //     __Ownable_init();
+    // }
 
+    // NOTE NOT NEEDED
     function setImplementations(
         ISaloonManager _saloonManager,
         ISaloonProjectPortal _saloonProjectPortal,
@@ -114,10 +115,10 @@ contract SaloonManager is
     /// @notice Extend the referral period for the bounty. The new end time can only be larger than the current value.
     /// @param _pid The pool id for the bounty
     /// @param _endTime The new end time for the referral bonus
-    function extendReferralPeriod(uint256 _pid, uint256 _endTime)
-        external
-        onlyOwner
-    {
+    function extendReferralPeriod(
+        uint256 _pid,
+        uint256 _endTime
+    ) external onlyOwner {
         PoolInfo storage pool = poolInfo[_pid];
         require(
             _endTime > pool.referralInfo.endTime,
@@ -128,12 +129,9 @@ contract SaloonManager is
 
     /// @notice Bill premiums for a single pool.
     /// @param _pid The pool id for the bounty
-    function billPremium(uint256 _pid)
-        public
-        nonReentrant
-        onlyOwner
-        returns (bool)
-    {
+    function billPremium(
+        uint256 _pid
+    ) public nonReentrant onlyOwner returns (bool) {
         _billPremium(_pid, 0);
         return true;
     }
@@ -147,11 +145,10 @@ contract SaloonManager is
     /// @notice Transfer Saloon profits for a specific token from premiums and bounties collected
     /// @param _token Token address to be transferred
     /// @param _saloonWallet Address where the funds will go to
-    function collectSaloonProfits(address _token, address _saloonWallet)
-        public
-        onlyOwner
-        returns (bool)
-    {
+    function collectSaloonProfits(
+        address _token,
+        address _saloonWallet
+    ) public onlyOwner returns (bool) {
         uint256 amount = saloonBountyProfit[_token] +
             saloonStrategyProfit[_token] +
             saloonPremiumProfit[_token];
@@ -164,11 +161,9 @@ contract SaloonManager is
 
     /// @notice Transfer Saloon profits for all tokens from premiums and bounties collected
     /// @param _saloonWallet Address where the funds will go to
-    function collectAllSaloonProfits(address _saloonWallet)
-        external
-        onlyOwner
-        returns (bool)
-    {
+    function collectAllSaloonProfits(
+        address _saloonWallet
+    ) external onlyOwner returns (bool) {
         uint256 activeTokenLength = activeTokens.length;
         for (uint256 i; i < activeTokenLength; ++i) {
             address _token = activeTokens[i];
@@ -183,11 +178,9 @@ contract SaloonManager is
 
     /// @notice Allows referrers to collect their profit from all bounties for one token
     /// @param _token Token used by the bounty that was referred
-    function collectReferralProfit(address _token)
-        public
-        nonReentrant
-        returns (bool)
-    {
+    function collectReferralProfit(
+        address _token
+    ) public nonReentrant returns (bool) {
         uint256 amount = referralBalances[msg.sender][_token];
         if (amount > 0) {
             referralBalances[msg.sender][_token] = 0;

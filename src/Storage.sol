@@ -106,12 +106,12 @@ struct AppStorage {
     address saloonBounty;
     address saloonView;
     //////// Possibly turn this into constants, but where?? - check Config.sol in zksync //////////
-    uint256 YEAR;
-    uint256 PERIOD;
-    uint256 saloonFee; // 10%
-    uint256 DEFAULT_APY; //NOTE is this ever used?
-    uint256 BPS;
-    uint256 PRECISION;
+    // uint256 YEAR;
+    // uint256 PERIOD;
+    // uint256 saloonFee; // 10%
+    // uint256 DEFAULT_APY; //NOTE is this ever used? yes at _updatingScalingMultiplier()
+    // uint256 BPS;
+    // uint256 PRECISION;
     /////////////////////////////////////////////////////
 
     // Info of each pool.

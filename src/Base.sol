@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./Storage.sol";
 import "./ReentrancyGuard.sol";
+import "./lib/SaloonLib.sol";
 
 /// @title Base contract containing functions accessible to the other facets.
 /// @author Matter Labs

@@ -4,23 +4,45 @@ import "../interfaces/ISaloon.sol";
 import "../StrategyFactory.sol";
 import "prb-math/UD60x18.sol";
 
-// import "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
-// import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
+import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 /*
 - calculateEffectiveAPY : Use this for both functions in BountyNFT
 - curveImplementation
 - all view functions in Saloon and BountyTokenNFT
 */
-library SaloonLib {
-    //Constants
-    uint256 constant DEFAULT_APY = 1.06 ether;
-    uint256 constant BPS = 10_000;
-    uint256 constant PRECISION = 1e18;
+library LibSaloon {
+    struct LibSaloonStorage {
+        //TODO IMPLEMENT FUNCTIONS TO SET THIS TO DIFFERENT VALUES
+        uint256 defaultAPY; // 1.06
+        uint256 bps; // 10_000
+        uint256 precision; // 1e18
+        uint256 year; // 365 days NOTE should this be made a constant?
+        uint256 period; // 1 weeks
+        uint256 saloonFee; // 1000
+    }
+    //     uint256  defaultAPY = 1.06 ether;
+    // uint256  bps = 10_000;
+    // uint256  precision = 1e18;
+    // uint256  year = 365 days;
+    // uint256  period = 1 weeks;
+    // uint256  saloonFee = 1000;
 
-    uint256 constant YEAR = 365 days;
-    uint256 constant PERIOD = 1 weeks;
-    uint256 constant saloonFee = 1000;
+    bytes32 constant LIB_STORAGE_POSITION =
+        0xb3489dd2b6aceffcd73eb3bc338c0fb7cf41e877855ec204580612eca103a15d; // keccak256("lib.saloon.storage") - 1;
+
+    /// @return saloonStorage The pointer to the storage where specific Saloon parameters stored
+    function getLibSaloonStorage()
+        internal
+        pure
+        returns (LibSaloonStorage storage saloonStorage)
+    {
+        bytes32 position = LIB_STORAGE_POSITION;
+        assembly {
+            saloonStorage.slot := position
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////
     //                           BountyTokenNFT                                  //
@@ -31,7 +53,9 @@ library SaloonLib {
     function _updateScalingMultiplier(
         uint256 _targetAPY
     ) public view returns (uint256 scalingMultiplier) {
-        scalingMultiplier = (_targetAPY * PRECISION) / DEFAULT_APY;
+        LibSaloonStorage storage ss = getLibSaloonStorage();
+
+        scalingMultiplier = (_targetAPY * ss.precision) / ss.defaultAPY;
     }
 
     ///@notice Default curve function implementation
@@ -52,7 +76,9 @@ library SaloonLib {
         uint256 _stake,
         uint256 _poolCap
     ) public view returns (uint256 x, uint256 poolPercentage) {
-        poolPercentage = (_stake * PRECISION) / _poolCap;
+        LibSaloonStorage storage ss = getLibSaloonStorage();
+
+        poolPercentage = (_stake * ss.precision) / _poolCap;
 
         x = 5 * poolPercentage;
     }
@@ -76,6 +102,8 @@ library SaloonLib {
         uint256 _poolCap,
         uint256 _multiplier
     ) public view returns (uint256 scaledAPY) {
+        LibSaloonStorage storage ss = getLibSaloonStorage();
+
         // get current x
         uint256 s = _memX;
         // convert stake to x-value
@@ -95,7 +123,7 @@ library SaloonLib {
         uint256 effectiveAPY = unwrap(res) / (k * 1e6);
 
         // calculate effective APY according to APY offered
-        scaledAPY = (effectiveAPY * _multiplier) / PRECISION;
+        scaledAPY = (effectiveAPY * _multiplier) / ss.precision;
     }
 
     //===========================================================================||
@@ -117,10 +145,12 @@ library SaloonLib {
         uint256 _referralFee,
         address _referrer
     ) public view returns (uint256, uint256, address) {
+        LibSaloonStorage storage ss = getLibSaloonStorage();
+
         if (_referrer == address(0) || _endTime < block.timestamp) {
             return (_totalAmount, 0, _referrer);
         } else {
-            uint256 referralAmount = (_totalAmount * _referralFee) / BPS;
+            uint256 referralAmount = (_totalAmount * _referralFee) / ss.bps;
             uint256 saloonAmount = _totalAmount - referralAmount;
             return (saloonAmount, referralAmount, _referrer);
         }
@@ -142,15 +172,27 @@ library SaloonLib {
             uint256 newPending
         )
     {
+        LibSaloonStorage storage ss = getLibSaloonStorage();
+
         uint256 endTime = _freezeTime != 0 ? _freezeTime : block.timestamp;
 
         // secondsPassed = number of seconds between lastClaimedTime and endTime
         uint256 secondsPassed = endTime - _lastClaimedTime;
-        newPending = ((_amount * _apy * secondsPassed) / BPS) / YEAR; //L5 FIXME multiplication before division fixed
+        newPending = ((_amount * _apy * secondsPassed) / ss.bps) / ss.year; //L5 FIXME multiplication before division fixed
         totalPending = newPending + _unclaimed;
-        actualPending = (totalPending * (BPS - saloonFee)) / BPS;
+        actualPending = (totalPending * (ss.bps - ss.saloonFee)) / ss.bps;
 
         return (totalPending, actualPending, newPending);
+    }
+
+    function calcRequiredPremiumBalancePerPeriod(
+        uint256 _poolCap,
+        uint256 _apy
+    ) public view returns (uint256 requiredPremiumBalance) {
+        LibSaloonStorage storage ss = getLibSaloonStorage();
+
+        requiredPremiumBalance = (((_poolCap * _apy * ss.period) / ss.bps) /
+            ss.year);
     }
 
     // NOTE this also makes it more expensive for some reason
