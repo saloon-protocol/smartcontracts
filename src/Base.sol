@@ -16,4 +16,14 @@ contract Base is ReentrancyGuard {
         require(msg.sender == s.owner, "not owner"); // only by owner
         _;
     }
+
+    modifier onlyOwnerOrProject(uint256 _pid) {
+        PoolInfo memory pool = s.poolInfo[_pid];
+        require(
+            msg.sender == pool.generalInfo.projectWallet ||
+                msg.sender == s.owner,
+            "Not authorized"
+        );
+        _;
+    }
 }

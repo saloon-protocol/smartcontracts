@@ -1,37 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "./lib/OwnableUpgradeable.sol";
-import "./BountyTokenNFT.sol";
+import "./Base.sol";
+import "./interfaces/IProjectFacet.sol";
 import "./interfaces/IStrategyFactory.sol";
-import "./SaloonCommon.sol";
+import "./lib/LibSaloon.sol";
 
-contract SaloonProjectPortal is
-    SaloonCommon,
-    OwnableUpgradeable,
-    ReentrancyGuardUpgradeable
-{
+contract ProjectFacet is Base, IProjectFacet {
     using SafeERC20 for IERC20;
 
-    // function initialize() public initializer {
-    //     __Ownable_init();
-    // }
-
-    modifier onlyOwnerOrProject(uint256 _pid) {
-        PoolInfo memory pool = poolInfo[_pid];
-        require(
-            msg.sender == pool.generalInfo.projectWallet ||
-                msg.sender == _owner,
-            "Not authorized"
-        );
-        _;
-    }
-
+    //NOTE Should I move this modifier to Base?
     modifier activePool(uint256 _pid) {
-        PoolInfo memory pool = poolInfo[_pid];
+        PoolInfo memory pool = s.poolInfo[_pid];
         if (!pool.isActive) revert("pool not active");
         _;
     }
@@ -54,7 +34,9 @@ contract SaloonProjectPortal is
         uint256 _deposit,
         string memory _strategyName
     ) external nonReentrant {
-        PoolInfo storage pool = poolInfo[_pid];
+        LibSaloon.LibSaloonStorage storage ss = LibSaloon.getLibSaloonStorage();
+
+        PoolInfo storage pool = s.poolInfo[_pid];
         require(
             !pool.isActive && pool.generalInfo.poolCap == 0,
             "Pool already initialized"
@@ -67,13 +49,11 @@ contract SaloonProjectPortal is
         );
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
         // requiredPremiumBalancePerPeriod includes Saloons commission
-        uint256 requiredPremiumBalancePerPeriod = calcRequiredPremiumBalancePerPeriod(
-                _poolCap,
-                _apy
-            );
+        uint256 requiredPremiumBalancePerPeriod = LibSaloon
+            .calcRequiredPremiumBalancePerPeriod(_poolCap, _apy);
 
         uint256 saloonCommission = (requiredPremiumBalancePerPeriod * //note could make this a pool.variable
-            saloonFee) / BPS;
+            ss.saloonFee) / ss.bps;
 
         uint256 balanceBefore = viewBountyBalance(_pid);
 
@@ -85,7 +65,7 @@ contract SaloonProjectPortal is
         pool.depositInfo.projectDepositHeld += _deposit;
         pool.generalInfo.poolCap = _poolCap;
         pool.generalInfo.apy = _apy;
-        pool.generalInfo.scalingMultiplier = SaloonLib._updateScalingMultiplier(
+        pool.generalInfo.scalingMultiplier = LibSaloon._updateScalingMultiplier(
             _apy
         );
         pool.isActive = true;
@@ -112,7 +92,7 @@ contract SaloonProjectPortal is
         uint256 _deposit,
         string memory _strategyName
     ) external nonReentrant {
-        PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo storage pool = s.poolInfo[_pid];
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
 
         uint256 balanceBefore = viewBountyBalance(_pid);
@@ -139,15 +119,17 @@ contract SaloonProjectPortal is
         uint256 _pid,
         uint256 _amount
     ) external returns (bool) {
-        PoolInfo storage pool = poolInfo[_pid];
+        LibSaloon.LibSaloonStorage storage ss = LibSaloon.getLibSaloonStorage();
+
+        PoolInfo storage pool = s.poolInfo[_pid];
         require(
             (pool.depositInfo.projectDepositHeld +
                 pool.depositInfo.projectDepositInStrategy) >= _amount,
             "Amount bigger than deposit"
         );
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
-        pool.poolTimelock.timelock = block.timestamp + PERIOD;
-        pool.poolTimelock.timeLimit = block.timestamp + PERIOD + 3 days;
+        pool.poolTimelock.timelock = block.timestamp + ss.period;
+        pool.poolTimelock.timeLimit = block.timestamp + ss.period + 3 days;
         pool.poolTimelock.withdrawalScheduledAmount = _amount;
         pool.poolTimelock.withdrawalExecuted = false;
 
@@ -162,7 +144,7 @@ contract SaloonProjectPortal is
         uint256 _pid,
         uint256 _amount
     ) external nonReentrant returns (bool) {
-        PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo storage pool = s.poolInfo[_pid];
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
         require(
             pool.poolTimelock.timelock < block.timestamp &&
@@ -192,13 +174,13 @@ contract SaloonProjectPortal is
     function withdrawProjectYield(
         uint256 _pid
     ) external nonReentrant returns (uint256 returnedAmount) {
-        PoolInfo memory pool = poolInfo[_pid];
+        PoolInfo memory pool = s.poolInfo[_pid];
         require(msg.sender == pool.generalInfo.projectWallet, "Not authorized");
 
-        bytes32 activeStrategyHash = activeStrategies[_pid];
+        bytes32 activeStrategyHash = s.activeStrategies[_pid];
         if (activeStrategyHash != bytes32(0)) {
             IStrategy activeStrategy = IStrategy(
-                pidStrategies[_pid][activeStrategyHash]
+                s.pidStrategies[_pid][activeStrategyHash]
             );
             returnedAmount = activeStrategy.withdrawYield();
             IERC20(pool.generalInfo.token).safeTransfer(
@@ -213,7 +195,7 @@ contract SaloonProjectPortal is
     function windDownBounty(
         uint256 _pid
     ) external onlyOwnerOrProject(_pid) returns (bool) {
-        PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo storage pool = s.poolInfo[_pid];
         require(pool.isActive, "Pool not active");
         pool.isActive = false;
         pool.freezeTime = block.timestamp;
@@ -228,12 +210,41 @@ contract SaloonProjectPortal is
         address _projectWallet
     ) external onlyOwnerOrProject(_pid) {
         require(_projectWallet != address(0), "Invalid wallet address");
-        poolInfo[_pid].generalInfo.projectWallet = _projectWallet;
+        s.poolInfo[_pid].generalInfo.projectWallet = _projectWallet;
     }
 
     //===========================================================================||
     //                               STRATEGY FUNCTIONS                          ||
     //===========================================================================||
+
+    /// @notice Withdraws current deposit held in active strategy
+    /// @param _pid Bounty pool id
+    function _withdrawFromActiveStrategy(
+        uint256 _pid
+    ) internal returns (uint256) {
+        PoolInfo storage pool = s.poolInfo[_pid];
+
+        uint256 fundsWithdrawn;
+        bytes32 activeStrategyHash = s.activeStrategies[_pid];
+
+        // Reset active strategy upon every withdraw. All withdrawals are in full.
+        s.activeStrategies[_pid] = bytes32(0);
+
+        if (activeStrategyHash != bytes32(0)) {
+            IStrategy activeStrategy = IStrategy(
+                s.pidStrategies[_pid][activeStrategyHash]
+            );
+            uint256 activeStrategyLPDepositBalance = activeStrategy
+                .lpDepositBalance();
+            fundsWithdrawn = activeStrategy.withdrawFromStrategy(
+                activeStrategyLPDepositBalance
+            );
+            pool.depositInfo.projectDepositInStrategy = 0;
+            pool.depositInfo.projectDepositHeld += fundsWithdrawn;
+        }
+
+        return fundsWithdrawn;
+    }
 
     /// @notice Deploys a new strategy contract if the bounty does not have one already
     function _deployStrategyIfNeeded(
@@ -242,24 +253,24 @@ contract SaloonProjectPortal is
     ) internal returns (address) {
         address deployedStrategy;
         bytes32 strategyHash = keccak256(abi.encode(_strategyName));
-        address pidStrategy = pidStrategies[_pid][strategyHash];
+        address pidStrategy = s.pidStrategies[_pid][strategyHash];
 
         // Active strategy must be updated regardless of deployment success/failure
 
         if (pidStrategy == address(0)) {
-            deployedStrategy = strategyFactory.deployStrategy(
+            deployedStrategy = s.strategyFactory.deployStrategy(
                 _strategyName,
-                address(poolInfo[_pid].generalInfo.token)
+                address(s.poolInfo[_pid].generalInfo.token)
             );
         } else {
-            activeStrategies[_pid] = strategyHash;
+            s.activeStrategies[_pid] = strategyHash;
             return pidStrategy;
         }
 
         if (deployedStrategy != address(0)) {
-            pidStrategies[_pid][strategyHash] = deployedStrategy;
-            strategyAddressToPid[deployedStrategy] = _pid;
-            activeStrategies[_pid] = strategyHash;
+            s.pidStrategies[_pid][strategyHash] = deployedStrategy;
+            s.strategyAddressToPid[deployedStrategy] = _pid;
+            s.activeStrategies[_pid] = strategyHash;
         }
 
         return deployedStrategy;
@@ -274,10 +285,10 @@ contract SaloonProjectPortal is
         string memory _strategyName,
         uint256 _newDeposit
     ) internal returns (uint256) {
-        PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo storage pool = s.poolInfo[_pid];
 
         bytes32 _strategyHash = keccak256(abi.encode(_strategyName));
-        bytes32 activeStrategyHash = activeStrategies[_pid];
+        bytes32 activeStrategyHash = s.activeStrategies[_pid];
         if (activeStrategyHash != _strategyHash) {
             uint256 fundsWithdrawn = _withdrawFromActiveStrategy(_pid);
             address deployedStrategy = _deployStrategyIfNeeded(
@@ -316,22 +327,22 @@ contract SaloonProjectPortal is
         uint256 _amount
     ) external override {
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        uint256 pid = strategyAddressToPid[msg.sender];
+        uint256 pid = s.strategyAddressToPid[msg.sender];
         if (pid == 0) {
-            saloonStrategyProfit[_token] += _amount;
+            s.saloonStrategyProfit[_token] += _amount;
         } else {
             (
                 uint256 saloonAmount,
                 uint256 referralAmount,
                 address referrer
-            ) = SaloonLib.calcReferralSplit(
+            ) = LibSaloon.calcReferralSplit(
                     _amount,
-                    poolInfo[pid].referralInfo.endTime,
-                    poolInfo[pid].referralInfo.referralFee,
-                    poolInfo[pid].referralInfo.referrer
+                    s.poolInfo[pid].referralInfo.endTime,
+                    s.poolInfo[pid].referralInfo.referralFee,
+                    s.poolInfo[pid].referralInfo.referrer
                 );
             _increaseReferralBalance(referrer, _token, referralAmount);
-            saloonStrategyProfit[_token] += saloonAmount;
+            s.saloonStrategyProfit[_token] += saloonAmount;
         }
     }
 
@@ -340,46 +351,39 @@ contract SaloonProjectPortal is
     function compoundYieldForPid(
         uint256 _pid
     ) public onlyOwnerOrProject(_pid) nonReentrant {
-        bytes32 strategyHash = activeStrategies[_pid];
-        address deployedStrategy = pidStrategies[_pid][strategyHash];
+        bytes32 strategyHash = s.activeStrategies[_pid];
+        address deployedStrategy = s.pidStrategies[_pid][strategyHash];
         if (deployedStrategy != address(0)) {
             uint256 depositAdded = IStrategy(deployedStrategy).compound();
-            poolInfo[_pid].depositInfo.projectDepositInStrategy +=
+            s.poolInfo[_pid].depositInfo.projectDepositInStrategy +=
                 depositAdded -
                 1; // Subtract 1 wei for immediate withdrawal precision issues
         }
     }
 
-    // /// @notice Increases how much a referrer is entitled to withdraw
-    // /// @param _referrer Referrer address
-    // /// @param _token ERC20 Token address
-    // /// @param _amount Amount referrer is entitled to
-    // function _increaseReferralBalance(
-    //     address _referrer,
-    //     address _token,
-    //     uint256 _amount
-    // ) internal {
-    //     if (_referrer != address(0)) {
-    //         referralBalances[_referrer][_token] += _amount;
-    //     }
-    // }
+    /// @notice Increases how much a referrer is entitled to withdraw
+    /// @param _referrer Referrer address
+    /// @param _token ERC20 Token address
+    /// @param _amount Amount referrer is entitled to
+    function _increaseReferralBalance(
+        address _referrer,
+        address _token,
+        uint256 _amount
+    ) internal {
+        if (_referrer != address(0)) {
+            s.referralBalances[_referrer][_token] += _amount;
+        }
+    }
 
+    // NOTE MOVE VIEW BOUNTY BALANCE to somewhere else???
     //===========================================================================||
     //                             VIEW & PURE FUNCTIONS                         ||
     //===========================================================================||
 
-    // function viewBountyBalance(uint256 _pid) public view returns (uint256) {
-    //     PoolInfo memory pool = poolInfo[_pid];
-    //     return (pool.generalInfo.totalStaked +
-    //         (pool.depositInfo.projectDepositHeld +
-    //             pool.depositInfo.projectDepositInStrategy));
-    // }
-
-    // function calcRequiredPremiumBalancePerPeriod(uint256 _poolCap, uint256 _apy)
-    //     public
-    //     pure
-    //     returns (uint256 requiredPremiumBalance)
-    // {
-    //     requiredPremiumBalance = (((_poolCap * _apy * PERIOD) / BPS) / YEAR);
-    // }
+    function viewBountyBalance(uint256 _pid) public view returns (uint256) {
+        PoolInfo memory pool = s.poolInfo[_pid];
+        return (pool.generalInfo.totalStaked +
+            (pool.depositInfo.projectDepositHeld +
+                pool.depositInfo.projectDepositInStrategy));
+    }
 }

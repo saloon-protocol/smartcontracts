@@ -2090,8 +2090,8 @@
       }
     },
     "src/Base.sol": {
-      "lastModificationDate": 1678333695197,
-      "contentHash": "f03f80d2b146fac421aed845936e4649",
+      "lastModificationDate": 1678345482375,
+      "contentHash": "bdcbcd059177798ff25e5655484b066e",
       "sourceName": "src/Base.sol",
       "solcConfig": {
         "settings": {
@@ -2585,6 +2585,76 @@
         }
       }
     },
+    "src/ProjectFacet.sol": {
+      "lastModificationDate": 1678347518744,
+      "contentHash": "20ae826f8e2a674850d70bb31cbf2347",
+      "sourceName": "src/ProjectFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/Base.sol",
+        "src/ReentrancyGuard.sol",
+        "src/StargateStrategy.sol",
+        "src/Storage.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/IProjectFacet.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonGlobal.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/LibSaloon.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "ProjectFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ProjectFacet.sol/ProjectFacet.json"
+        }
+      }
+    },
     "src/ReentrancyGuard.sol": {
       "lastModificationDate": 1678179431532,
       "contentHash": "26294d991b47cbcb6e95c7e67e751241",
@@ -2969,8 +3039,8 @@
       }
     },
     "src/SaloonProjectPortal.sol": {
-      "lastModificationDate": 1678162929849,
-      "contentHash": "56e67a80c9014cfd33964c1fd9012813",
+      "lastModificationDate": 1678347549964,
+      "contentHash": "4f5dc7f69459a4dc6ddbb8fdc51699fa",
       "sourceName": "src/SaloonProjectPortal.sol",
       "solcConfig": {
         "settings": {
@@ -3103,7 +3173,7 @@
       }
     },
     "src/SaloonRelay.sol": {
-      "lastModificationDate": 1678162235826,
+      "lastModificationDate": 1678347352421,
       "contentHash": "7e653aeb05e0246266e7e1deef54d21b",
       "sourceName": "src/SaloonRelay.sol",
       "solcConfig": {
@@ -3331,8 +3401,8 @@
       }
     },
     "src/StargateStrategy.sol": {
-      "lastModificationDate": 1678069127425,
-      "contentHash": "349bf9fafe01cd1c99c16b094a1a0623",
+      "lastModificationDate": 1678347353479,
+      "contentHash": "7423cb6852ff1eaf9c90e2f55f53dd90",
       "sourceName": "src/StargateStrategy.sol",
       "solcConfig": {
         "settings": {
@@ -3609,6 +3679,46 @@
       "artifacts": {
         "IManagerFacet": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "IManagerFacet.sol/IManagerFacet.json"
+        }
+      }
+    },
+    "src/interfaces/IProjectFacet.sol": {
+      "lastModificationDate": 1678347586574,
+      "contentHash": "7c55053c9705cece9c04228af0697cd1",
+      "sourceName": "src/interfaces/IProjectFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "IProjectFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IProjectFacet.sol/IProjectFacet.json"
         }
       }
     },
@@ -4887,8 +4997,8 @@
       }
     },
     "src/test/SaloonDiamondTest.t.sol": {
-      "lastModificationDate": 1678345070590,
-      "contentHash": "0e0ccbc4568334308142ff58dab8adc6",
+      "lastModificationDate": 1678348457826,
+      "contentHash": "bd86258e79adc4b5c54264304e2d5ca2",
       "sourceName": "src/test/SaloonDiamondTest.t.sol",
       "solcConfig": {
         "settings": {
@@ -4965,6 +5075,7 @@
         "src/DiamondProxy.sol",
         "src/Getters.sol",
         "src/ManagerFacet.sol",
+        "src/ProjectFacet.sol",
         "src/ReentrancyGuard.sol",
         "src/SaloonCommon.sol",
         "src/SaloonProjectPortal.sol",
@@ -4977,6 +5088,7 @@
         "src/interfaces/IDiamondCut.sol",
         "src/interfaces/IGetters.sol",
         "src/interfaces/IManagerFacet.sol",
+        "src/interfaces/IProjectFacet.sol",
         "src/interfaces/ISaloon.sol",
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonGlobal.sol",

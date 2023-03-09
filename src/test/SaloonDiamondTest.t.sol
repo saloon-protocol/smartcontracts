@@ -7,6 +7,7 @@ import "../Base.sol";
 
 import "../DiamondProxy.sol";
 import "../ManagerFacet.sol";
+import "../ProjectFacet.sol";
 import "../Getters.sol";
 
 import "../SaloonProjectPortal.sol";
@@ -56,7 +57,7 @@ contract SaloonDiamondTest is DSTest, Script {
     ISaloonGlobal saloon;
 
     ManagerFacet saloonManager;
-    SaloonProjectPortal saloonProjectPortal;
+    ProjectFacet saloonProject;
     // SaloonBounty saloonBounty;
     SaloonView saloonView;
     GettersFacet getters;
@@ -65,9 +66,11 @@ contract SaloonDiamondTest is DSTest, Script {
     Diamond.FacetCut diamondCutFacet;
     Diamond.FacetCut gettersFacet;
 
-    Diamond.DiamondCutData managerDiamondCut;
     Diamond.FacetCut managerFacet;
+    Diamond.FacetCut projectFacet;
+
     Diamond.FacetCut[] proposeFacets;
+    Diamond.DiamondCutData executeFacets;
 
     function setUp() external {
         string memory rpc = vm.envString("POLYGON_RPC_URL");
@@ -203,17 +206,55 @@ contract SaloonDiamondTest is DSTest, Script {
         );
 
         proposeFacets.push(managerFacet);
+        executeFacets.facetCuts.push(managerFacet);
 
+        //// Project Facet ////////////
+        saloonProject = new ProjectFacet();
+        projectFacet.facet = address(saloonManager);
+        projectFacet.action = Diamond.Action.Add;
+        projectFacet.isFreezable = false;
+        projectFacet.selectors.push(IProjectFacet.compoundYieldForPid.selector);
+        projectFacet.selectors.push(IProjectFacet.makeProjectDeposit.selector);
+        projectFacet.selectors.push(
+            IProjectFacet.projectDepositWithdrawal.selector
+        );
+        projectFacet.selectors.push(
+            IProjectFacet.receiveStrategyYield.selector
+        );
+        projectFacet.selectors.push(
+            IProjectFacet.setAPYandPoolCapAndDeposit.selector
+        );
+        projectFacet.selectors.push(
+            IProjectFacet.updateProjectWalletAddress.selector
+        );
+        projectFacet.selectors.push(IProjectFacet.viewBountyBalance.selector);
+        projectFacet.selectors.push(IProjectFacet.windDownBounty.selector);
+        projectFacet.selectors.push(
+            IProjectFacet.withdrawProjectYield.selector
+        );
+
+        proposeFacets.push(projectFacet);
+        executeFacets.facetCuts.push(projectFacet);
+
+        ///// Bounty Facet/////
+        // saloonManager = new ManagerFacet();
+        // managerFacet.facet = address(saloonManager);
+        // managerFacet.action = Diamond.Action.Add;
+        // managerFacet.isFreezable = false;
+        // managerFacet.selectors.push(IManagerFacet.addNewBountyPool.selector);
+        // proposeFacets.push(managerFacet);
+        // executeFacets.facetCuts.push(managerFacet);
+
+        // Propose and Execute all facets
         IDiamondCut(address(saloonProxy)).proposeDiamondCut(
             proposeFacets,
             address(0x0)
         );
 
-        managerDiamondCut.initAddress = address(0x0);
-        managerDiamondCut.initCalldata = "";
-        managerDiamondCut.facetCuts.push(managerFacet);
+        executeFacets.initAddress = address(0x0);
+        executeFacets.initCalldata = "";
         IDiamondCut(address(saloonProxy)).executeDiamondCutProposal(
-            managerDiamondCut
+            executeFacets
         );
 
         // Test functions???

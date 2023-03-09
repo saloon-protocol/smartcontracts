@@ -141,11 +141,9 @@ contract StargateStrategy is IStrategy {
     /// @notice Withdraw deposited LP from staking contract, remove liquidity, and send to caller
     /// @dev Automatically converts pending yield to deposit token and sends entire contract balance.
     /// @param _amount Amount of LP tokens to withdraw from strategy.
-    function withdrawFromStrategy(uint256 _amount)
-        external
-        onlyOwner
-        returns (uint256)
-    {
+    function withdrawFromStrategy(
+        uint256 _amount
+    ) external onlyOwner returns (uint256) {
         require(_amount <= lpDepositBalance, "Not enough lp");
         lpDepositBalance -= _amount;
         stargateLPStaking.withdraw(stakingPoolId, _amount);
