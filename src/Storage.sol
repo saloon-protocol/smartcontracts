@@ -94,6 +94,9 @@ struct DiamondCutStorage {
 }
 
 // NOTE Perhaps separating structs into Interfaces might be a good way to do things, but maybe not
+/// @dev storing all storage variables for Saloon facets
+/// NOTE: It is used in a proxy, so it is possible to add new variables to the end
+/// NOTE: but NOT to modify already existing variables or change their order
 struct AppStorage {
     DiamondCutStorage diamondCutStorage;
     address owner;

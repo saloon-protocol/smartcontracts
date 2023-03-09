@@ -54,14 +54,14 @@ contract DiamondCutFacet is Base, IDiamondCut {
         Diamond.DiamondStorage storage diamondStorage = Diamond
             .getDiamondStorage();
 
-        bool approvedBySecurityCouncil = s
+        bool approvedBySecurityCouncil = s //NOTE TODO Should probably remove this
             .diamondCutStorage
             .securityCouncilEmergencyApprovals >=
             SECURITY_COUNCIL_APPROVALS_FOR_EMERGENCY_UPGRADE;
 
-        bool upgradeNoticePeriodPassed = block.timestamp >=
+        bool upgradeNoticePeriodPassed = block.timestamp >= //NOTE TODO Should remove or change this
             s.diamondCutStorage.proposedDiamondCutTimestamp +
-                UPGRADE_NOTICE_PERIOD;
+                UPGRADE_NOTICE_PERIOD; //UPGRADE_NOTICE_PERIOD curenntly = 0 seconds
 
         require(approvedBySecurityCouncil || upgradeNoticePeriodPassed, "a6"); // notice period should expire
         require(approvedBySecurityCouncil || !diamondStorage.isFrozen, "f3");
@@ -129,8 +129,8 @@ contract DiamondCutFacet is Base, IDiamondCut {
             "ao"
         ); // already approved this proposal
         s.diamondCutStorage.securityCouncilMemberLastApprovedProposalId[
-                msg.sender
-            ] = currentProposalId;
+            msg.sender
+        ] = currentProposalId;
 
         require(s.diamondCutStorage.proposedDiamondCutTimestamp != 0, "f0"); // there is no proposed diamond cut
         require(

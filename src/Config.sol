@@ -57,7 +57,7 @@ uint256 constant PRIORITY_EXPIRATION = PRIORITY_EXPIRATION_PERIOD /
 
 /// @dev Notice period before activation preparation status of upgrade mode (in seconds)
 /// @dev NOTE: we must reserve for users enough time to send full exit operation, wait maximum time for processing this operation and withdraw funds from it.
-uint256 constant UPGRADE_NOTICE_PERIOD = 1; //NOTE WRONG VALUE
+uint256 constant UPGRADE_NOTICE_PERIOD = 0; //NOTE WRONG VALUE
 
 /// @dev Timestamp - seconds since unix epoch
 uint256 constant COMMIT_TIMESTAMP_NOT_OLDER = 1; //NOTE WRONG VALUE

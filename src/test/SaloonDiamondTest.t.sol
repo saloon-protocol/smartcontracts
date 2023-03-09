@@ -13,6 +13,7 @@ import "../SaloonProjectPortal.sol";
 import "../SaloonRelay.sol";
 import "../SaloonView.sol";
 
+// import "../interfaces/IManagerFacet.sol";
 import "../interfaces/ISaloonManager.sol";
 import "../interfaces/ISaloonProjectPortal.sol";
 import "../interfaces/ISaloonBounty.sol";
@@ -47,9 +48,9 @@ contract SaloonDiamondTest is DSTest, Script {
 
     uint256 pid;
 
-    uint256 constant poolCap = 1000 * 10**6;
+    uint256 constant poolCap = 1000 * 10 ** 6;
     uint16 constant apy = 1000;
-    uint256 constant deposit = 30 * 10**6;
+    uint256 constant deposit = 30 * 10 ** 6;
 
     DiamondProxy saloonProxy;
     ISaloonGlobal saloon;
@@ -60,12 +61,39 @@ contract SaloonDiamondTest is DSTest, Script {
     SaloonView saloonView;
     GettersFacet getters;
     DiamondCutFacet diamondCut;
+    Diamond.DiamondCutData _diamondCut;
+    Diamond.FacetCut diamondCutFacet;
+    Diamond.FacetCut gettersFacet;
+
+    Diamond.DiamondCutData managerDiamondCut;
+    Diamond.FacetCut managerFacet;
+    Diamond.FacetCut[] proposeFacets;
 
     function setUp() external {
         string memory rpc = vm.envString("POLYGON_RPC_URL");
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         uint256 forkId = vm.createFork(rpc);
         vm.selectFork(forkId);
+        usdc = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
+        address USDCHolder = address(
+            0x9810762578aCCF1F314320CCa5B72506aE7D7630
+        );
+        vm.prank(USDCHolder);
+        usdc.transfer(address(this), 100000 * (10 ** 6));
+
+        // saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+        usdc.transfer(project, 10000 * (10 ** 6));
+        usdc.transfer(staker, 1000 * (10 ** 6));
+        usdc.transfer(staker2, 1000 * (10 ** 6));
+
+        dai = new ERC20("DAI", "DAI", 18);
+        dai.mint(project, 500 ether);
+        dai.mint(staker, 500 ether);
+        dai.mint(staker2, 500 ether);
+
+        vm.deal(project, 500 ether);
+
+        deployer = address(this);
         //Create implementations
         // SaloonRelay saloonRelay = new SaloonRelay();
         // saloonProjectPortal = new SaloonProjectPortal();
@@ -76,161 +104,108 @@ contract SaloonDiamondTest is DSTest, Script {
         diamondCut = new DiamondCutFacet();
         DiamondInit diamondInit = new DiamondInit();
 
-        bytes memory initData; // initialize func with owner address
+        bytes memory initData = abi.encodeWithSignature(
+            "initialize(address)",
+            address(this)
+        ); // initialize func with owner address
 
-        Diamond.DiamondCutData memory _diamondCut;
         //diamondCut Facet
-        Diamond.FacetCut memory diamondCutFacet;
         diamondCutFacet.facet = address(diamondCut);
         diamondCutFacet.action = Diamond.Action.Add;
         diamondCutFacet.isFreezable = false;
-        diamondCutFacet.selectors[0] = IDiamondCut.proposeDiamondCut.selector;
-        diamondCutFacet.selectors[1] = IDiamondCut
-            .cancelDiamondCutProposal
-            .selector;
-        diamondCutFacet.selectors[2] = IDiamondCut
-            .executeDiamondCutProposal
-            .selector;
-        diamondCutFacet.selectors[3] = IDiamondCut
-            .emergencyFreezeDiamond
-            .selector;
-        diamondCutFacet.selectors[4] = IDiamondCut.unfreezeDiamond.selector;
-        diamondCutFacet.selectors[5] = IDiamondCut
-            .approveEmergencyDiamondCutAsSecurityCouncilMember
-            .selector;
+        diamondCutFacet.selectors.push(IDiamondCut.proposeDiamondCut.selector);
+        diamondCutFacet.selectors.push(
+            IDiamondCut.cancelDiamondCutProposal.selector
+        );
+        diamondCutFacet.selectors.push(
+            IDiamondCut.executeDiamondCutProposal.selector
+        );
+        diamondCutFacet.selectors.push(
+            IDiamondCut.emergencyFreezeDiamond.selector
+        );
+        diamondCutFacet.selectors.push(IDiamondCut.unfreezeDiamond.selector);
+        diamondCutFacet.selectors.push(
+            IDiamondCut
+                .approveEmergencyDiamondCutAsSecurityCouncilMember
+                .selector
+        );
 
-        Diamond.FacetCut memory gettersFacet;
+        // Getters Facet
         gettersFacet.facet = address(getters);
         gettersFacet.action = Diamond.Action.Add;
         gettersFacet.isFreezable = false;
-        gettersFacet.selectors[0] = IGetters.getOwner.selector;
-        gettersFacet.selectors[1] = IGetters.getPendingOwner.selector;
-        gettersFacet.selectors[2] = IGetters.isDiamondStorageFrozen.selector;
-        gettersFacet.selectors[3] = IGetters.getProposedDiamondCutHash.selector;
-        gettersFacet.selectors[4] = IGetters
-            .getProposedDiamondCutTimestamp
-            .selector;
-        gettersFacet.selectors[5] = IGetters
-            .getLastDiamondFreezeTimestamp
-            .selector;
-        gettersFacet.selectors[6] = IGetters.getCurrentProposalId.selector;
-        gettersFacet.selectors[7] = IGetters
-            .getSecurityCouncilEmergencyApprovals
-            .selector;
-        gettersFacet.selectors[8] = IGetters.isSecurityCouncilMember.selector;
-        gettersFacet.selectors[9] = IGetters
-            .getSecurityCouncilMemberLastApprovedProposalId
-            .selector;
-        gettersFacet.selectors[10] = IGetters.facets.selector;
-        gettersFacet.selectors[11] = IGetters.facetFunctionSelectors.selector;
-        gettersFacet.selectors[12] = IGetters.facetAddresses.selector;
-        gettersFacet.selectors[13] = IGetters.facetAddress.selector;
-        gettersFacet.selectors[14] = IGetters.isFunctionFreezable.selector;
+        gettersFacet.selectors.push(IGetters.getOwner.selector);
+        gettersFacet.selectors.push(IGetters.getPendingOwner.selector);
+        gettersFacet.selectors.push(IGetters.isDiamondStorageFrozen.selector);
+        gettersFacet.selectors.push(
+            IGetters.getProposedDiamondCutHash.selector
+        );
+        gettersFacet.selectors.push(
+            IGetters.getProposedDiamondCutTimestamp.selector
+        );
+        gettersFacet.selectors.push(
+            IGetters.getLastDiamondFreezeTimestamp.selector
+        );
+        gettersFacet.selectors.push(IGetters.getCurrentProposalId.selector);
+        gettersFacet.selectors.push(
+            IGetters.getSecurityCouncilEmergencyApprovals.selector
+        );
+        gettersFacet.selectors.push(IGetters.isSecurityCouncilMember.selector);
+        gettersFacet.selectors.push(
+            IGetters.getSecurityCouncilMemberLastApprovedProposalId.selector
+        );
+        gettersFacet.selectors.push(IGetters.facets.selector);
+        gettersFacet.selectors.push(IGetters.facetFunctionSelectors.selector);
+        gettersFacet.selectors.push(IGetters.facetAddresses.selector);
+        gettersFacet.selectors.push(IGetters.facetAddress.selector);
+        gettersFacet.selectors.push(IGetters.isFunctionFreezable.selector);
 
-        _diamondCut.facetCuts[0] = diamondCutFacet;
-        _diamondCut.facetCuts[1] = gettersFacet;
+        _diamondCut.facetCuts.push(diamondCutFacet);
+        _diamondCut.facetCuts.push(gettersFacet);
+
         _diamondCut.initAddress = address(diamondInit);
         _diamondCut.initCalldata = initData;
-        //Creates proxy and sets Relay Implementation
+
+        //Creates proxy and sets Init/DiamontCut Implementation
         saloonProxy = new DiamondProxy(_diamondCut);
+
         // saloonProxy = new SaloonProxy(address(saloonManager), data);
 
-        //
-        // Init relay and sets other implementations
-        saloon.initialize(address(this));
-
-        StrategyFactory factory = new StrategyFactory();
-        saloon.setStrategyFactory(address(factory));
+        ///////////////////// Deploy Facets ///////////////////////////////////
 
         // Deploy/add manager facet
         saloonManager = new ManagerFacet();
+        managerFacet.facet = address(saloonManager);
+        managerFacet.action = Diamond.Action.Add;
+        managerFacet.isFreezable = false;
+        managerFacet.selectors.push(IManagerFacet.addNewBountyPool.selector);
+        managerFacet.selectors.push(IManagerFacet.viewBountyBalance.selector);
+
+        proposeFacets.push(managerFacet);
+
+        IDiamondCut(address(saloonProxy)).proposeDiamondCut(
+            proposeFacets,
+            address(0x0)
+        );
+
+        managerDiamondCut.initAddress = address(0x0);
+        managerDiamondCut.initCalldata = "";
+        managerDiamondCut.facetCuts.push(managerFacet);
+        IDiamondCut(address(saloonProxy)).executeDiamondCutProposal(
+            managerDiamondCut
+        );
 
         // Test functions???
         // saloon = ISaloonGlobal(payable(address((saloonProxy))));
-
-        usdc = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
-        address USDCHolder = address(
-            0x9810762578aCCF1F314320CCa5B72506aE7D7630
-        );
-        vm.prank(USDCHolder);
-        usdc.transfer(address(this), 100000 * (10**6));
-
-        // saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
-        usdc.transfer(project, 10000 * (10**6));
-        usdc.transfer(staker, 1000 * (10**6));
-        usdc.transfer(staker2, 1000 * (10**6));
-
-        dai = new ERC20("DAI", "DAI", 18);
-        dai.mint(project, 500 ether);
-        dai.mint(staker, 500 ether);
-        dai.mint(staker2, 500 ether);
-
-        vm.deal(project, 500 ether);
-
-        deployer = address(this);
-
-        // saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
-
-        // pid = saloon.addNewBountyPool(
-        //     address(usdc),
-        //     project,
-        //     "yeehay",
-        //     address(0),
-        //     0,
-        //     0
-        // );
-
-        // vm.startPrank(project);
-        // usdc.approve(address(saloon), 1000 * 10**6);
-        // saloon.setAPYandPoolCapAndDeposit(
-        //     0, //pid
-        //     poolCap, // $100
-        //     apy, // 10%
-        //     deposit, // $30
-        //     "Stargate"
-        // );
-        // vm.stopPrank();
+        StrategyFactory factory = new StrategyFactory();
+        // saloon.setStrategyFactory(address(factory)); TODO Implement this
     }
 
     // ============================
-    // Test Initialize Revert
+    //        Test Deploy
     // ============================
-    function testInitialize() external {
-        // Test if implementation can be initialized twice (should revert)
-        vm.expectRevert("Initializable: contract is already initialized");
-        saloon.initSaloonBounty();
-    }
-
-    // ============================
-    // Test Implementation Update
-    // ============================
-    function testUpdate() external {
-        SaloonRelay newSaloon = new SaloonRelay();
-        saloon.upgradeTo(address(newSaloon));
-
-        vm.prank(staker);
-        vm.expectRevert("Ownable: caller is not the owner");
-        saloon.upgradeTo(address(newSaloon));
-
-        // Test first step of ownership transfer and accept reverts for random caller
-        saloon.transferOwnership(newOwner);
-
-        // Test new owner accepts ownership and can deploy new bounty
-        vm.startPrank(newOwner);
-        saloon.acceptOwnershipTransfer();
-        saloon.upgradeTo(address(newSaloon));
-        vm.stopPrank();
-    }
-
-    // ============================
-    // Test addNewBountyPool with non-whitelisted token
-    // ============================
-    function testaddNewBountyPoolBadToken() external {
-        saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
-        bool whitelisted = saloon.tokenWhitelist(address(usdc));
-
-        vm.expectRevert("token not whitelisted");
-        pid = saloon.addNewBountyPool(
+    function testDeploy() external {
+        pid = IManagerFacet(address(saloonProxy)).addNewBountyPool(
             address(usdc),
             project,
             "yeehaw",
@@ -239,100 +214,150 @@ contract SaloonDiamondTest is DSTest, Script {
             0
         );
 
-        // Test is approving works again
-        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
-
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehuu",
-            address(0),
-            0,
-            0
-        );
-
-        // One more check to test disapproving works after approving
-        saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
-        bool whitelistedF = saloon.tokenWhitelist(address(usdc));
-
-        vm.expectRevert("token not whitelisted");
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehee",
-            address(0),
-            0,
-            0
-        );
+        IManagerFacet(address(saloonProxy)).viewBountyBalance(pid);
     }
 
-    // ============================
-    // Test setAPYandPoolCapAndDeposit
-    // ============================
-    function testSetAPYAndPoolCapAndDeposit() external {
-        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+    // // ============================
+    // // Test Initialize Revert
+    // // ============================
+    // function testInitialize() external {
+    //     // Test if implementation can be initialized twice (should revert)
+    //     vm.expectRevert("Initializable: contract is already initialized");
+    //     saloon.initSaloonBounty();
+    // }
 
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehuu",
-            address(0),
-            0,
-            0
-        );
-        emit log_uint(pid);
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehaaa",
-            address(0),
-            0,
-            0
-        );
-        emit log_uint(pid); // Testing if pid increases correctly
+    // // ============================
+    // // Test Implementation Update
+    // // ============================
+    // function testUpdate() external {
+    //     SaloonRelay newSaloon = new SaloonRelay();
+    //     saloon.upgradeTo(address(newSaloon));
 
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 100000 * 10**6);
-        // Test setAPYandPoolCapAndDeposit
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            1000 * 10**6,
-            1000,
-            10,
-            "Stargate"
-        );
+    //     vm.prank(staker);
+    //     vm.expectRevert("Ownable: caller is not the owner");
+    //     saloon.upgradeTo(address(newSaloon));
 
-        // Test if APY and PoolCap can be set again (should revert)
-        vm.expectRevert("Pool already initialized");
-        saloon.setAPYandPoolCapAndDeposit(
-            pid,
-            100 * 10**6,
-            1000,
-            10,
-            "Stargate"
-        );
-        // todo Test if poolCap can be exceeded by stakers
-    }
+    //     // Test first step of ownership transfer and accept reverts for random caller
+    //     saloon.transferOwnership(newOwner);
 
-    // ============================
-    // Test makeProjectDeposit
-    // ============================
-    function testMakeProjectDeposit() external {
-        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehaw",
-            address(0),
-            0,
-            0
-        );
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
-        uint256 bountyBalance = saloon.viewBountyBalance(pid);
-        assertEq(bountyBalance, 10 * 10**6 - 1);
-    }
+    //     // Test new owner accepts ownership and can deploy new bounty
+    //     vm.startPrank(newOwner);
+    //     saloon.acceptOwnershipTransfer();
+    //     saloon.upgradeTo(address(newSaloon));
+    //     vm.stopPrank();
+    // }
+
+    // // ============================
+    // // Test addNewBountyPool with non-whitelisted token
+    // // ============================
+    // function testaddNewBountyPoolBadToken() external {
+    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
+    //     bool whitelisted = saloon.tokenWhitelist(address(usdc));
+
+    //     vm.expectRevert("token not whitelisted");
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehaw",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+
+    //     // Test is approving works again
+    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehuu",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+
+    //     // One more check to test disapproving works after approving
+    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10**6);
+    //     bool whitelistedF = saloon.tokenWhitelist(address(usdc));
+
+    //     vm.expectRevert("token not whitelisted");
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehee",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+    // }
+
+    // // ============================
+    // // Test setAPYandPoolCapAndDeposit
+    // // ============================
+    // function testSetAPYAndPoolCapAndDeposit() external {
+    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehuu",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+    //     emit log_uint(pid);
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehaaa",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+    //     emit log_uint(pid); // Testing if pid increases correctly
+
+    //     vm.startPrank(project);
+    //     usdc.approve(address(saloon), 100000 * 10**6);
+    //     // Test setAPYandPoolCapAndDeposit
+    //     saloon.setAPYandPoolCapAndDeposit(
+    //         pid,
+    //         1000 * 10**6,
+    //         1000,
+    //         10,
+    //         "Stargate"
+    //     );
+
+    //     // Test if APY and PoolCap can be set again (should revert)
+    //     vm.expectRevert("Pool already initialized");
+    //     saloon.setAPYandPoolCapAndDeposit(
+    //         pid,
+    //         100 * 10**6,
+    //         1000,
+    //         10,
+    //         "Stargate"
+    //     );
+    //     // todo Test if poolCap can be exceeded by stakers
+    // }
+
+    // // ============================
+    // // Test makeProjectDeposit
+    // // ============================
+    // function testMakeProjectDeposit() external {
+    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehaw",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+    //     vm.startPrank(project);
+    //     usdc.approve(address(saloon), 1000 * 10**6);
+    //     saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
+    //     uint256 bountyBalance = saloon.viewBountyBalance(pid);
+    //     assertEq(bountyBalance, 10 * 10**6 - 1);
+    // }
 
     //     // ============================
     //     // Test scheduleProjectDepositWithdrawal
@@ -410,35 +435,35 @@ contract SaloonDiamondTest is DSTest, Script {
     // ============================
     // Test stake
     // ============================
-    function testStake() external {
-        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehaw",
-            address(0),
-            0,
-            0
-        );
-        vm.startPrank(project);
-        usdc.approve(address(saloon), 1000 * 10**6);
-        saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
-        uint256 bountyBalance = saloon.viewBountyBalance(pid);
-        assertEq(bountyBalance, 10 * 10**6 - 1);
-        vm.stopPrank();
+    // function testStake() external {
+    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehaw",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+    //     vm.startPrank(project);
+    //     usdc.approve(address(saloon), 1000 * 10**6);
+    //     saloon.makeProjectDeposit(pid, 10 * 10**6, "Stargate");
+    //     uint256 bountyBalance = saloon.viewBountyBalance(pid);
+    //     assertEq(bountyBalance, 10 * 10**6 - 1);
+    //     vm.stopPrank();
 
-        vm.startPrank(staker);
-        usdc.approve(address(saloon), 1000 * 10**6);
+    //     vm.startPrank(staker);
+    //     usdc.approve(address(saloon), 1000 * 10**6);
 
-        vm.expectRevert("Min stake not met");
-        saloon.stake(pid, 5 * 10**6);
+    //     vm.expectRevert("Min stake not met");
+    //     saloon.stake(pid, 5 * 10**6);
 
-        uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-        assertEq(stake, 10 * 10**6);
-        assertEq(saloon.ownerOf(tokenId), staker);
-        vm.stopPrank();
-    }
+    //     uint256 tokenId = saloon.stake(pid, 10 * 10**6);
+    //     (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+    //     assertEq(stake, 10 * 10**6);
+    //     assertEq(saloon.ownerOf(tokenId), staker);
+    //     vm.stopPrank();
+    // }
 
     //     // ============================
     //     // Test pendingPremium

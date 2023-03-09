@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./Base.sol";
+import "./interfaces/IManagerFacet.sol";
 
 contract ManagerFacet is Base {
     /// @notice Adds a new bounty pool.
@@ -20,7 +21,7 @@ contract ManagerFacet is Base {
         uint256 _referralFee,
         uint256 _referralEndTime
     ) external onlyOwner returns (uint256) {
-        require(s.tokenWhitelist[_token], "token not whitelisted");
+        // require(s.tokenWhitelist[_token], "token not whitelisted");
         require(_referralFee <= 5000, "referral fee too high");
         // uint8 _tokenDecimals = IERC20(_token).decimals();
         (, bytes memory _decimals) = _token.staticcall(

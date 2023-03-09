@@ -2208,8 +2208,8 @@
       }
     },
     "src/Config.sol": {
-      "lastModificationDate": 1678182090387,
-      "contentHash": "7c7bccd1a593d9df08d6c2cb57ef8acd",
+      "lastModificationDate": 1678326727697,
+      "contentHash": "50574b8813d8df5cb91071553c97e026",
       "sourceName": "src/Config.sol",
       "solcConfig": {
         "settings": {
@@ -2248,8 +2248,8 @@
       }
     },
     "src/DiamondCut.sol": {
-      "lastModificationDate": 1678182366742,
-      "contentHash": "3704ddb212d4a7ce2243e531d39725de",
+      "lastModificationDate": 1678329388486,
+      "contentHash": "25a697daea0f092cf76c783b381ed532",
       "sourceName": "src/DiamondCut.sol",
       "solcConfig": {
         "settings": {
@@ -2436,8 +2436,8 @@
       }
     },
     "src/ManagerFacet.sol": {
-      "lastModificationDate": 1678181238903,
-      "contentHash": "82420baa69da709252e38948fb4382f9",
+      "lastModificationDate": 1678330972047,
+      "contentHash": "407c14056ac6c9764519ea93b9d0c925",
       "sourceName": "src/ManagerFacet.sol",
       "solcConfig": {
         "settings": {
@@ -2475,6 +2475,7 @@
         "src/Base.sol",
         "src/ReentrancyGuard.sol",
         "src/Storage.sol",
+        "src/interfaces/IManagerFacet.sol",
         "src/interfaces/IStrategyFactory.sol"
       ],
       "versionRequirement": "^0.8.17",
@@ -3287,8 +3288,8 @@
       }
     },
     "src/Storage.sol": {
-      "lastModificationDate": 1678250585030,
-      "contentHash": "f9a3ff49c628ee20eefd67591e849581",
+      "lastModificationDate": 1678327067093,
+      "contentHash": "1d0139d2dd294888006d66a0c088c08c",
       "sourceName": "src/Storage.sol",
       "solcConfig": {
         "settings": {
@@ -3468,6 +3469,46 @@
       "artifacts": {
         "IGetters": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "IGetters.sol/IGetters.json"
+        }
+      }
+    },
+    "src/interfaces/IManagerFacet.sol": {
+      "lastModificationDate": 1678329050817,
+      "contentHash": "89bd74dbc390c4406f6c205cdf78b9a6",
+      "sourceName": "src/interfaces/IManagerFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "IManagerFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IManagerFacet.sol/IManagerFacet.json"
         }
       }
     },
@@ -4752,8 +4793,8 @@
       }
     },
     "src/test/SaloonDiamondTest.t.sol": {
-      "lastModificationDate": 1678260561035,
-      "contentHash": "c428170d03ca9e37d1963eacb459d395",
+      "lastModificationDate": 1678331249796,
+      "contentHash": "f8770f2290b293636099f6f2402394f2",
       "sourceName": "src/test/SaloonDiamondTest.t.sol",
       "solcConfig": {
         "settings": {
@@ -4841,6 +4882,7 @@
         "src/StrategyFactory.sol",
         "src/interfaces/IDiamondCut.sol",
         "src/interfaces/IGetters.sol",
+        "src/interfaces/IManagerFacet.sol",
         "src/interfaces/ISaloon.sol",
         "src/interfaces/ISaloonBounty.sol",
         "src/interfaces/ISaloonGlobal.sol",
