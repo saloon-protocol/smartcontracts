@@ -2090,8 +2090,8 @@
       }
     },
     "src/Base.sol": {
-      "lastModificationDate": 1678345482375,
-      "contentHash": "bdcbcd059177798ff25e5655484b066e",
+      "lastModificationDate": 1678400550848,
+      "contentHash": "f1671edde455fcd0851e1cc0941a6204",
       "sourceName": "src/Base.sol",
       "solcConfig": {
         "settings": {
@@ -2151,6 +2151,84 @@
       "artifacts": {
         "Base": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "Base.sol/Base.json"
+        }
+      }
+    },
+    "src/BountyFacet.sol": {
+      "lastModificationDate": 1678414968440,
+      "contentHash": "7aaaa95a597f8f99497470d83e4d5266",
+      "sourceName": "src/BountyFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/Base.sol",
+        "src/ReentrancyGuard.sol",
+        "src/StargateStrategy.sol",
+        "src/Storage.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/IBountyFacet.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonGlobal.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/lib/LibERC721.sol",
+        "src/lib/LibSaloon.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "BountyFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "BountyFacet.sol/BountyFacet.json"
         }
       }
     },
@@ -2586,8 +2664,8 @@
       }
     },
     "src/ProjectFacet.sol": {
-      "lastModificationDate": 1678347518744,
-      "contentHash": "20ae826f8e2a674850d70bb31cbf2347",
+      "lastModificationDate": 1678400562109,
+      "contentHash": "8e9deedefac70359fc6d54891b294aa4",
       "sourceName": "src/ProjectFacet.sol",
       "solcConfig": {
         "settings": {
@@ -3555,6 +3633,46 @@
       "artifacts": {
         "StrategyFactory": {
           "0.8.17+commit.8df45f5f.Darwin.appleclang": "StrategyFactory.sol/StrategyFactory.json"
+        }
+      }
+    },
+    "src/interfaces/IBountyFacet.sol": {
+      "lastModificationDate": 1678414940267,
+      "contentHash": "24fcd60425cfba3aa1f6217ab41c7571",
+      "sourceName": "src/interfaces/IBountyFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "IBountyFacet": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IBountyFacet.sol/IBountyFacet.json"
         }
       }
     },
@@ -4566,9 +4684,57 @@
         }
       }
     },
+    "src/lib/LibERC721.sol": {
+      "lastModificationDate": 1678414311232,
+      "contentHash": "c4ee3aa3943b0009c83e1f5f5604e7a4",
+      "sourceName": "src/lib/LibERC721.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721ReceiverUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/extensions/IERC721MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "LibERC721": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "LibERC721.sol/LibERC721.json"
+        }
+      }
+    },
     "src/lib/LibSaloon.sol": {
-      "lastModificationDate": 1678343719925,
-      "contentHash": "00693e9de7a022dab9c35692869d6de3",
+      "lastModificationDate": 1678410196229,
+      "contentHash": "f02cab0515c9090027f232825c69b19c",
       "sourceName": "src/lib/LibSaloon.sol",
       "solcConfig": {
         "settings": {
@@ -4997,8 +5163,8 @@
       }
     },
     "src/test/SaloonDiamondTest.t.sol": {
-      "lastModificationDate": 1678348457826,
-      "contentHash": "bd86258e79adc4b5c54264304e2d5ca2",
+      "lastModificationDate": 1678414474819,
+      "contentHash": "03de4f27bf55840e077babd13ab2cb13",
       "sourceName": "src/test/SaloonDiamondTest.t.sol",
       "solcConfig": {
         "settings": {
@@ -5068,6 +5234,7 @@
         "lib/prb-math/src/Core.sol",
         "lib/prb-math/src/UD60x18.sol",
         "src/Base.sol",
+        "src/BountyFacet.sol",
         "src/BountyTokenNFT.sol",
         "src/Config.sol",
         "src/DiamondCut.sol",
@@ -5085,6 +5252,7 @@
         "src/StargateStrategy.sol",
         "src/Storage.sol",
         "src/StrategyFactory.sol",
+        "src/interfaces/IBountyFacet.sol",
         "src/interfaces/IDiamondCut.sol",
         "src/interfaces/IGetters.sol",
         "src/interfaces/IManagerFacet.sol",
@@ -5105,6 +5273,7 @@
         "src/lib/Diamond.sol",
         "src/lib/ERC20.sol",
         "src/lib/ERC721Upgradeable.sol",
+        "src/lib/LibERC721.sol",
         "src/lib/LibSaloon.sol",
         "src/lib/OwnableUpgradeable.sol",
         "src/lib/PriorityQueue.sol",

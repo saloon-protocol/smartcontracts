@@ -8,6 +8,8 @@ import "../Base.sol";
 import "../DiamondProxy.sol";
 import "../ManagerFacet.sol";
 import "../ProjectFacet.sol";
+import "../BountyFacet.sol";
+
 import "../Getters.sol";
 
 import "../SaloonProjectPortal.sol";
@@ -58,7 +60,8 @@ contract SaloonDiamondTest is DSTest, Script {
 
     ManagerFacet saloonManager;
     ProjectFacet saloonProject;
-    // SaloonBounty saloonBounty;
+    BountyFacet saloonBounty;
+
     SaloonView saloonView;
     GettersFacet getters;
     DiamondCutFacet diamondCut;
@@ -68,6 +71,7 @@ contract SaloonDiamondTest is DSTest, Script {
 
     Diamond.FacetCut managerFacet;
     Diamond.FacetCut projectFacet;
+    Diamond.FacetCut bountyFacet;
 
     Diamond.FacetCut[] proposeFacets;
     Diamond.DiamondCutData executeFacets;
@@ -237,13 +241,13 @@ contract SaloonDiamondTest is DSTest, Script {
         executeFacets.facetCuts.push(projectFacet);
 
         ///// Bounty Facet/////
-        // saloonManager = new ManagerFacet();
-        // managerFacet.facet = address(saloonManager);
-        // managerFacet.action = Diamond.Action.Add;
-        // managerFacet.isFreezable = false;
-        // managerFacet.selectors.push(IManagerFacet.addNewBountyPool.selector);
-        // proposeFacets.push(managerFacet);
-        // executeFacets.facetCuts.push(managerFacet);
+        saloonBounty = new BountyFacet();
+        bountyFacet.facet = address(saloonBounty);
+        bountyFacet.action = Diamond.Action.Add;
+        bountyFacet.isFreezable = false;
+        bountyFacet.selectors.push(IBountyFacet.payBounty.selector);
+        proposeFacets.push(bountyFacet);
+        executeFacets.facetCuts.push(bountyFacet);
 
         // Propose and Execute all facets
         IDiamondCut(address(saloonProxy)).proposeDiamondCut(

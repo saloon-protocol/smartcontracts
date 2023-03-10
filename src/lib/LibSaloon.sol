@@ -53,7 +53,7 @@ library LibSaloon {
     function _updateScalingMultiplier(
         uint256 _targetAPY
     ) public view returns (uint256 scalingMultiplier) {
-        LibSaloonStorage storage ss = getLibSaloonStorage();
+        LibSaloonStorage storage ss = getLibSaloonStorage(); //note can this be changed to memory?
 
         scalingMultiplier = (_targetAPY * ss.precision) / ss.defaultAPY;
     }

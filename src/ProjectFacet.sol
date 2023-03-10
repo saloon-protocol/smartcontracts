@@ -9,13 +9,6 @@ import "./lib/LibSaloon.sol";
 contract ProjectFacet is Base, IProjectFacet {
     using SafeERC20 for IERC20;
 
-    //NOTE Should I move this modifier to Base?
-    modifier activePool(uint256 _pid) {
-        PoolInfo memory pool = s.poolInfo[_pid];
-        if (!pool.isActive) revert("pool not active");
-        _;
-    }
-
     //===========================================================================||
     //                               PROJECT FUNCTIONS                           ||
     //===========================================================================||

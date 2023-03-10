@@ -26,4 +26,10 @@ contract Base is ReentrancyGuard {
         );
         _;
     }
+
+    modifier activePool(uint256 _pid) {
+        PoolInfo memory pool = s.poolInfo[_pid];
+        if (!pool.isActive) revert("pool not active");
+        _;
+    }
 }
