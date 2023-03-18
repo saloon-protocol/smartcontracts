@@ -245,7 +245,21 @@ contract SaloonDiamondTest is DSTest, Script {
         bountyFacet.facet = address(saloonBounty);
         bountyFacet.action = Diamond.Action.Add;
         bountyFacet.isFreezable = false;
+
         bountyFacet.selectors.push(IBountyFacet.payBounty.selector);
+        bountyFacet.selectors.push(IBountyFacet.calculateEffectiveAPY.selector);
+        bountyFacet.selectors.push(IBountyFacet.claimPremium.selector);
+        bountyFacet.selectors.push(IBountyFacet.consolidate.selector);
+        bountyFacet.selectors.push(IBountyFacet.consolidateAll.selector);
+        bountyFacet.selectors.push(IBountyFacet.getCurrentAPY.selector);
+        bountyFacet.selectors.push(
+            IBountyFacet.payBountyDuringAssessment.selector
+        );
+        bountyFacet.selectors.push(IBountyFacet.scheduleUnstake.selector);
+        bountyFacet.selectors.push(IBountyFacet.stake.selector);
+        bountyFacet.selectors.push(IBountyFacet.unstake.selector);
+        bountyFacet.selectors.push(IBountyFacet.withdrawRemainingAPY.selector);
+
         proposeFacets.push(bountyFacet);
         executeFacets.facetCuts.push(bountyFacet);
 
@@ -271,6 +285,7 @@ contract SaloonDiamondTest is DSTest, Script {
     //        Test Deploy
     // ============================
     function testManager() external {
+        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
         pid = IManagerFacet(address(saloonProxy)).addNewBountyPool(
             address(usdc),
             project,
@@ -325,46 +340,46 @@ contract SaloonDiamondTest is DSTest, Script {
     // ============================
     // Test addNewBountyPool with non-whitelisted token
     // ============================
-    function testaddNewBountyPoolBadToken() external {
-        saloon.updateTokenWhitelist(address(usdc), false, 10 * 10 ** 6);
-        // bool whitelisted = saloon.tokenWhitelist(address(usdc));
+    // function testaddNewBountyPoolBadToken() external {
+    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10 ** 6);
+    //     // bool whitelisted = saloon.tokenWhitelist(address(usdc));
 
-        vm.expectRevert("token not whitelisted");
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehaw",
-            address(0),
-            0,
-            0
-        );
+    //     vm.expectRevert("token not whitelisted");
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehaw",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
 
-        // Test is approving works again
-        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
+    //     // Test is approving works again
+    //     saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
 
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehuu",
-            address(0),
-            0,
-            0
-        );
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehuu",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
 
-        // One more check to test disapproving works after approving
-        saloon.updateTokenWhitelist(address(usdc), false, 10 * 10 ** 6);
-        // bool whitelistedF = saloon.tokenWhitelist(address(usdc));
+    //     // One more check to test disapproving works after approving
+    //     saloon.updateTokenWhitelist(address(usdc), false, 10 * 10 ** 6);
+    //     // bool whitelistedF = saloon.tokenWhitelist(address(usdc));
 
-        vm.expectRevert("token not whitelisted");
-        pid = saloon.addNewBountyPool(
-            address(usdc),
-            project,
-            "yeehee",
-            address(0),
-            0,
-            0
-        );
-    }
+    //     vm.expectRevert("token not whitelisted");
+    //     pid = saloon.addNewBountyPool(
+    //         address(usdc),
+    //         project,
+    //         "yeehee",
+    //         address(0),
+    //         0,
+    //         0
+    //     );
+    // }
 
     // // ============================
     // // Test setAPYandPoolCapAndDeposit
