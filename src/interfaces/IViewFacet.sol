@@ -38,6 +38,16 @@ interface IViewFacet {
             uint256 withdrawalScheduledAmount
         );
 
+    function viewPendingPremium(
+        uint256 _tokenId
+    )
+        external
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        );
+
     function viewReferralBalance(
         address _referrer,
         address _token

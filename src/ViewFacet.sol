@@ -62,6 +62,28 @@ contract ViewFacet is Base, IViewFacet {
         timelock = token.timelock;
     }
 
+    function viewPendingPremium(
+        uint _tokenId
+    )
+        external
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        )
+    {
+        NFTInfo memory token = s.nftInfo[_tokenId];
+        uint pid = token.pid;
+        PoolInfo memory pool = s.poolInfo[pid];
+        (totalPending, actualPending, newPending) = LibSaloon.pendingPremium(
+            pool.freezeTime,
+            token.lastClaimedTime,
+            token.amount,
+            token.apy,
+            token.unclaimed
+        );
+    }
+
     // viewSaloonProfitBalance
     function viewSaloonProfitBalance(
         address _token

@@ -324,6 +324,16 @@ interface ISaloonGlobal {
 
     function name() external view returns (string memory);
 
+    function viewPendingPremium(
+        uint256 _tokenId
+    )
+        external
+        returns (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        );
+
     function isApprovedForAll(
         address owner,
         address operator

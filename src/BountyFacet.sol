@@ -39,7 +39,6 @@ which my differ from the standard 1.06%
 contract BountyFacet is Base, IBountyFacet {
     using SafeERC20 for IERC20;
 
-    //NOTE TODO Where to place the ERC721 VARIABLES?
     /// @notice Updates and transfers amount owed to a tokenId
     /// @param _tokenId Token Id of ERC721 being updated
     /// @param _shouldHarvest Whether staker wants to claim their owed premium or not
@@ -323,6 +322,10 @@ contract BountyFacet is Base, IBountyFacet {
         );
         LibSaloon.LibSaloonStorage storage ss = LibSaloon.getLibSaloonStorage();
 
+        //TODO Call updateTokenReward here (to take snapshot) because,
+        // user will not be entitled to any more rewards after this sets token.apy to zero
+        _updateTokenReward(_tokenId, false); //NOTE trial
+
         NFTInfo storage token = s.nftInfo[_tokenId];
         uint256 pid = token.pid;
         token.apy = 0;
@@ -348,8 +351,10 @@ contract BountyFacet is Base, IBountyFacet {
         NFTInfo storage token = s.nftInfo[_tokenId];
         uint256 pid = token.pid;
         PoolInfo storage pool = s.poolInfo[pid];
+        address owner = LibERC721.ownerOf(_tokenId);
+
         // If pool is under assessment period there is no need to schedule unstake M5 FIXME
-        if (pool.assessmentPeriodEnd > block.timestamp) {
+        if (pool.assessmentPeriodEnd < block.timestamp) {
             require(
                 token.timelock < block.timestamp &&
                     token.timelimit > block.timestamp,
@@ -376,10 +381,7 @@ contract BountyFacet is Base, IBountyFacet {
         if (amount > 0) {
             pool.generalInfo.totalStaked -= amount;
 
-            pool.generalInfo.token.safeTransfer(
-                LibERC721.ownerOf(_tokenId),
-                amount
-            );
+            pool.generalInfo.token.safeTransfer(owner, amount);
         }
 
         emit Unstaked(msg.sender, pid, amount);

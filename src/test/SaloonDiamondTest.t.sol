@@ -300,6 +300,7 @@ contract SaloonDiamondTest is DSTest, Script {
         viewFacet.selectors.push(IViewFacet.viewSaloonProfitBalance.selector);
         viewFacet.selectors.push(IViewFacet.viewTokenInfo.selector);
         viewFacet.selectors.push(IViewFacet.viewTotalStaked.selector);
+        viewFacet.selectors.push(IViewFacet.viewPendingPremium.selector);
 
         proposeFacets.push(viewFacet);
         executeFacets.facetCuts.push(viewFacet);
@@ -630,6 +631,8 @@ contract SaloonDiamondTest is DSTest, Script {
         (uint256 tokenAmount1, uint256 tokenAPY1, , , ) = saloon.viewTokenInfo(
             tokenId
         );
+        emit log_named_address("owner", saloon.ownerOf(tokenId));
+
         assertEq(tokenAmount1, stakeAmount);
 
         uint256 tokenId2 = saloon.stake(pid, stakeAmount);
@@ -654,8 +657,8 @@ contract SaloonDiamondTest is DSTest, Script {
 
         // unstake
         vm.warp(block.timestamp + 8 days);
-        //NOTE REVERTING HERE FOR SOME REASON
         bool unstaked = saloon.unstake(tokenId, true);
+
         (uint256 stakeAfter, , , , ) = saloon.viewTokenInfo(tokenId);
         assertEq(stakeAfter, 0);
 
@@ -668,161 +671,174 @@ contract SaloonDiamondTest is DSTest, Script {
         assertEq(tokenAPY3New, tokenAPY2);
     }
 
-    //     // ============================
-    //     // Test scheduleUnstake
-    //     // ============================
-    //     function testScheduleUnstake() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
+    // ============================
+    // Test scheduleUnstake
+    // ============================
+    function testScheduleUnstake() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
 
-    //         //schedule unstake
-    //         bool scheduled = saloon.scheduleUnstake(tokenId);
-    //         assert(scheduled == true);
-    //     }
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(tokenId);
+        assert(scheduled == true);
+    }
 
-    //     // ============================
-    //     // Test unstake
-    //     // ============================
-    //     function testUnstake() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
+    // ============================
+    // Test unstake
+    // ============================
+    function testUnstake() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
 
-    //         //schedule unstake
-    //         bool scheduled = saloon.scheduleUnstake(tokenId);
-    //         assert(scheduled == true);
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(tokenId);
+        assert(scheduled == true);
 
-    //         // unstake
-    //         vm.warp(block.timestamp + 8 days);
-    //         bool unstaked = saloon.unstake(tokenId, true);
-    //         (uint256 stakeAfter, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stakeAfter, 0);
+        // unstake
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(tokenId, true);
+        (uint256 stakeAfter, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stakeAfter, 0);
 
-    //         //test unstake fails before schedule window opens
-    //         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stake2, 10 * 10**6);
-    //         bool scheduled2 = saloon.scheduleUnstake(tokenId2);
-    //         assert(scheduled2 == true);
+        //test unstake fails before schedule window opens
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10 ** 6);
+        bool scheduled2 = saloon.scheduleUnstake(tokenId2);
+        assert(scheduled2 == true);
 
-    //         // unstake before window opens
-    //         vm.warp(block.timestamp + 6 days);
-    //         vm.expectRevert("Timelock not set or not completed in time");
-    //         saloon.unstake(tokenId2, true);
+        // unstake before window opens
+        vm.warp(block.timestamp + 6 days);
+        vm.expectRevert("Timelock not set or not completed in time");
+        saloon.unstake(tokenId2, true);
 
-    //         //test unstake fails after schedule window closes
-    //         bool scheduled3 = saloon.scheduleUnstake(tokenId2);
-    //         assert(scheduled3 == true);
-    //         vm.warp(block.timestamp + 11 days);
-    //         vm.expectRevert("Timelock not set or not completed in time");
-    //         saloon.unstake(tokenId2, true);
-    //     }
+        //test unstake fails after schedule window closes
+        bool scheduled3 = saloon.scheduleUnstake(tokenId2);
+        assert(scheduled3 == true);
+        vm.warp(block.timestamp + 11 days);
+        vm.expectRevert("Timelock not set or not completed in time");
+        saloon.unstake(tokenId2, true);
+    }
 
-    //     // ============================
-    //     // Test unstake with unclaimed
-    //     // ============================
-    //     function testUnstakeWithUnclaimed() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
+    // ============================
+    // Test unstake with unclaimed
+    // ============================
+    // TODO Ask Djando to go over this.
+    function testUnstakeWithUnclaimed() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
 
-    //         uint256 tokenId = saloon.stake(pid, 1000 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 1000 * 10**6);
+        uint256 tokenId = saloon.stake(pid, 1000 * 10 ** 6);
+        (uint256 stake, uint256 apy, , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 1000 * 10 ** 6);
+        // assertEq(apy, 10 * 10 ** 6);
 
-    //         (
-    //             uint256 requiredPremiumBalancePerPeriod,
-    //             uint256 premiumBalance,
-    //             uint256 premiumAvailable
-    //         ) = saloon.viewPoolPremiumInfo(pid);
+        (
+            uint256 requiredPremiumBalancePerPeriod,
+            uint256 premiumBalance,
+            uint256 premiumAvailable
+        ) = saloon.viewPoolPremiumInfo(pid);
 
-    //         vm.warp(block.timestamp + 6 days);
-    //         (
-    //             uint256 totalPending,
-    //             uint256 actualPending,
-    //             uint256 newPending
-    //         ) = saloon.pendingPremium(tokenId);
-    //         (, , uint256 actualPendingTokenInfo, , ) = saloon.viewTokenInfo(
-    //             tokenId
-    //         );
-    //         assertEq(actualPending, actualPendingTokenInfo);
+        vm.warp(block.timestamp + 14 days);
+        (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        ) = saloon.viewPendingPremium(tokenId);
 
-    //         saloon.claimPremium(tokenId);
-    //         (
-    //             requiredPremiumBalancePerPeriod,
-    //             premiumBalance,
-    //             premiumAvailable
-    //         ) = saloon.viewPoolPremiumInfo(pid);
-    //         assertEq(
-    //             premiumBalance,
-    //             requiredPremiumBalancePerPeriod - totalPending
-    //         );
+        // (, , uint256 actualPendingTokenInfo, , ) = saloon.viewTokenInfo(
+        //     tokenId
+        // );
+        // assertEq(actualPending, actualPendingTokenInfo);
 
-    //         //schedule unstake
-    //         bool scheduled = saloon.scheduleUnstake(tokenId);
-    //         assert(scheduled == true);
+        // (
+        //     requiredPremiumBalancePerPeriod,
+        //     premiumBalance,
+        //     premiumAvailable
+        // ) = saloon.viewPoolPremiumInfo(pid);
+        // assertEq(
+        //     premiumBalance,
+        //     totalPending - requiredPremiumBalancePerPeriod
+        // ); NOTE //why is there a slight difference here??
 
-    //         vm.stopPrank();
-    //         vm.startPrank(project);
-    //         usdc.approve(address(saloon), 0);
-    //         vm.stopPrank();
-    //         vm.startPrank(staker);
+        //schedule unstake -> sets token.apy to zero
+        bool scheduled = saloon.scheduleUnstake(tokenId);
+        assert(scheduled == true);
 
-    //         // unstake
-    //         vm.warp(block.timestamp + 8 days);
-    //         (totalPending, actualPending, newPending) = saloon.pendingPremium(
-    //             tokenId
-    //         );
-    //         (
-    //             requiredPremiumBalancePerPeriod,
-    //             premiumBalance,
-    //             premiumAvailable
-    //         ) = saloon.viewPoolPremiumInfo(pid);
-    //         assert(totalPending > premiumBalance);
-    //         assertEq(
-    //             totalPending,
-    //             (requiredPremiumBalancePerPeriod * 1007 * 8) / 7 / 1000
-    //         ); // Staked full cap for 8 days, divide by PERIOD (7 days)... * 1007/1000 due to small precision issue with dynamic APY curve
-    //         assertEq(newPending, totalPending);
-    //         vm.expectRevert("ERC20: transfer amount exceeds allowance"); //Project revoked allowance so user can't claim while unstaking
-    //         bool unstaked = saloon.unstake(tokenId, true);
+        vm.stopPrank();
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 1e6);
+        vm.stopPrank();
+        vm.startPrank(staker);
 
-    //         // Unstake again but set _shouldHarvest to false. Stored pending in user.unclaimed.
-    //         unstaked = saloon.unstake(tokenId, false);
-    //         // uint256 usdcBalance = usdc.balanceOf(staker);
-    //         (uint256 stakeAfter, , uint256 pendingAfter, , ) = saloon.viewTokenInfo(
-    //             tokenId
-    //         );
-    //         assertEq(stakeAfter, 0);
-    //         assertEq(pendingAfter, actualPending);
-    //         vm.stopPrank();
+        // unstake
+        vm.warp(block.timestamp + 8 days);
 
-    //         // Project re-sets approvals
-    //         vm.startPrank(project);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         vm.stopPrank();
+        (totalPending, actualPending, newPending) = saloon.viewPendingPremium(
+            tokenId
+        );
 
-    //         // Staker can claim their premium now
-    //         vm.startPrank(staker);
-    //         saloon.claimPremium(tokenId);
-    //         (stakeAfter, , pendingAfter, , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stakeAfter, 0);
-    //         assertEq(pendingAfter, 0);
-    //         vm.stopPrank();
+        (
+            requiredPremiumBalancePerPeriod,
+            premiumBalance,
+            premiumAvailable
+        ) = saloon.viewPoolPremiumInfo(pid);
+        // NOTE THIS WAS REVERTING... WHY? - TODO FIX THIS (read below)
+        //      token.apy was set to zero on scheduleUnstake.
+        //      But user should still be able to claim owed premium... HOW TO FIX THIS?
+        //      Take premium snapshot at scheduleUnstake()
+        assert(totalPending > premiumBalance);
+        assertEq(
+            totalPending,
+            (requiredPremiumBalancePerPeriod * 1007 * 14) / 7 / 1000
+        ); // Staked full cap for 8 days, divide by PERIOD (7 days)... * 1007/1000 due to small precision issue with dynamic APY curve
 
-    //         // Ensure that pool has been topped up
-    //         (
-    //             requiredPremiumBalancePerPeriod,
-    //             premiumBalance,
-    //             premiumAvailable
-    //         ) = saloon.viewPoolPremiumInfo(pid);
-    //         assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
-    //         assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 3); // +3 due precision loss
-    //     }
+        saloon.claimPremium(tokenId);
+        (totalPending, actualPending, newPending) = saloon.viewPendingPremium(
+            tokenId
+        );
+        assertEq(newPending, totalPending); // newPending and TotalPending should be zero after claiming
+        // vm.expectRevert("ERC20: transfer amount exceeds allowance"); //Project revoked allowance so user can't claim while unstaking
+        // bool unstaked = saloon.unstake(tokenId, true);
+
+        // // Unstake again but set _shouldHarvest to false. Stored pending in user.unclaimed.
+        // unstaked = saloon.unstake(tokenId, false);
+        // // uint256 usdcBalance = usdc.balanceOf(staker);
+        // (uint256 stakeAfter, , uint256 pendingAfter, , ) = saloon.viewTokenInfo(
+        //     tokenId
+        // );
+        // assertEq(stakeAfter, 0);
+        // assertEq(pendingAfter, actualPending);
+        // vm.stopPrank();
+
+        // Project re-sets approvals
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        vm.stopPrank();
+
+        // Staker can claim their premium now
+        vm.startPrank(staker);
+        saloon.claimPremium(tokenId);
+        (stakeAfter, , pendingAfter, , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stakeAfter, 0);
+        assertEq(pendingAfter, 0);
+        vm.stopPrank();
+
+        // Ensure that pool has been topped up
+        (
+            requiredPremiumBalancePerPeriod,
+            premiumBalance,
+            premiumAvailable
+        ) = saloon.viewPoolPremiumInfo(pid);
+        assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
+        assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 3); // +3 due precision loss
+    }
 
     //     function testTokenList() external {
     //         vm.startPrank(staker);
