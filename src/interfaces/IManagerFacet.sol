@@ -41,6 +41,8 @@ interface IManagerFacet {
 
     function setStrategyFactory(address _strategyFactory) external;
 
+    function setLibSaloonStorage() external;
+
     function startAssessmentPeriod(uint256 _pid) external;
 
     function updateTokenWhitelist(

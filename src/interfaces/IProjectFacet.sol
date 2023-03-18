@@ -22,6 +22,11 @@ interface IProjectFacet {
         uint256 _amount
     ) external returns (bool);
 
+    function scheduleProjectDepositWithdrawal(
+        uint256 _pid,
+        uint256 _amount
+    ) external returns (bool);
+
     function receiveStrategyYield(address _token, uint256 _amount) external;
 
     function setAPYandPoolCapAndDeposit(

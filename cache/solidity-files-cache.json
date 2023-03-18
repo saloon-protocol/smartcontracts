@@ -2155,8 +2155,8 @@
       }
     },
     "src/BountyFacet.sol": {
-      "lastModificationDate": 1679109427981,
-      "contentHash": "eceab434b7d99b2b0a1db397feecfe43",
+      "lastModificationDate": 1679118418568,
+      "contentHash": "9bde4cf93372604e2ba5b4b2720df93c",
       "sourceName": "src/BountyFacet.sol",
       "solcConfig": {
         "settings": {
@@ -2594,8 +2594,8 @@
       }
     },
     "src/ManagerFacet.sol": {
-      "lastModificationDate": 1678344963658,
-      "contentHash": "909dfc9e5831452202466b655e6e94ce",
+      "lastModificationDate": 1679113319317,
+      "contentHash": "244199fa1b9f63fabd80d48dd4d916eb",
       "sourceName": "src/ManagerFacet.sol",
       "solcConfig": {
         "settings": {
@@ -2664,8 +2664,8 @@
       }
     },
     "src/ProjectFacet.sol": {
-      "lastModificationDate": 1678400562109,
-      "contentHash": "8e9deedefac70359fc6d54891b294aa4",
+      "lastModificationDate": 1679117420843,
+      "contentHash": "98b6ac036cb84d94fe2e855b4c1f7f2d",
       "sourceName": "src/ProjectFacet.sol",
       "solcConfig": {
         "settings": {
@@ -3636,9 +3636,79 @@
         }
       }
     },
+    "src/ViewFacet.sol": {
+      "lastModificationDate": 1679116725394,
+      "contentHash": "54c8bf718945896ecf959bc42cdcdf11",
+      "sourceName": "src/ViewFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol",
+        "lib/prb-math/src/Core.sol",
+        "lib/prb-math/src/UD60x18.sol",
+        "src/Base.sol",
+        "src/ReentrancyGuard.sol",
+        "src/StargateStrategy.sol",
+        "src/Storage.sol",
+        "src/StrategyFactory.sol",
+        "src/interfaces/ISaloon.sol",
+        "src/interfaces/ISaloonBounty.sol",
+        "src/interfaces/ISaloonGlobal.sol",
+        "src/interfaces/ISaloonManager.sol",
+        "src/interfaces/ISaloonProjectPortal.sol",
+        "src/interfaces/ISaloonView.sol",
+        "src/interfaces/IStargateLPStaking.sol",
+        "src/interfaces/IStargateLPToken.sol",
+        "src/interfaces/IStargateRouter.sol",
+        "src/interfaces/IStrategy.sol",
+        "src/interfaces/IStrategyFactory.sol",
+        "src/interfaces/IUniswapV2Router.sol",
+        "src/interfaces/IViewFacet.sol",
+        "src/lib/LibSaloon.sol",
+        "src/lib/SaloonLib.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "ViewFacet": {
+          "0.8.19+commit.7dd6d404.Darwin.appleclang": "ViewFacet.sol/ViewFacet.json"
+        }
+      }
+    },
     "src/interfaces/IBountyFacet.sol": {
-      "lastModificationDate": 1678414940267,
-      "contentHash": "24fcd60425cfba3aa1f6217ab41c7571",
+      "lastModificationDate": 1679118852955,
+      "contentHash": "e870de0356fbe6e2840c1e3559acc599",
       "sourceName": "src/interfaces/IBountyFacet.sol",
       "solcConfig": {
         "settings": {
@@ -3761,8 +3831,8 @@
       }
     },
     "src/interfaces/IManagerFacet.sol": {
-      "lastModificationDate": 1678347394777,
-      "contentHash": "4357ad586b7c3172d297000d1ed91e1c",
+      "lastModificationDate": 1679112943852,
+      "contentHash": "4fb726f58029da01bf9bcf1a15dcd478",
       "sourceName": "src/interfaces/IManagerFacet.sol",
       "solcConfig": {
         "settings": {
@@ -3801,8 +3871,8 @@
       }
     },
     "src/interfaces/IProjectFacet.sol": {
-      "lastModificationDate": 1678347586574,
-      "contentHash": "7c55053c9705cece9c04228af0697cd1",
+      "lastModificationDate": 1679113753634,
+      "contentHash": "0aa597382db43dcde4918fb9763302bf",
       "sourceName": "src/interfaces/IProjectFacet.sol",
       "solcConfig": {
         "settings": {
@@ -3926,8 +3996,8 @@
       }
     },
     "src/interfaces/ISaloonGlobal.sol": {
-      "lastModificationDate": 1678250635240,
-      "contentHash": "64d1dd4618ec3caf3b32aaec040153b3",
+      "lastModificationDate": 1679113113334,
+      "contentHash": "1fb279466b15c619a0c53b6eba8beea8",
       "sourceName": "src/interfaces/ISaloonGlobal.sol",
       "solcConfig": {
         "settings": {
@@ -4426,6 +4496,46 @@
         },
         "IUniswapV3SwapCallback": {
           "0.8.19+commit.7dd6d404.Darwin.appleclang": "IUniswapV3Router.sol/IUniswapV3SwapCallback.json"
+        }
+      }
+    },
+    "src/interfaces/IViewFacet.sol": {
+      "lastModificationDate": 1679116774347,
+      "contentHash": "df6dfc57f68e8b726ba740191a1c5b38",
+      "sourceName": "src/interfaces/IViewFacet.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "IViewFacet": {
+          "0.8.19+commit.7dd6d404.Darwin.appleclang": "IViewFacet.sol/IViewFacet.json"
         }
       }
     },
@@ -5163,8 +5273,8 @@
       }
     },
     "src/test/SaloonDiamondTest.t.sol": {
-      "lastModificationDate": 1679110911081,
-      "contentHash": "a80786dd67e2b7203faacd34d1914aff",
+      "lastModificationDate": 1679119589014,
+      "contentHash": "7996e238fdc4a069af7b8beb9b68ff99",
       "sourceName": "src/test/SaloonDiamondTest.t.sol",
       "solcConfig": {
         "settings": {
@@ -5252,6 +5362,7 @@
         "src/StargateStrategy.sol",
         "src/Storage.sol",
         "src/StrategyFactory.sol",
+        "src/ViewFacet.sol",
         "src/interfaces/IBountyFacet.sol",
         "src/interfaces/IDiamondCut.sol",
         "src/interfaces/IGetters.sol",
@@ -5269,6 +5380,7 @@
         "src/interfaces/IStrategy.sol",
         "src/interfaces/IStrategyFactory.sol",
         "src/interfaces/IUniswapV2Router.sol",
+        "src/interfaces/IViewFacet.sol",
         "src/lib/DelegateCall.sol",
         "src/lib/Diamond.sol",
         "src/lib/ERC20.sol",

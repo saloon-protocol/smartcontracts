@@ -34,6 +34,7 @@ contract ProjectFacet is Base, IProjectFacet {
             !pool.isActive && pool.generalInfo.poolCap == 0,
             "Pool already initialized"
         );
+        // TODO Change thsi to be if apy = 0 deposit must be > $X, and if deposit = 0 apy needs to be higher than X%
         require(_apy > 0 && _apy <= 10000, "APY out of range");
         require(
             _poolCap >= 1000 * (10 ** pool.generalInfo.tokenDecimals) &&

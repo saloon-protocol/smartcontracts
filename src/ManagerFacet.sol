@@ -17,6 +17,16 @@ contract ManagerFacet is Base, IManagerFacet {
         s.strategyFactory = IStrategyFactory(_strategyFactory);
     }
 
+    function setLibSaloonStorage() external onlyOwner {
+        LibSaloon.LibSaloonStorage storage ss = LibSaloon.getLibSaloonStorage();
+        ss.defaultAPY = 1.06 ether;
+        ss.bps = 10_000;
+        ss.precision = 1e18;
+        ss.year = 365 days;
+        ss.period = 1 weeks;
+        ss.saloonFee = 1000;
+    }
+
     /// @notice Updates the list of ERC20 tokens allow to be used in bounty pools
     /// @notice _minStakeAmount must either be set on first whitelisting for token, or must be un-whitelisted and then re-whitelisted to reset value
     /// @dev Only one token is allowed per pool

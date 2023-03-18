@@ -133,7 +133,9 @@ interface ISaloonGlobal {
         uint256 indexed tokenId
     );
 
-    function nftInfo(uint256)
+    function nftInfo(
+        uint256
+    )
         external
         view
         returns (
@@ -147,7 +149,9 @@ interface ISaloonGlobal {
             uint256 timelimit
         );
 
-    function poolInfo(uint256)
+    function poolInfo(
+        uint256
+    )
         external
         view
         returns (
@@ -189,10 +193,10 @@ interface ISaloonGlobal {
         ISaloonView _saloonView
     ) external;
 
-    function calcRequiredPremiumBalancePerPeriod(uint256 _poolCap, uint256 _apy)
-        external
-        pure
-        returns (uint256 requiredPremiumBalance);
+    function calcRequiredPremiumBalancePerPeriod(
+        uint256 _poolCap,
+        uint256 _apy
+    ) external pure returns (uint256 requiredPremiumBalance);
 
     function compoundYieldForPid(uint256 _pid) external;
 
@@ -204,9 +208,10 @@ interface ISaloonGlobal {
 
     function minTokenStakeAmount(address) external view returns (uint256);
 
-    function projectDepositWithdrawal(uint256 _pid, uint256 _amount)
-        external
-        returns (bool);
+    function projectDepositWithdrawal(
+        uint256 _pid,
+        uint256 _amount
+    ) external returns (bool);
 
     function proxiableUUID() external view returns (bytes32);
 
@@ -216,9 +221,10 @@ interface ISaloonGlobal {
 
     function saloonStrategyProfit(address) external view returns (uint256);
 
-    function scheduleProjectDepositWithdrawal(uint256 _pid, uint256 _amount)
-        external
-        returns (bool);
+    function scheduleProjectDepositWithdrawal(
+        uint256 _pid,
+        uint256 _amount
+    ) external returns (bool);
 
     function setAPYandPoolCapAndDeposit(
         uint256 _pid,
@@ -234,22 +240,25 @@ interface ISaloonGlobal {
 
     function transferOwnership(address newOwner) external;
 
-    function updateProjectWalletAddress(uint256 _pid, address _projectWallet)
-        external;
+    function updateProjectWalletAddress(
+        uint256 _pid,
+        address _projectWallet
+    ) external;
 
     function upgradeTo(address newImplementation) external;
 
-    function upgradeToAndCall(address newImplementation, bytes memory data)
-        external
-        payable;
+    function upgradeToAndCall(
+        address newImplementation,
+        bytes memory data
+    ) external payable;
 
     function viewBountyBalance(uint256 _pid) external view returns (uint256);
 
     function windDownBounty(uint256 _pid) external returns (bool);
 
-    function withdrawProjectYield(uint256 _pid)
-        external
-        returns (uint256 returnedAmount);
+    function withdrawProjectYield(
+        uint256 _pid
+    ) external returns (uint256 returnedAmount);
 
     function viewAllPoolInfo() external view returns (PoolInfo[] memory);
 
@@ -268,15 +277,16 @@ interface ISaloonGlobal {
 
     function collectAllReferralProfits() external returns (bool);
 
-    function collectAllSaloonProfits(address _saloonWallet)
-        external
-        returns (bool);
+    function collectAllSaloonProfits(
+        address _saloonWallet
+    ) external returns (bool);
 
     function collectReferralProfit(address _token) external returns (bool);
 
-    function collectSaloonProfits(address _token, address _saloonWallet)
-        external
-        returns (bool);
+    function collectSaloonProfits(
+        address _token,
+        address _saloonWallet
+    ) external returns (bool);
 
     function extendReferralPeriod(uint256 _pid, uint256 _endTime) external;
 
@@ -288,10 +298,9 @@ interface ISaloonGlobal {
 
     function setStrategyFactory(address) external;
 
-    function viewTokenWhitelistStatus(address _token)
-        external
-        view
-        returns (bool);
+    function viewTokenWhitelistStatus(
+        address _token
+    ) external view returns (bool);
 
     function approve(address to, uint256 tokenId) external;
 
@@ -303,24 +312,22 @@ interface ISaloonGlobal {
 
     function consolidateAll() external;
 
-    function getAllTokensByOwner(address _owner)
-        external
-        view
-        returns (ISaloon.NFTInfo[] memory userTokens);
+    function getAllTokensByOwner(
+        address _owner
+    ) external view returns (ISaloon.NFTInfo[] memory userTokens);
 
-    function getCurrentAPY(uint256 _pid)
-        external
-        view
-        returns (uint256 currentAPY);
+    function getCurrentAPY(
+        uint256 _pid
+    ) external view returns (uint256 currentAPY);
 
     function index() external view returns (uint256);
 
     function name() external view returns (string memory);
 
-    function isApprovedForAll(address owner, address operator)
-        external
-        view
-        returns (bool);
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) external view returns (bool);
 
     function ownerOf(uint256 tokenId) external view returns (address);
 
@@ -352,11 +359,7 @@ interface ISaloonGlobal {
 
     function tokenURI(uint256 tokenId) external view returns (string memory);
 
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) external;
+    function transferFrom(address from, address to, uint256 tokenId) external;
 
     function setApprovalForAll(address operator, bool approved) external;
 
@@ -364,9 +367,10 @@ interface ISaloonGlobal {
 
     function scheduleUnstake(uint256 _tokenId) external returns (bool);
 
-    function unstake(uint256 _tokenId, bool _shouldHarvest)
-        external
-        returns (bool);
+    function unstake(
+        uint256 _tokenId,
+        bool _shouldHarvest
+    ) external returns (bool);
 
     function YEAR() external view returns (uint256);
 
@@ -374,39 +378,36 @@ interface ISaloonGlobal {
 
     function testingArray() external view returns (uint256[] memory);
 
-    function viewActiveTokens(address _token)
+    function viewActiveTokens(
+        address _token
+    )
         external
-        returns (
-            address[] memory,
-            bool,
-            uint256[] memory,
-            PoolInfo[] memory
-        );
+        returns (address[] memory, bool, uint256[] memory, PoolInfo[] memory);
 
     function strategyFactory() external view returns (address);
 
-    function viewBountyInfo(uint256 _pid)
+    function viewBountyInfo(
+        uint256 _pid
+    )
         external
         view
-        returns (
-            uint256 payout,
-            uint256 apy,
-            uint256 staked,
-            uint256 poolCap
-        );
+        returns (uint256 payout, uint256 apy, uint256 staked, uint256 poolCap);
 
     function viewHackerPayout(uint256 _pid) external view returns (uint256);
 
-    function viewMinProjectDeposit(uint256 _pid)
-        external
-        view
-        returns (uint256);
+    function setLibSaloonStorage() external;
+
+    function viewMinProjectDeposit(
+        uint256 _pid
+    ) external view returns (uint256);
 
     function viewPoolAPY(uint256 _pid) external view returns (uint256);
 
     function viewPoolCap(uint256 _pid) external view returns (uint256);
 
-    function viewPoolPremiumInfo(uint256 _pid)
+    function viewPoolPremiumInfo(
+        uint256 _pid
+    )
         external
         view
         returns (
@@ -415,7 +416,9 @@ interface ISaloonGlobal {
             uint256 premiumAvailable
         );
 
-    function viewPoolTimelockInfo(uint256 _pid)
+    function viewPoolTimelockInfo(
+        uint256 _pid
+    )
         external
         view
         returns (
@@ -424,12 +427,14 @@ interface ISaloonGlobal {
             uint256 withdrawalScheduledAmount
         );
 
-    function viewReferralBalance(address _referrer, address _token)
-        external
-        view
-        returns (uint256 referralBalance);
+    function viewReferralBalance(
+        address _referrer,
+        address _token
+    ) external view returns (uint256 referralBalance);
 
-    function viewSaloonProfitBalance(address _token)
+    function viewSaloonProfitBalance(
+        address _token
+    )
         external
         view
         returns (
@@ -439,7 +444,9 @@ interface ISaloonGlobal {
             uint256 premiumProfit
         );
 
-    function viewTokenInfo(uint256 _tokenId)
+    function viewTokenInfo(
+        uint256 _tokenId
+    )
         external
         view
         returns (
@@ -463,8 +470,9 @@ interface ISaloonGlobal {
 
     function initManager(ISaloonManager _saloonManager) external;
 
-    function initProjectPortal(ISaloonProjectPortal _saloonProjectPortal)
-        external;
+    function initProjectPortal(
+        ISaloonProjectPortal _saloonProjectPortal
+    ) external;
 
     function initSaloonBounty() external;
 }
