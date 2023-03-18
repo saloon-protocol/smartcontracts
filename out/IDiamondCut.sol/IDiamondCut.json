@@ -307,10 +307,10 @@
     "proposeDiamondCut((address,uint8,bool,bytes4[])[],address)": "1a97bca1",
     "unfreezeDiamond()": "17338945"
   },
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"indexed\":false,\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"_facetCuts\",\"type\":\"tuple[]\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_initAddress\",\"type\":\"address\"}],\"name\":\"DiamondCutProposal\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentProposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"proposedDiamondCutHash\",\"type\":\"bytes32\"}],\"name\":\"DiamondCutProposalCancelation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"facetCuts\",\"type\":\"tuple[]\"},{\"internalType\":\"address\",\"name\":\"initAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initCalldata\",\"type\":\"bytes\"}],\"indexed\":false,\"internalType\":\"struct Diamond.DiamondCutData\",\"name\":\"_diamondCut\",\"type\":\"tuple\"}],\"name\":\"DiamondCutProposalExecution\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentProposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"securityCouncilEmergencyApprovals\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"proposedDiamondCutHash\",\"type\":\"bytes32\"}],\"name\":\"EmergencyDiamondCutApproved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"EmergencyFreeze\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"lastDiamondFreezeTimestamp\",\"type\":\"uint256\"}],\"name\":\"Unfreeze\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_diamondCutHash\",\"type\":\"bytes32\"}],\"name\":\"approveEmergencyDiamondCutAsSecurityCouncilMember\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cancelDiamondCutProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emergencyFreezeDiamond\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"facetCuts\",\"type\":\"tuple[]\"},{\"internalType\":\"address\",\"name\":\"initAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initCalldata\",\"type\":\"bytes\"}],\"internalType\":\"struct Diamond.DiamondCutData\",\"name\":\"_diamondCut\",\"type\":\"tuple\"}],\"name\":\"executeDiamondCutProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"_facetCuts\",\"type\":\"tuple[]\"},{\"internalType\":\"address\",\"name\":\"_initAddress\",\"type\":\"address\"}],\"name\":\"proposeDiamondCut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unfreezeDiamond\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IDiamondCut.sol\":\"IDiamondCut\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@prb/test/=lib/prb-math/lib/prb-test/src/\",\":decimath/=lib/decimath/contracts/\",\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":prb-math/=lib/prb-math/src/\",\":prb-test/=lib/prb-math/lib/prb-test/src/\",\":solmate/=lib/solmate/src/\",\":src/=src/\"]},\"sources\":{\"src/interfaces/IDiamondCut.sol\":{\"keccak256\":\"0xd264774a2fe3d685e8b1ab8c7887f98ffd682ddad7cbf475fae76d0f095297d0\",\"license\":\"MIT OR Apache-2.0\",\"urls\":[\"bzz-raw://58db93f6328bd54dd957220e71a9f2f54e5277095283ede07191ba3f290a2885\",\"dweb:/ipfs/QmdVbMunqqJwkbqEJ3Ti65cVZDAJjZzPPm9ndxYKBjHRMn\"]},\"src/lib/Diamond.sol\":{\"keccak256\":\"0xded900704652c2ba02649cea01c416dc16c494bfc083c55485844471095510a5\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f2a068d692367c3ba5bd17a97b363a75540b7bdb7fbc2821c17c71ba3ea04fea\",\"dweb:/ipfs/QmS3f7pgAQY7yjNNr3CePSkVh1CV4kR16jycQ3sRR6GGPo\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"indexed\":false,\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"_facetCuts\",\"type\":\"tuple[]\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_initAddress\",\"type\":\"address\"}],\"name\":\"DiamondCutProposal\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentProposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"proposedDiamondCutHash\",\"type\":\"bytes32\"}],\"name\":\"DiamondCutProposalCancelation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"facetCuts\",\"type\":\"tuple[]\"},{\"internalType\":\"address\",\"name\":\"initAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initCalldata\",\"type\":\"bytes\"}],\"indexed\":false,\"internalType\":\"struct Diamond.DiamondCutData\",\"name\":\"_diamondCut\",\"type\":\"tuple\"}],\"name\":\"DiamondCutProposalExecution\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"currentProposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"securityCouncilEmergencyApprovals\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"proposedDiamondCutHash\",\"type\":\"bytes32\"}],\"name\":\"EmergencyDiamondCutApproved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"EmergencyFreeze\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"lastDiamondFreezeTimestamp\",\"type\":\"uint256\"}],\"name\":\"Unfreeze\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_diamondCutHash\",\"type\":\"bytes32\"}],\"name\":\"approveEmergencyDiamondCutAsSecurityCouncilMember\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cancelDiamondCutProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emergencyFreezeDiamond\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"facetCuts\",\"type\":\"tuple[]\"},{\"internalType\":\"address\",\"name\":\"initAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initCalldata\",\"type\":\"bytes\"}],\"internalType\":\"struct Diamond.DiamondCutData\",\"name\":\"_diamondCut\",\"type\":\"tuple\"}],\"name\":\"executeDiamondCutProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"facet\",\"type\":\"address\"},{\"internalType\":\"enum Diamond.Action\",\"name\":\"action\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"isFreezable\",\"type\":\"bool\"},{\"internalType\":\"bytes4[]\",\"name\":\"selectors\",\"type\":\"bytes4[]\"}],\"internalType\":\"struct Diamond.FacetCut[]\",\"name\":\"_facetCuts\",\"type\":\"tuple[]\"},{\"internalType\":\"address\",\"name\":\"_initAddress\",\"type\":\"address\"}],\"name\":\"proposeDiamondCut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unfreezeDiamond\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IDiamondCut.sol\":\"IDiamondCut\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@prb/test/=lib/prb-math/lib/prb-test/src/\",\":decimath/=lib/decimath/contracts/\",\":ds-test/=lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\",\":prb-math/=lib/prb-math/src/\",\":prb-test/=lib/prb-math/lib/prb-test/src/\",\":solmate/=lib/solmate/src/\",\":src/=src/\"]},\"sources\":{\"src/interfaces/IDiamondCut.sol\":{\"keccak256\":\"0xd264774a2fe3d685e8b1ab8c7887f98ffd682ddad7cbf475fae76d0f095297d0\",\"license\":\"MIT OR Apache-2.0\",\"urls\":[\"bzz-raw://58db93f6328bd54dd957220e71a9f2f54e5277095283ede07191ba3f290a2885\",\"dweb:/ipfs/QmdVbMunqqJwkbqEJ3Ti65cVZDAJjZzPPm9ndxYKBjHRMn\"]},\"src/lib/Diamond.sol\":{\"keccak256\":\"0xded900704652c2ba02649cea01c416dc16c494bfc083c55485844471095510a5\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f2a068d692367c3ba5bd17a97b363a75540b7bdb7fbc2821c17c71ba3ea04fea\",\"dweb:/ipfs/QmS3f7pgAQY7yjNNr3CePSkVh1CV4kR16jycQ3sRR6GGPo\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
-      "version": "0.8.17+commit.8df45f5f"
+      "version": "0.8.19+commit.7dd6d404"
     },
     "language": "Solidity",
     "output": {
@@ -656,22 +656,22 @@
   },
   "ast": {
     "absolutePath": "src/interfaces/IDiamondCut.sol",
-    "id": 37232,
+    "id": 41969,
     "exportedSymbols": {
       "Diamond": [
-        41380
+        55563
       ],
       "IDiamondCut": [
-        37231
+        41968
       ]
     },
     "nodeType": "SourceUnit",
-    "src": "47:1182:64",
+    "src": "47:1182:71",
     "nodes": [
       {
-        "id": 37165,
+        "id": 41902,
         "nodeType": "PragmaDirective",
-        "src": "47:21:64",
+        "src": "47:21:71",
         "nodes": [],
         "literals": [
           "solidity",
@@ -680,80 +680,80 @@
         ]
       },
       {
-        "id": 37166,
+        "id": 41903,
         "nodeType": "ImportDirective",
-        "src": "70:28:64",
+        "src": "70:28:71",
         "nodes": [],
         "absolutePath": "src/lib/Diamond.sol",
         "file": "../lib/Diamond.sol",
         "nameLocation": "-1:-1:-1",
-        "scope": 37232,
-        "sourceUnit": 41381,
+        "scope": 41969,
+        "sourceUnit": 55564,
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 37231,
+        "id": 41968,
         "nodeType": "ContractDefinition",
-        "src": "100:1128:64",
+        "src": "100:1128:71",
         "nodes": [
           {
-            "id": 37175,
+            "id": 41912,
             "nodeType": "FunctionDefinition",
-            "src": "128:120:64",
+            "src": "128:120:71",
             "nodes": [],
             "functionSelector": "1a97bca1",
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "proposeDiamondCut",
-            "nameLocation": "137:17:64",
+            "nameLocation": "137:17:71",
             "parameters": {
-              "id": 37173,
+              "id": 41910,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37170,
+                  "id": 41907,
                   "mutability": "mutable",
                   "name": "_facetCuts",
-                  "nameLocation": "192:10:64",
+                  "nameLocation": "192:10:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37175,
-                  "src": "164:38:64",
+                  "scope": 41912,
+                  "src": "164:38:71",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_struct$_FacetCut_$40628_calldata_ptr_$dyn_calldata_ptr",
+                    "typeIdentifier": "t_array$_t_struct$_FacetCut_$54811_calldata_ptr_$dyn_calldata_ptr",
                     "typeString": "struct Diamond.FacetCut[]"
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 37168,
+                      "id": 41905,
                       "nodeType": "UserDefinedTypeName",
                       "pathNode": {
-                        "id": 37167,
+                        "id": 41904,
                         "name": "Diamond.FacetCut",
                         "nameLocations": [
-                          "164:7:64",
-                          "172:8:64"
+                          "164:7:71",
+                          "172:8:71"
                         ],
                         "nodeType": "IdentifierPath",
-                        "referencedDeclaration": 40628,
-                        "src": "164:16:64"
+                        "referencedDeclaration": 54811,
+                        "src": "164:16:71"
                       },
-                      "referencedDeclaration": 40628,
-                      "src": "164:16:64",
+                      "referencedDeclaration": 54811,
+                      "src": "164:16:71",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_FacetCut_$40628_storage_ptr",
+                        "typeIdentifier": "t_struct$_FacetCut_$54811_storage_ptr",
                         "typeString": "struct Diamond.FacetCut"
                       }
                     },
-                    "id": 37169,
+                    "id": 41906,
                     "nodeType": "ArrayTypeName",
-                    "src": "164:18:64",
+                    "src": "164:18:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_struct$_FacetCut_$40628_storage_$dyn_storage_ptr",
+                      "typeIdentifier": "t_array$_t_struct$_FacetCut_$54811_storage_$dyn_storage_ptr",
                       "typeString": "struct Diamond.FacetCut[]"
                     }
                   },
@@ -761,13 +761,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 37172,
+                  "id": 41909,
                   "mutability": "mutable",
                   "name": "_initAddress",
-                  "nameLocation": "220:12:64",
+                  "nameLocation": "220:12:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37175,
-                  "src": "212:20:64",
+                  "scope": 41912,
+                  "src": "212:20:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -775,10 +775,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 37171,
+                    "id": 41908,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "212:7:64",
+                    "src": "212:7:71",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -788,194 +788,194 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "154:84:64"
+              "src": "154:84:71"
             },
             "returnParameters": {
-              "id": 37174,
+              "id": 41911,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "247:0:64"
+              "src": "247:0:71"
             },
-            "scope": 37231,
+            "scope": 41968,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 37178,
+            "id": 41915,
             "nodeType": "FunctionDefinition",
-            "src": "254:45:64",
+            "src": "254:45:71",
             "nodes": [],
             "functionSelector": "62c727ab",
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "cancelDiamondCutProposal",
-            "nameLocation": "263:24:64",
+            "nameLocation": "263:24:71",
             "parameters": {
-              "id": 37176,
+              "id": 41913,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "287:2:64"
+              "src": "287:2:71"
             },
             "returnParameters": {
-              "id": 37177,
+              "id": 41914,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "298:0:64"
+              "src": "298:0:71"
             },
-            "scope": 37231,
+            "scope": 41968,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 37184,
+            "id": 41921,
             "nodeType": "FunctionDefinition",
-            "src": "305:103:64",
+            "src": "305:103:71",
             "nodes": [],
             "functionSelector": "0b66fc12",
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "executeDiamondCutProposal",
-            "nameLocation": "314:25:64",
+            "nameLocation": "314:25:71",
             "parameters": {
-              "id": 37182,
+              "id": 41919,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37181,
+                  "id": 41918,
                   "mutability": "mutable",
                   "name": "_diamondCut",
-                  "nameLocation": "381:11:64",
+                  "nameLocation": "381:11:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37184,
-                  "src": "349:43:64",
+                  "scope": 41921,
+                  "src": "349:43:71",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_DiamondCutData_$40637_calldata_ptr",
+                    "typeIdentifier": "t_struct$_DiamondCutData_$54820_calldata_ptr",
                     "typeString": "struct Diamond.DiamondCutData"
                   },
                   "typeName": {
-                    "id": 37180,
+                    "id": 41917,
                     "nodeType": "UserDefinedTypeName",
                     "pathNode": {
-                      "id": 37179,
+                      "id": 41916,
                       "name": "Diamond.DiamondCutData",
                       "nameLocations": [
-                        "349:7:64",
-                        "357:14:64"
+                        "349:7:71",
+                        "357:14:71"
                       ],
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 40637,
-                      "src": "349:22:64"
+                      "referencedDeclaration": 54820,
+                      "src": "349:22:71"
                     },
-                    "referencedDeclaration": 40637,
-                    "src": "349:22:64",
+                    "referencedDeclaration": 54820,
+                    "src": "349:22:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_DiamondCutData_$40637_storage_ptr",
+                      "typeIdentifier": "t_struct$_DiamondCutData_$54820_storage_ptr",
                       "typeString": "struct Diamond.DiamondCutData"
                     }
                   },
                   "visibility": "internal"
                 }
               ],
-              "src": "339:59:64"
+              "src": "339:59:71"
             },
             "returnParameters": {
-              "id": 37183,
+              "id": 41920,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "407:0:64"
+              "src": "407:0:71"
             },
-            "scope": 37231,
+            "scope": 41968,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 37187,
+            "id": 41924,
             "nodeType": "FunctionDefinition",
-            "src": "414:43:64",
+            "src": "414:43:71",
             "nodes": [],
             "functionSelector": "b2f44526",
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "emergencyFreezeDiamond",
-            "nameLocation": "423:22:64",
+            "nameLocation": "423:22:71",
             "parameters": {
-              "id": 37185,
+              "id": 41922,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "445:2:64"
+              "src": "445:2:71"
             },
             "returnParameters": {
-              "id": 37186,
+              "id": 41923,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "456:0:64"
+              "src": "456:0:71"
             },
-            "scope": 37231,
+            "scope": 41968,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 37190,
+            "id": 41927,
             "nodeType": "FunctionDefinition",
-            "src": "463:36:64",
+            "src": "463:36:71",
             "nodes": [],
             "functionSelector": "17338945",
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "unfreezeDiamond",
-            "nameLocation": "472:15:64",
+            "nameLocation": "472:15:71",
             "parameters": {
-              "id": 37188,
+              "id": 41925,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "487:2:64"
+              "src": "487:2:71"
             },
             "returnParameters": {
-              "id": 37189,
+              "id": 41926,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "498:0:64"
+              "src": "498:0:71"
             },
-            "scope": 37231,
+            "scope": 41968,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 37195,
+            "id": 41932,
             "nodeType": "FunctionDefinition",
-            "src": "505:107:64",
+            "src": "505:107:71",
             "nodes": [],
             "functionSelector": "635abadb",
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "approveEmergencyDiamondCutAsSecurityCouncilMember",
-            "nameLocation": "514:49:64",
+            "nameLocation": "514:49:71",
             "parameters": {
-              "id": 37193,
+              "id": 41930,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37192,
+                  "id": 41929,
                   "mutability": "mutable",
                   "name": "_diamondCutHash",
-                  "nameLocation": "581:15:64",
+                  "nameLocation": "581:15:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37195,
-                  "src": "573:23:64",
+                  "scope": 41932,
+                  "src": "573:23:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -983,10 +983,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 37191,
+                    "id": 41928,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "573:7:64",
+                    "src": "573:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -995,75 +995,75 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "563:39:64"
+              "src": "563:39:71"
             },
             "returnParameters": {
-              "id": 37194,
+              "id": 41931,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "611:0:64"
+              "src": "611:0:71"
             },
-            "scope": 37231,
+            "scope": 41968,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "id": 37203,
+            "id": 41940,
             "nodeType": "EventDefinition",
-            "src": "618:100:64",
+            "src": "618:100:71",
             "nodes": [],
             "anonymous": false,
             "eventSelector": "b660ff2e2beb524469d93421fc2ce64613213acc498afdea46f054941af61145",
             "name": "DiamondCutProposal",
-            "nameLocation": "624:18:64",
+            "nameLocation": "624:18:71",
             "parameters": {
-              "id": 37202,
+              "id": 41939,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37199,
+                  "id": 41936,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "_facetCuts",
-                  "nameLocation": "671:10:64",
+                  "nameLocation": "671:10:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37203,
-                  "src": "652:29:64",
+                  "scope": 41940,
+                  "src": "652:29:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_struct$_FacetCut_$40628_memory_ptr_$dyn_memory_ptr",
+                    "typeIdentifier": "t_array$_t_struct$_FacetCut_$54811_memory_ptr_$dyn_memory_ptr",
                     "typeString": "struct Diamond.FacetCut[]"
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 37197,
+                      "id": 41934,
                       "nodeType": "UserDefinedTypeName",
                       "pathNode": {
-                        "id": 37196,
+                        "id": 41933,
                         "name": "Diamond.FacetCut",
                         "nameLocations": [
-                          "652:7:64",
-                          "660:8:64"
+                          "652:7:71",
+                          "660:8:71"
                         ],
                         "nodeType": "IdentifierPath",
-                        "referencedDeclaration": 40628,
-                        "src": "652:16:64"
+                        "referencedDeclaration": 54811,
+                        "src": "652:16:71"
                       },
-                      "referencedDeclaration": 40628,
-                      "src": "652:16:64",
+                      "referencedDeclaration": 54811,
+                      "src": "652:16:71",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_FacetCut_$40628_storage_ptr",
+                        "typeIdentifier": "t_struct$_FacetCut_$54811_storage_ptr",
                         "typeString": "struct Diamond.FacetCut"
                       }
                     },
-                    "id": 37198,
+                    "id": 41935,
                     "nodeType": "ArrayTypeName",
-                    "src": "652:18:64",
+                    "src": "652:18:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_struct$_FacetCut_$40628_storage_$dyn_storage_ptr",
+                      "typeIdentifier": "t_array$_t_struct$_FacetCut_$54811_storage_$dyn_storage_ptr",
                       "typeString": "struct Diamond.FacetCut[]"
                     }
                   },
@@ -1071,14 +1071,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 37201,
+                  "id": 41938,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "_initAddress",
-                  "nameLocation": "699:12:64",
+                  "nameLocation": "699:12:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37203,
-                  "src": "691:20:64",
+                  "scope": 41940,
+                  "src": "691:20:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1086,10 +1086,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 37200,
+                    "id": 41937,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "691:7:64",
+                    "src": "691:7:71",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1099,32 +1099,32 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "642:75:64"
+              "src": "642:75:71"
             }
           },
           {
-            "id": 37209,
+            "id": 41946,
             "nodeType": "EventDefinition",
-            "src": "724:125:64",
+            "src": "724:125:71",
             "nodes": [],
             "anonymous": false,
             "eventSelector": "32086bfab02b0c5cfd1a3625faf6723a921a50a566515a89c5d89f540e3ab5a5",
             "name": "DiamondCutProposalCancelation",
-            "nameLocation": "730:29:64",
+            "nameLocation": "730:29:71",
             "parameters": {
-              "id": 37208,
+              "id": 41945,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37205,
+                  "id": 41942,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "currentProposalId",
-                  "nameLocation": "777:17:64",
+                  "nameLocation": "777:17:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37209,
-                  "src": "769:25:64",
+                  "scope": 41946,
+                  "src": "769:25:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1132,10 +1132,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 37204,
+                    "id": 41941,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "769:7:64",
+                    "src": "769:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1145,14 +1145,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 37207,
+                  "id": 41944,
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "proposedDiamondCutHash",
-                  "nameLocation": "820:22:64",
+                  "nameLocation": "820:22:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37209,
-                  "src": "804:38:64",
+                  "scope": 41946,
+                  "src": "804:38:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1160,10 +1160,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 37206,
+                    "id": 41943,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "804:7:64",
+                    "src": "804:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1172,104 +1172,104 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "759:89:64"
+              "src": "759:89:71"
             }
           },
           {
-            "id": 37214,
+            "id": 41951,
             "nodeType": "EventDefinition",
-            "src": "855:70:64",
+            "src": "855:70:71",
             "nodes": [],
             "anonymous": false,
             "eventSelector": "2939ddef15b725effeb997aeabeae70f7fd143da62d054fee20a65879c0327be",
             "name": "DiamondCutProposalExecution",
-            "nameLocation": "861:27:64",
+            "nameLocation": "861:27:71",
             "parameters": {
-              "id": 37213,
+              "id": 41950,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37212,
+                  "id": 41949,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "_diamondCut",
-                  "nameLocation": "912:11:64",
+                  "nameLocation": "912:11:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37214,
-                  "src": "889:34:64",
+                  "scope": 41951,
+                  "src": "889:34:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_DiamondCutData_$40637_memory_ptr",
+                    "typeIdentifier": "t_struct$_DiamondCutData_$54820_memory_ptr",
                     "typeString": "struct Diamond.DiamondCutData"
                   },
                   "typeName": {
-                    "id": 37211,
+                    "id": 41948,
                     "nodeType": "UserDefinedTypeName",
                     "pathNode": {
-                      "id": 37210,
+                      "id": 41947,
                       "name": "Diamond.DiamondCutData",
                       "nameLocations": [
-                        "889:7:64",
-                        "897:14:64"
+                        "889:7:71",
+                        "897:14:71"
                       ],
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 40637,
-                      "src": "889:22:64"
+                      "referencedDeclaration": 54820,
+                      "src": "889:22:71"
                     },
-                    "referencedDeclaration": 40637,
-                    "src": "889:22:64",
+                    "referencedDeclaration": 54820,
+                    "src": "889:22:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_DiamondCutData_$40637_storage_ptr",
+                      "typeIdentifier": "t_struct$_DiamondCutData_$54820_storage_ptr",
                       "typeString": "struct Diamond.DiamondCutData"
                     }
                   },
                   "visibility": "internal"
                 }
               ],
-              "src": "888:36:64"
+              "src": "888:36:71"
             }
           },
           {
-            "id": 37216,
+            "id": 41953,
             "nodeType": "EventDefinition",
-            "src": "931:24:64",
+            "src": "931:24:71",
             "nodes": [],
             "anonymous": false,
             "eventSelector": "afd1d5b84f004ceb4200b20fa7ff616c76b383dd0487655feb35ae687f45386b",
             "name": "EmergencyFreeze",
-            "nameLocation": "937:15:64",
+            "nameLocation": "937:15:71",
             "parameters": {
-              "id": 37215,
+              "id": 41952,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "952:2:64"
+              "src": "952:2:71"
             }
           },
           {
-            "id": 37220,
+            "id": 41957,
             "nodeType": "EventDefinition",
-            "src": "961:51:64",
+            "src": "961:51:71",
             "nodes": [],
             "anonymous": false,
             "eventSelector": "e2babfd5e77285a3c3dbc4b25592cbe4a7a26e97a7ac63067a22ebdaa9b82add",
             "name": "Unfreeze",
-            "nameLocation": "967:8:64",
+            "nameLocation": "967:8:71",
             "parameters": {
-              "id": 37219,
+              "id": 41956,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37218,
+                  "id": 41955,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "lastDiamondFreezeTimestamp",
-                  "nameLocation": "984:26:64",
+                  "nameLocation": "984:26:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37220,
-                  "src": "976:34:64",
+                  "scope": 41957,
+                  "src": "976:34:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1277,10 +1277,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 37217,
+                    "id": 41954,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "976:7:64",
+                    "src": "976:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1289,32 +1289,32 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "975:36:64"
+              "src": "975:36:71"
             }
           },
           {
-            "id": 37230,
+            "id": 41967,
             "nodeType": "EventDefinition",
-            "src": "1018:208:64",
+            "src": "1018:208:71",
             "nodes": [],
             "anonymous": false,
             "eventSelector": "143fafaae36ac0284dacf3c58b264d65436660169768c04cad70c95751d79361",
             "name": "EmergencyDiamondCutApproved",
-            "nameLocation": "1024:27:64",
+            "nameLocation": "1024:27:71",
             "parameters": {
-              "id": 37229,
+              "id": 41966,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 37222,
+                  "id": 41959,
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "_address",
-                  "nameLocation": "1077:8:64",
+                  "nameLocation": "1077:8:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37230,
-                  "src": "1061:24:64",
+                  "scope": 41967,
+                  "src": "1061:24:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1322,10 +1322,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 37221,
+                    "id": 41958,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1061:7:64",
+                    "src": "1061:7:71",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1336,14 +1336,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 37224,
+                  "id": 41961,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "currentProposalId",
-                  "nameLocation": "1103:17:64",
+                  "nameLocation": "1103:17:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37230,
-                  "src": "1095:25:64",
+                  "scope": 41967,
+                  "src": "1095:25:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1351,10 +1351,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 37223,
+                    "id": 41960,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1095:7:64",
+                    "src": "1095:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1364,14 +1364,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 37226,
+                  "id": 41963,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "securityCouncilEmergencyApprovals",
-                  "nameLocation": "1138:33:64",
+                  "nameLocation": "1138:33:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37230,
-                  "src": "1130:41:64",
+                  "scope": 41967,
+                  "src": "1130:41:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1379,10 +1379,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 37225,
+                    "id": 41962,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1130:7:64",
+                    "src": "1130:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1392,14 +1392,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 37228,
+                  "id": 41965,
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "proposedDiamondCutHash",
-                  "nameLocation": "1197:22:64",
+                  "nameLocation": "1197:22:71",
                   "nodeType": "VariableDeclaration",
-                  "scope": 37230,
-                  "src": "1181:38:64",
+                  "scope": 41967,
+                  "src": "1181:38:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1407,10 +1407,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 37227,
+                    "id": 41964,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1181:7:64",
+                    "src": "1181:7:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1419,7 +1419,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1051:174:64"
+              "src": "1051:174:71"
             }
           }
         ],
@@ -1430,15 +1430,15 @@
         "contractKind": "interface",
         "fullyImplemented": false,
         "linearizedBaseContracts": [
-          37231
+          41968
         ],
         "name": "IDiamondCut",
-        "nameLocation": "110:11:64",
-        "scope": 37232,
+        "nameLocation": "110:11:71",
+        "scope": 41969,
         "usedErrors": []
       }
     ],
     "license": "MIT OR Apache-2.0"
   },
-  "id": 64
+  "id": 71
 }

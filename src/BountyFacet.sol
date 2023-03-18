@@ -120,16 +120,17 @@ contract BountyFacet is Base, IBountyFacet {
     /// @dev only callable by Saloon owner
     /// @dev Includes Saloon commission + hunter payout
     /// @param __pid Bounty pool id
-    /// @param _hunter Hunter address that will receive payout
+    /// @param __hunter Hunter address that will receive payout
     /// @param _payoutBPS Percentage of pool to payout in BPS
     /// @param _hunterBonusBPS Percentage of Saloon's fee that will go to hunter as bonus
     function payBounty(
         uint256 __pid,
-        address _hunter,
+        address __hunter,
         uint16 _payoutBPS,
         uint16 _hunterBonusBPS
     ) public onlyOwner {
         uint256 _pid = __pid; // Appeasing "Stack too Deep" Gods
+        address _hunter = __hunter; // Appeasing "Stack too Deep" Gods
         LibSaloon.LibSaloonStorage storage ss = LibSaloon.getLibSaloonStorage();
 
         PoolInfo storage pool = s.poolInfo[_pid];
@@ -209,13 +210,13 @@ contract BountyFacet is Base, IBountyFacet {
         s.saloonBountyProfit[paymentToken] += saloonAmount;
 
         // transfer payout to hunter
-        // IERC20(paymentToken).safeTransfer( //FIXME STACK TOO DEEP
-        //     _hunter,
-        //     payoutAmount - saloonCommission
-        // );
-
-        // emit BountyPaid(_hunter, paymentToken, payoutAmount); //FIXME STACK TOO DEEP
-        // emit BountyBalanceChanged(_pid, poolTotal, viewBountyBalance(_pid)); //FIXME STACK TOO DEEP
+        IERC20(paymentToken).safeTransfer(
+            _hunter,
+            payoutAmount - saloonCommission
+        );
+        uint bountyBalance = viewBountyBalance(_pid);
+        emit BountyPaid(_hunter, paymentToken, payoutAmount);
+        emit BountyBalanceChanged(_pid, poolTotal, bountyBalance);
     }
 
     // M5 FIXME added payBountyDuringAssessment() to make fair payment during assessment period
