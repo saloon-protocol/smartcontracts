@@ -4,6 +4,7 @@ import "./Base.sol";
 import "./interfaces/IViewFacet.sol";
 import "./interfaces/IStrategyFactory.sol";
 import "./lib/LibSaloon.sol";
+import "./lib/LibERC721.sol";
 
 contract ViewFacet is Base, IViewFacet {
     using SafeERC20 for IERC20;
@@ -165,5 +166,19 @@ contract ViewFacet is Base, IViewFacet {
         staked = viewTotalStaked(_pid);
         apy = viewPoolAPY(_pid);
         poolCap = viewPoolCap(_pid);
+    }
+
+    function getAllTokensByOwner(
+        address _owner
+    ) public view returns (NFTInfo[] memory userTokens) {
+        LibERC721.TokenStorage storage ts = LibERC721.getTokenStorage();
+
+        uint256[] memory tokens = ts._ownedTokens[_owner];
+        uint256 tokenLength = tokens.length;
+        userTokens = new NFTInfo[](tokenLength);
+
+        for (uint256 i = 0; i < tokenLength; ++i) {
+            userTokens[i] = s.nftInfo[tokens[i]];
+        }
     }
 }

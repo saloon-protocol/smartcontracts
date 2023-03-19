@@ -257,4 +257,38 @@ contract ManagerFacet is Base, IManagerFacet {
         }
         return true;
     }
+
+    //===========================================================================||
+    //                        OWNER TRANSFER                                     ||
+    //===========================================================================||
+
+    /// @notice Starts the transfer of owner rights. Only the current owner can propose a new pending one.
+    /// @notice New owner can accept owner rights by calling `acceptOwnershipTransfer` function.
+    /// @param _newPendingOwner Address of the new owner
+    function setPendingOwner(address _newPendingOwner) external onlyOwner {
+        // Save previous value into the stack to put it into the event later
+        address oldPendingOwner = s.owner;
+
+        if (oldPendingOwner != _newPendingOwner) {
+            // Change pending owner
+            s.pendingOwner = _newPendingOwner;
+
+            emit NewPendingOwner(oldPendingOwner, _newPendingOwner);
+        }
+    }
+
+    /// @notice Accepts transfer of admin rights. Only pending owner can accept the role.
+    function acceptOwnershipTransfer() external {
+        address pendingOwner = s.pendingOwner;
+        require(msg.sender == pendingOwner, "not pending owner"); // Only proposed by current owner address can claim the owner rights
+
+        if (pendingOwner != s.owner) {
+            address previousOwner = s.owner;
+            s.owner = pendingOwner;
+            delete s.pendingOwner;
+
+            emit NewPendingOwner(pendingOwner, address(0));
+            emit NewOwner(previousOwner, pendingOwner);
+        }
+    }
 }

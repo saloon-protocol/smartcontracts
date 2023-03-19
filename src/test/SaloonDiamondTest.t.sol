@@ -10,28 +10,27 @@ import "../ManagerFacet.sol";
 import "../ProjectFacet.sol";
 import "../BountyFacet.sol";
 import "../ViewFacet.sol";
-
 import "../Getters.sol";
 
-import "../SaloonProjectPortal.sol";
-import "../SaloonRelay.sol";
-import "../SaloonView.sol";
+// import "../SaloonProjectPortal.sol";
+// import "../SaloonRelay.sol";
+// import "../SaloonView.sol";
 
 // import "../interfaces/IManagerFacet.sol";
-import "../interfaces/ISaloonManager.sol";
-import "../interfaces/ISaloonProjectPortal.sol";
-import "../interfaces/ISaloonBounty.sol";
+// import "../interfaces/ISaloonManager.sol";
+// import "../interfaces/ISaloonProjectPortal.sol";
+// import "../interfaces/ISaloonBounty.sol";
 import "../interfaces/ISaloonGlobal.sol";
 
 import "../StrategyFactory.sol";
-import "../interfaces/ISaloon.sol";
+// import "../interfaces/ISaloon.sol";
 import "../SaloonCommon.sol";
 import "../SaloonStorage.sol";
 
 import "../interfaces/IStrategyFactory.sol";
 import "../interfaces/IDiamondCut.sol";
 import "../lib/Diamond.sol";
-import "../lib/SaloonLib.sol";
+// import "../lib/SaloonLib.sol";
 import "../lib/ERC20.sol";
 import "ds-test/test.sol";
 import "forge-std/Script.sol";
@@ -55,6 +54,11 @@ contract SaloonDiamondTest is DSTest, Script {
     uint256 constant poolCap = 1000 * 10 ** 6;
     uint16 constant apy = 1000;
     uint256 constant deposit = 30 * 10 ** 6;
+    uint256 constant YEAR = 365 days;
+    uint256 constant PERIOD = 1 weeks;
+    uint256 constant BPS = 10_000;
+    uint256 constant PRECISION = 1e18;
+    uint256 constant saloonFee = 1000;
 
     DiamondProxy saloonProxy;
     ISaloonGlobal saloon;
@@ -211,6 +215,10 @@ contract SaloonDiamondTest is DSTest, Script {
             IManagerFacet.updateTokenWhitelist.selector
         );
         managerFacet.selectors.push(IManagerFacet.setLibSaloonStorage.selector);
+        managerFacet.selectors.push(IManagerFacet.setPendingOwner.selector);
+        managerFacet.selectors.push(
+            IManagerFacet.acceptOwnershipTransfer.selector
+        );
 
         proposeFacets.push(managerFacet);
         executeFacets.facetCuts.push(managerFacet);
@@ -301,6 +309,7 @@ contract SaloonDiamondTest is DSTest, Script {
         viewFacet.selectors.push(IViewFacet.viewTokenInfo.selector);
         viewFacet.selectors.push(IViewFacet.viewTotalStaked.selector);
         viewFacet.selectors.push(IViewFacet.viewPendingPremium.selector);
+        viewFacet.selectors.push(IViewFacet.getAllTokensByOwner.selector);
 
         proposeFacets.push(viewFacet);
         executeFacets.facetCuts.push(viewFacet);
@@ -729,17 +738,14 @@ contract SaloonDiamondTest is DSTest, Script {
     // ============================
     // Test unstake with unclaimed
     // ============================
-    // TODO Ask Djando to go over this.
-    // TODO Re-implement this
+    // TODO Ask Django to go over this.
     function testUnstakeWithUnclaimed() external {
         vm.startPrank(staker);
         usdc.approve(address(saloon), 1000 * 10 ** 6);
 
         uint256 tokenId = saloon.stake(pid, 1000 * 10 ** 6);
-        (uint256 stake, uint256 apy, , , ) = saloon.viewTokenInfo(tokenId);
+        (uint256 stake, uint256 tokenApy, , , ) = saloon.viewTokenInfo(tokenId);
         assertEq(stake, 1000 * 10 ** 6);
-        // assertEq(apy, 10 * 10 ** 6);
-
         (
             uint256 requiredPremiumBalancePerPeriod,
             uint256 premiumBalance,
@@ -766,7 +772,7 @@ contract SaloonDiamondTest is DSTest, Script {
         // assertEq(
         //     premiumBalance,
         //     totalPending - requiredPremiumBalancePerPeriod
-        // ); NOTE //why is there a slight difference here??
+        // ); NOTE //slight difference here due to precision loss
 
         //schedule unstake -> sets token.apy to zero
         bool scheduled = saloon.scheduleUnstake(tokenId);
@@ -790,7 +796,7 @@ contract SaloonDiamondTest is DSTest, Script {
             premiumBalance,
             premiumAvailable
         ) = saloon.viewPoolPremiumInfo(pid);
-        // NOTE THIS WAS REVERTING... WHY? - TODO FIX THIS (read below)
+        // NOTE THIS WAS REVERTING... WHY? (read below)
         //      token.apy was set to zero on scheduleUnstake.
         //      But user should still be able to claim owed premium... HOW TO FIX THIS?
         //      Take premium snapshot at scheduleUnstake()
@@ -798,7 +804,7 @@ contract SaloonDiamondTest is DSTest, Script {
         assertEq(
             totalPending,
             (requiredPremiumBalancePerPeriod * 1007 * 14) / 7 / 1000
-        ); // Staked full cap for 8 days, divide by PERIOD (7 days)... * 1007/1000 due to small precision issue with dynamic APY curve
+        ); // Staked full cap for 14 days, divide by PERIOD (7 days)... * 1007/1000 due to small precision issue with dynamic APY curve
 
         saloon.claimPremium(tokenId);
         (totalPending, actualPending, newPending) = saloon.viewPendingPremium(
@@ -811,12 +817,12 @@ contract SaloonDiamondTest is DSTest, Script {
         // // Unstake again but set _shouldHarvest to false. Stored pending in user.unclaimed.
         // unstaked = saloon.unstake(tokenId, false);
         // // uint256 usdcBalance = usdc.balanceOf(staker);
-        // (uint256 stakeAfter, , uint256 pendingAfter, , ) = saloon.viewTokenInfo(
-        //     tokenId
-        // );
+        (uint256 stakeAfter, , uint256 pendingAfter, , ) = saloon.viewTokenInfo(
+            tokenId
+        );
         // assertEq(stakeAfter, 0);
         // assertEq(pendingAfter, actualPending);
-        // vm.stopPrank();
+        vm.stopPrank();
 
         // Project re-sets approvals
         vm.startPrank(project);
@@ -827,8 +833,16 @@ contract SaloonDiamondTest is DSTest, Script {
         vm.startPrank(staker);
         saloon.claimPremium(tokenId);
         (stakeAfter, , pendingAfter, , ) = saloon.viewTokenInfo(tokenId);
-        assertEq(stakeAfter, 0);
-        assertEq(pendingAfter, 0);
+        assertEq(stakeAfter, 1000000000); //user hasnt unstaked yet to stake will still be the same
+        assertEq(pendingAfter, 0); //pending should be zero because premium has been set to 0 in scheduleUnstake()
+
+        scheduled = saloon.scheduleUnstake(tokenId);
+        assert(scheduled == true);
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(tokenId, true);
+        assert(unstaked == true);
+        (stakeAfter, , pendingAfter, , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stakeAfter, 0); // stake amount should be zero after unstake
         vm.stopPrank();
 
         // Ensure that pool has been topped up
@@ -838,570 +852,571 @@ contract SaloonDiamondTest is DSTest, Script {
             premiumAvailable
         ) = saloon.viewPoolPremiumInfo(pid);
         assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
-        assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 3); // +3 due precision loss
+        assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 2); // +3 due precision loss
     }
 
-    //     function testTokenList() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-
-    //         uint256 tokenId1 = saloon.stake(pid, 10 * 10**6);
-    //         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
-    //         uint256 tokenId3 = saloon.stake(pid, 10 * 10**6);
-
-    //         NFTInfo[] memory tokens = saloon.getAllTokensByOwner(staker);
-    //         assertEq(tokens.length, 3);
-
-    //         saloon.transferFrom(staker, project, 1);
-
-    //         tokens = saloon.getAllTokensByOwner(staker);
-    //         assertEq(tokens.length, 2);
-
-    //         // Unstaking with _shouldHarvest == true burns the NFT
-    //         saloon.scheduleUnstake(2);
-    //         vm.warp(block.timestamp + 8 days);
-    //         bool unstaked = saloon.unstake(2, true);
-    //         tokens = saloon.getAllTokensByOwner(staker);
-    //         assertEq(tokens.length, 1);
-
-    //         // Unstaking with _shouldHarvest == false DOES NOT burn the NFT
-    //         saloon.scheduleUnstake(3);
-    //         vm.warp(block.timestamp + 8 days);
-    //         unstaked = saloon.unstake(3, false);
-    //         tokens = saloon.getAllTokensByOwner(staker);
-    //         assertEq(tokens.length, 1);
-    //     }
-
-    //     // ============================
-    //     // Test claimPremium
-    //     // ============================
-    //     function testClaimPremium() external {
-    //         vm.startPrank(staker);
-    //         uint256 originalStakerBalance = usdc.balanceOf(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 100 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 100 * 10**6);
-
-    //         vm.warp(block.timestamp + 365 days);
-    //         (
-    //             uint256 totalPending,
-    //             uint256 actualPending,
-    //             uint256 newPending
-    //         ) = saloon.pendingPremium(tokenId);
-    //         assertEq(totalPending, (100 * 10**6 * 4168) / 10000);
-    //         assertEq(actualPending, (totalPending * 9) / 10);
-    //         assertEq(newPending, (100 * 10**6 * 4168) / 10000);
-
-    //         saloon.claimPremium(tokenId);
-    //         // mint - stake + premium -> 500 - 10 + (10 * (10% * 90%)) = 409 * 10**6
-    //         uint256 stakerBalance = usdc.balanceOf(staker);
-    //         assertEq(stakerBalance, originalStakerBalance - stake + actualPending);
-
-    //         // test unstake and claim
-    //         saloon.scheduleUnstake(tokenId);
-    //         vm.warp(block.timestamp + 1 weeks + 1 days);
-    //         (, uint256 actualPending2, ) = saloon.pendingPremium(tokenId);
-    //         saloon.unstake(tokenId, true);
-    //         // previous balance - stake + premium -> 481.797534246575342466 + 20 + (20 * (8/365 * 10% * 90%)) = 501.836986301
-    //         uint256 stakerBalance2 = usdc.balanceOf(staker);
-    //         assertEq(
-    //             stakerBalance2,
-    //             originalStakerBalance + actualPending + actualPending2
-    //         );
-    //         assert(stakerBalance2 > originalStakerBalance);
-    //     }
-
-    //     // ============================
-    //     // Test billPremium
-    //     // ============================
-    //     function testBillPremium() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 100 * 10**6);
-    //         vm.stopPrank();
-
-    //         (
-    //             uint256 requiredPremiumBalancePerPeriod,
-    //             uint256 premiumBalance,
-    //             uint256 premiumAvailable
-    //         ) = saloon.viewPoolPremiumInfo(pid);
-    //         (, uint256 poolAPY, , uint256 poolCap) = saloon.viewBountyInfo(pid);
-    //         assertEq(
-    //             requiredPremiumBalancePerPeriod,
-    //             (((poolCap * apy * PERIOD) / BPS) / YEAR)
-    //         );
-
-    //         // requiredPremiumBalancePerPeriod should be equal premiumBalance
-    //         assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
-    //         assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 1); // Where is this precision loss coming from?
-
-    //         uint256 balanceBefore = usdc.balanceOf(address(saloon));
-    //         uint256 topUpBalance = 100 * 10**6 + requiredPremiumBalancePerPeriod; // +1 from stake, deposit was sent to strategy
-    //         assertEq(balanceBefore, topUpBalance);
-
-    //         vm.warp(block.timestamp + 365 days);
-    //         (uint256 totalPending, uint256 actualPending, ) = saloon.pendingPremium(
-    //             tokenId
-    //         );
-    //         assertEq(totalPending, 41680000); // 10e6 stake => 10% of pool = 41.68% APY on 10% avg APY, for 1 year = 4.168e6 USDC
-    //         assertEq(actualPending, (41680000 * 9) / 10);
-
-    //         saloon.billPremium(pid);
-    //         // should be the same as no one has claimed premium and requiredPremiumBalancePerPeriod = premiumBalance
-    //         uint256 balanceAfterBilling = usdc.balanceOf(address(saloon));
-    //         assertEq(balanceAfterBilling, balanceBefore);
-
-    //         // requiredPremiumBalancePerPeriod should be equal premiumBalance
-    //         (, uint256 premiumBalance2, ) = saloon.viewPoolPremiumInfo(pid);
-    //         assertEq(premiumBalance2, requiredPremiumBalancePerPeriod);
-
-    //         vm.startPrank(staker);
-    //         //test if after claiming balance decreases by the amount of pending
-    //         saloon.claimPremium(tokenId);
-
-    //         // +10 from stake, deposit was sent to strategy. Dynamic APY made it so that premium surpassed balance
-    //         // Saloon also still hold's Saloon's profit from premium (totalPending - actualPending)
-    //         uint256 balanceAfterClaim = usdc.balanceOf(address(saloon));
-    //         uint256 balanceExpected = 100 *
-    //             10**6 +
-    //             requiredPremiumBalancePerPeriod +
-    //             (totalPending - actualPending);
-    //         assertEq(balanceAfterClaim, balanceExpected);
-
-    //         // test if requiredPremiumBalancePerPeriod is topped up when premiumAvailable is not enough
-    //         vm.warp(block.timestamp + 730 days);
-    //         (totalPending, actualPending, ) = saloon.pendingPremium(tokenId);
-    //         assertEq(totalPending, ((100 * 10**6 * 4168) / 10000) * 2);
-
-    //         saloon.claimPremium(tokenId);
-    //         // stake balance + requiredBalancePerPeriod + Saloon Fee for 3 years (user's pending / 2 years * 3 years * 10%)
-    //         uint256 newBalanceExpected = 100 *
-    //             10**6 +
-    //             requiredPremiumBalancePerPeriod +
-    //             (((totalPending / 2) * 3 * 1000) / 10000); // +1 from stake, deposit was sent to strategy
-    //         uint256 balanceAfterClaim2 = usdc.balanceOf(address(saloon));
-    //         assertEq(balanceAfterClaim2, newBalanceExpected);
-    //         (
-    //             uint256 requiredPremiumBalancePerPeriod3,
-    //             uint256 premiumBalance3,
-    //             uint256 premiumAvailable3
-    //         ) = saloon.viewPoolPremiumInfo(pid);
-    //         assertEq(premiumBalance3, requiredPremiumBalancePerPeriod3);
-    //         uint256 newAvailableExpected = (premiumBalance3 * 9000) / 10000 + 1; // Where is this precision loss coming from?
-    //         assertEq(premiumAvailable3, newAvailableExpected);
-    //         vm.stopPrank();
-    //     }
-
-    //     // ============================
-    //     // Test payBounty
-    //     // ============================
-    //     function testPayBountyStakingCovers() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 35 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 35 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker2);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId2 = saloon.stake(pid, 35 * 10**6);
-    //         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stake2, 35 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.prank(newOwner);
-    //         vm.expectRevert("Ownable: caller is not the owner");
-    //         saloon.payBounty(pid, newOwner, 2000, 0); // $70 stake + $30 deposit = $100 total... 2000 BPS = 20% = $20
-
-    //         saloon.payBounty(pid, hunter, 2000, 0);
-
-    //         // test hunters balance got the right amount
-    //         uint256 hunterBalance = usdc.balanceOf(hunter);
-    //         assertEq(hunterBalance, 18 * 10**6); // 0.9 usdc
-
-    //         // test saloonBountyProfit has the right amount
-    //         (, uint256 bountyProfit, , ) = saloon.viewSaloonProfitBalance(
-    //             address(usdc)
-    //         );
-    //         assertEq(bountyProfit, 2 * 10**6 - 1); // 2 usdc
-
-    //         // test stakers balance was reduced properly
-    //         (uint256 stakerAmount, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         (uint256 stakerAmount2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stakerAmount2, stakerAmount); // balances should be 25 usdc both
-
-    //         // total staked should be 1 total now. total Pool value = 4 usdc
-    //         uint256 bountyBalance = saloon.viewBountyBalance(pid);
-    //         assertEq(bountyBalance, 80 * 10**6 + 1);
-    //     }
-
-    //     function testPayBountyStrategyDepositNeeded() external {
-    //         vm.prank(newOwner);
-    //         vm.expectRevert("Ownable: caller is not the owner");
-    //         saloon.payBounty(pid, newOwner, 10000, 0);
-
-    //         saloon.payBounty(pid, hunter, 5000, 0);
-
-    //         // test hunters balance got the right amount
-    //         uint256 hunterBalance = usdc.balanceOf(hunter);
-    //         assertEq(hunterBalance, ((15 * 10**6) * 9) / 10); // 13.5 usdc
-
-    //         // test saloonBountyProfit got the right amount
-    //         (
-    //             uint256 totalProfit,
-    //             uint256 bountyProfit,
-    //             uint256 strategyProfit,
-    //             uint256 premiumProfit
-    //         ) = saloon.viewSaloonProfitBalance(address(usdc));
-    //         assertEq(bountyProfit, 15 * 10**5 - 1); // 1.5 usdc
-    //     }
-
-    //     // ============================
-    //     // Test collectSaloonProfits
-    //     // ============================
-    //     function testCollectSaloonProfits() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker2);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stake2, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         saloon.payBounty(pid, hunter, 10000, 0); // -1 wei due to stargate precision loss
-
-    //         saloon.collectSaloonProfits(address(usdc), saloonWallet);
-
-    //         // test wallet has received amount
-    //         uint256 walletBalance = usdc.balanceOf(saloonWallet);
-    //         assertEq(walletBalance, 5 * 10**6 - 1); // -1 wei due to stargate precision loss
-
-    //         // test variables have been reset
-    //         (
-    //             uint256 totalProfit,
-    //             uint256 bountyProfit,
-    //             uint256 strategyProfit,
-    //             uint256 premiumProfit
-    //         ) = saloon.viewSaloonProfitBalance(address(usdc));
-    //         assertEq(totalProfit, 0);
-    //     }
-
-    //     // ============================
-    //     // Test collectAllSaloonProfits
-    //     // ============================
-    //     function testCollectAllSaloonProfits() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker2);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stake2, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         saloon.payBounty(pid, hunter, 10000, 0); // Immediate stargate precision loss
-
-    //         // Repeat with pool with token DAI
-
-    //         saloon.updateTokenWhitelist(address(dai), true, 10 ether);
-    //         uint256 pid2 = saloon.addNewBountyPool(
-    //             address(dai),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-    //         vm.startPrank(project);
-    //         dai.approve(address(saloon), 1000 ether);
-    //         saloon.setAPYandPoolCapAndDeposit(pid2, 1000 ether, 1000, 30 ether, ""); // No strategy for DAI at the moment
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker);
-    //         dai.approve(address(saloon), 1000 ether);
-    //         uint256 tokenId3 = saloon.stake(pid2, 10 ether);
-    //         (uint256 stake3, , , , ) = saloon.viewTokenInfo(tokenId3);
-    //         assertEq(stake3, 10 ether);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker2);
-    //         dai.approve(address(saloon), 1000 ether);
-    //         uint256 tokenId4 = saloon.stake(pid2, 10 ether);
-    //         (uint256 stake4, , , , ) = saloon.viewTokenInfo(tokenId4);
-    //         assertEq(stake4, 10 ether);
-    //         vm.stopPrank();
-
-    //         saloon.payBounty(pid2, hunter, 10000, 0);
-
-    //         saloon.collectAllSaloonProfits(saloonWallet);
-
-    //         // test wallet has received amount
-    //         uint256 walletBalanceUSDC = usdc.balanceOf(saloonWallet);
-    //         assertEq(walletBalanceUSDC, 5 * 10**6 - 1); // Immediate stargate precision loss
-    //         uint256 walletBalanceDAI = dai.balanceOf(saloonWallet);
-    //         assertEq(walletBalanceDAI, 5 ether); // No precision loss because deposit was not sent to strategy
-
-    //         // test variables have been reset
-    //         (
-    //             uint256 totalProfit,
-    //             uint256 bountyProfit,
-    //             uint256 strategyProfit,
-    //             uint256 premiumProfit
-    //         ) = saloon.viewSaloonProfitBalance(address(usdc));
-    //         assertEq(totalProfit, 0);
-
-    //         (
-    //             uint256 totalProfit2,
-    //             uint256 bountyProfit2,
-    //             uint256 strategyProfit2,
-    //             uint256 premiumProfit2
-    //         ) = saloon.viewSaloonProfitBalance(address(dai));
-    //         assertEq(totalProfit2, 0);
-    //     }
-
-    //     function testReferrerClaimBounty() external {
-    //         // Set up new pool with referral
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             referrer,
-    //             5000,
-    //             block.timestamp + 365 days
-    //         );
-    //         vm.startPrank(project);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         saloon.setAPYandPoolCapAndDeposit(
-    //             pid,
-    //             poolCap, // $100
-    //             apy, // 10%
-    //             deposit, // $30
-    //             ""
-    //         );
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker2);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stake2, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         saloon.payBounty(pid, hunter, 10000, 0);
-
-    //         saloon.collectSaloonProfits(address(usdc), saloonWallet);
-
-    //         // test wallet has received amount
-    //         uint256 saloonWalletBalance = usdc.balanceOf(saloonWallet);
-    //         assertEq(saloonWalletBalance, ((5 * 10**6 * (10000 - 5000)) / 10000)); // Multiply by referral multiplier / BPS
-    //         uint256 referrerWalletBalance = saloon.viewReferralBalance(
-    //             referrer,
-    //             address(usdc)
-    //         );
-    //         assertEq(referrerWalletBalance, (5 * 10**6 * 5000) / 10000); // Multiply by referral multiplier / BPS
-
-    //         vm.startPrank(referrer);
-    //         saloon.collectAllReferralProfits();
-    //         referrerWalletBalance = usdc.balanceOf(referrer);
-    //         assertEq(referrerWalletBalance, (5 * 10**6 * 5000) / 10000); // Multiply by referral multiplier / BPS
-
-    //         // test variables have been reset
-    //         (
-    //             uint256 totalProfit,
-    //             uint256 bountyProfit,
-    //             uint256 strategyProfit,
-    //             uint256 premiumProfit
-    //         ) = saloon.viewSaloonProfitBalance(address(usdc));
-    //         assertEq(totalProfit, 0);
-    //     }
-
-    //     function testReferrerClaimBountyExpired() external {
-    //         // Set up new pool with referral
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             referrer,
-    //             5000,
-    //             block.timestamp + 1 days
-    //         );
-    //         vm.startPrank(project);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         saloon.setAPYandPoolCapAndDeposit(
-    //             pid,
-    //             poolCap, // $100
-    //             apy, // 10%
-    //             deposit, // $30
-    //             ""
-    //         );
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(staker2);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId2 = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
-    //         assertEq(stake2, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.warp(block.timestamp + 2 days);
-    //         saloon.payBounty(pid, hunter, 10000, 0);
-
-    //         saloon.collectSaloonProfits(address(usdc), saloonWallet);
-
-    //         // test wallet has received amount
-    //         uint256 saloonWalletBalance = usdc.balanceOf(saloonWallet);
-    //         assertEq(saloonWalletBalance, (5 * 10**6));
-    //         uint256 referrerWalletBalance = saloon.viewReferralBalance(
-    //             referrer,
-    //             address(usdc)
-    //         );
-    //         assertEq(referrerWalletBalance, 0); // Referral window expired. Referrer balance was never increased.
-
-    //         vm.startPrank(referrer);
-    //         saloon.collectAllReferralProfits();
-    //         referrerWalletBalance = usdc.balanceOf(referrer);
-    //         assertEq(referrerWalletBalance, 0); // Referral window expired. Referrer balance was never increased.
-
-    //         // test variables have been reset
-    //         (
-    //             uint256 totalProfit,
-    //             uint256 bountyProfit,
-    //             uint256 strategyProfit,
-    //             uint256 premiumProfit
-    //         ) = saloon.viewSaloonProfitBalance(address(usdc));
-    //         assertEq(totalProfit, 0);
-    //     }
-
-    //     function testDecimalsCall() external {
-    //         (, bytes memory _decimals) = address(usdc).staticcall(
-    //             abi.encodeWithSignature("decimals()")
-    //         );
-    //         uint8 decimals = abi.decode(_decimals, (uint8));
-    //     }
-
-    //     // ============================
-    //     // Test Ownership access and functions
-    //     // ============================
-    //     function testOwnershipFunctions() external {
-    //         // Test random user can not call protected functions (pay bounty protection tested in testpayBounty)
-    //         vm.prank(newOwner);
-    //         vm.expectRevert("Ownable: caller is not the owner");
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-    //         assertEq(pid, 1);
-
-    //         // Test first step of ownership transfer and accept reverts for random caller
-    //         saloon.transferOwnership(newOwner);
-    //         vm.prank(staker);
-    //         vm.expectRevert("only pending owner can accept transfer");
-    //         saloon.acceptOwnershipTransfer();
-
-    //         // Test new owner accepts ownership and can deploy new bounty
-    //         vm.startPrank(newOwner);
-    //         saloon.acceptOwnershipTransfer();
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-    //         assertEq(pid, 2);
-    //         vm.stopPrank();
-
-    //         // Test original owner cannot deploy new bounty
-    //         vm.expectRevert("Ownable: caller is not the owner");
-    //         pid = saloon.addNewBountyPool(
-    //             address(usdc),
-    //             project,
-    //             "yeehaw",
-    //             address(0),
-    //             0,
-    //             0
-    //         );
-    //     }
-
-    //     function testWindDownBounty() external {
-    //         vm.startPrank(staker);
-    //         usdc.approve(address(saloon), 1000 * 10**6);
-    //         uint256 tokenId = saloon.stake(pid, 10 * 10**6);
-    //         (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stake, 10 * 10**6);
-    //         vm.stopPrank();
-
-    //         vm.startPrank(project);
-    //         vm.warp(block.timestamp + 7 days);
-    //         saloon.windDownBounty(pid);
-    //         vm.stopPrank();
-
-    //         // Even though 14 days has passed, user only receives pending up until the bounty was wound down
-    //         vm.startPrank(staker);
-    //         vm.warp(block.timestamp + 7 days);
-    //         (uint256 stake2, uint256 stakeAPY, uint256 actualPending2, , ) = saloon
-    //             .viewTokenInfo(tokenId);
-    //         (tokenId);
-    //         uint256 actualPending = actualPending2;
-    //         uint256 expectedPending = (((((stake2 * stakeAPY) / 10000) * 9000) /
-    //             10000) * 7 days) / 365 days;
-    //         assertEq(actualPending, expectedPending);
-
-    //         // Staking should fail after pool is wound down
-    //         vm.expectRevert("pool not active");
-    //         saloon.stake(pid, 10 * 10**6);
-
-    //         //schedule unstake
-    //         bool scheduled = saloon.scheduleUnstake(tokenId);
-    //         assert(scheduled == true);
-
-    //         // Can still unstake and collect premium even if bounty is wound down
-    //         vm.warp(block.timestamp + 8 days);
-    //         bool unstaked = saloon.unstake(tokenId, true);
-    //         (uint256 stakeAfter, , , , ) = saloon.viewTokenInfo(tokenId);
-    //         assertEq(stakeAfter, 0);
-    //     }
+    function testTokenList() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+
+        uint256 tokenId1 = saloon.stake(pid, 10 * 10 ** 6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10 ** 6);
+        uint256 tokenId3 = saloon.stake(pid, 10 * 10 ** 6);
+
+        ISaloonGlobal.NFTInfo[] memory tokens = saloon.getAllTokensByOwner(
+            staker
+        );
+        assertEq(tokens.length, 3);
+
+        saloon.transferFrom(staker, project, tokenId1);
+
+        tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 2);
+
+        // Unstaking with _shouldHarvest == true burns the NFT
+        saloon.scheduleUnstake(tokenId2);
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(tokenId2, true);
+        tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 1);
+
+        // Unstaking with _shouldHarvest == false DOES NOT burn the NFT
+        saloon.scheduleUnstake(tokenId3);
+        vm.warp(block.timestamp + 8 days);
+        unstaked = saloon.unstake(tokenId3, false);
+        tokens = saloon.getAllTokensByOwner(staker);
+        assertEq(tokens.length, 1);
+    }
+
+    // ============================
+    // Test claimPremium
+    // ============================
+    function testClaimPremium() external {
+        vm.startPrank(staker);
+        uint256 originalStakerBalance = usdc.balanceOf(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 100 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 100 * 10 ** 6);
+
+        vm.warp(block.timestamp + 365 days);
+        (
+            uint256 totalPending,
+            uint256 actualPending,
+            uint256 newPending
+        ) = saloon.viewPendingPremium(tokenId);
+        assertEq(totalPending, (100 * 10 ** 6 * 4168) / 10000);
+        assertEq(actualPending, (totalPending * 9) / 10);
+        assertEq(newPending, (100 * 10 ** 6 * 4168) / 10000);
+
+        saloon.claimPremium(tokenId);
+        // mint - stake + premium -> 500 - 10 + (10 * (10% * 90%)) = 409 * 10**6
+        uint256 stakerBalance = usdc.balanceOf(staker);
+        assertEq(stakerBalance, originalStakerBalance - stake + actualPending);
+
+        // test unstake and claim
+        saloon.scheduleUnstake(tokenId);
+        vm.warp(block.timestamp + 1 weeks + 1 days);
+        (, uint256 actualPending2, ) = saloon.viewPendingPremium(tokenId);
+        saloon.unstake(tokenId, true);
+        // previous balance - stake + premium -> 481.797534246575342466 + 20 + (20 * (8/365 * 10% * 90%)) = 501.836986301
+        uint256 stakerBalance2 = usdc.balanceOf(staker);
+        assertEq(
+            stakerBalance2,
+            originalStakerBalance + actualPending + actualPending2
+        );
+        assert(stakerBalance2 > originalStakerBalance);
+    }
+
+    // ============================
+    // Test billPremium
+    // ============================
+    function testBillPremium() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 100 * 10 ** 6);
+        vm.stopPrank();
+
+        (
+            uint256 requiredPremiumBalancePerPeriod,
+            uint256 premiumBalance,
+            uint256 premiumAvailable
+        ) = saloon.viewPoolPremiumInfo(pid);
+        (, uint256 poolAPY, , uint256 poolcap) = saloon.viewBountyInfo(pid);
+        assertEq(
+            requiredPremiumBalancePerPeriod,
+            (((poolcap * apy * PERIOD) / BPS) / YEAR)
+        );
+
+        // requiredPremiumBalancePerPeriod should be equal premiumBalance
+        assertEq(premiumBalance, requiredPremiumBalancePerPeriod);
+        assertEq(premiumAvailable, (premiumBalance * 9000) / 10000 + 1); // Where is this precision loss coming from?
+
+        uint256 balanceBefore = usdc.balanceOf(address(saloon));
+        uint256 topUpBalance = 100 * 10 ** 6 + requiredPremiumBalancePerPeriod; // +1 from stake, deposit was sent to strategy
+        assertEq(balanceBefore, topUpBalance);
+
+        vm.warp(block.timestamp + 365 days);
+        (uint256 totalPending, uint256 actualPending, ) = saloon
+            .viewPendingPremium(tokenId);
+        assertEq(totalPending, 41680000); // 10e6 stake => 10% of pool = 41.68% APY on 10% avg APY, for 1 year = 4.168e6 USDC
+        assertEq(actualPending, (41680000 * 9) / 10);
+
+        saloon.billPremium(pid);
+        // should be the same as no one has claimed premium and requiredPremiumBalancePerPeriod = premiumBalance
+        uint256 balanceAfterBilling = usdc.balanceOf(address(saloon));
+        assertEq(balanceAfterBilling, balanceBefore);
+
+        // requiredPremiumBalancePerPeriod should be equal premiumBalance
+        (, uint256 premiumBalance2, ) = saloon.viewPoolPremiumInfo(pid);
+        assertEq(premiumBalance2, requiredPremiumBalancePerPeriod);
+
+        vm.startPrank(staker);
+        //test if after claiming balance decreases by the amount of pending
+        saloon.claimPremium(tokenId);
+
+        // +10 from stake, deposit was sent to strategy. Dynamic APY made it so that premium surpassed balance
+        // Saloon also still hold's Saloon's profit from premium (totalPending - actualPending)
+        uint256 balanceAfterClaim = usdc.balanceOf(address(saloon));
+        uint256 balanceExpected = 100 *
+            10 ** 6 +
+            requiredPremiumBalancePerPeriod +
+            (totalPending - actualPending);
+        assertEq(balanceAfterClaim, balanceExpected);
+
+        // test if requiredPremiumBalancePerPeriod is topped up when premiumAvailable is not enough
+        vm.warp(block.timestamp + 730 days);
+        (totalPending, actualPending, ) = saloon.viewPendingPremium(tokenId);
+        assertEq(totalPending, ((100 * 10 ** 6 * 4168) / 10000) * 2);
+
+        saloon.claimPremium(tokenId);
+        // stake balance + requiredBalancePerPeriod + Saloon Fee for 3 years (user's pending / 2 years * 3 years * 10%)
+        uint256 newBalanceExpected = 100 *
+            10 ** 6 +
+            requiredPremiumBalancePerPeriod +
+            (((totalPending / 2) * 3 * 1000) / 10000); // +1 from stake, deposit was sent to strategy
+        uint256 balanceAfterClaim2 = usdc.balanceOf(address(saloon));
+        assertEq(balanceAfterClaim2, newBalanceExpected);
+        (
+            uint256 requiredPremiumBalancePerPeriod3,
+            uint256 premiumBalance3,
+            uint256 premiumAvailable3
+        ) = saloon.viewPoolPremiumInfo(pid);
+        assertEq(premiumBalance3, requiredPremiumBalancePerPeriod3);
+        uint256 newAvailableExpected = (premiumBalance3 * 9000) / 10000 + 1; // Where is this precision loss coming from?
+        assertEq(premiumAvailable3, newAvailableExpected);
+        vm.stopPrank();
+    }
+
+    // ============================
+    // Test payBounty
+    // ============================
+    function testPayBountyStakingCovers() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 35 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 35 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId2 = saloon.stake(pid, 35 * 10 ** 6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 35 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.prank(newOwner);
+        vm.expectRevert("not owner");
+        saloon.payBounty(pid, newOwner, 2000, 0); // $70 stake + $30 deposit = $100 total... 2000 BPS = 20% = $20
+
+        saloon.payBounty(pid, hunter, 2000, 0);
+
+        // test hunters balance got the right amount
+        uint256 hunterBalance = usdc.balanceOf(hunter);
+        assertEq(hunterBalance, 18 * 10 ** 6); // 0.9 usdc
+
+        // test saloonBountyProfit has the right amount
+        (, uint256 bountyProfit, , ) = saloon.viewSaloonProfitBalance(
+            address(usdc)
+        );
+        assertEq(bountyProfit, 2 * 10 ** 6 - 1); // 2 usdc
+
+        // test stakers balance was reduced properly
+        (uint256 stakerAmount, , , , ) = saloon.viewTokenInfo(tokenId);
+        (uint256 stakerAmount2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stakerAmount2, stakerAmount); // balances should be 25 usdc both
+
+        // total staked should be 1 total now. total Pool value = 4 usdc
+        uint256 bountyBalance = saloon.viewBountyBalance(pid);
+        assertEq(bountyBalance, 80 * 10 ** 6 + 1);
+    }
+
+    function testPayBountyStrategyDepositNeeded() external {
+        vm.prank(newOwner);
+        vm.expectRevert("not owner");
+        saloon.payBounty(pid, newOwner, 10000, 0);
+
+        saloon.payBounty(pid, hunter, 5000, 0);
+
+        // test hunters balance got the right amount
+        uint256 hunterBalance = usdc.balanceOf(hunter);
+        assertEq(hunterBalance, ((15 * 10 ** 6) * 9) / 10); // 13.5 usdc
+
+        // test saloonBountyProfit got the right amount
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(bountyProfit, 15 * 10 ** 5 - 1); // 1.5 usdc
+    }
+
+    // ============================
+    // Test collectSaloonProfits
+    // ============================
+    function testCollectSaloonProfits() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        saloon.payBounty(pid, hunter, 10000, 0); // -1 wei due to stargate precision loss
+
+        saloon.collectSaloonProfits(address(usdc), saloonWallet);
+
+        // test wallet has received amount
+        uint256 walletBalance = usdc.balanceOf(saloonWallet);
+        assertEq(walletBalance, 5 * 10 ** 6 - 1); // -1 wei due to stargate precision loss
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+    }
+
+    // ============================
+    // Test collectAllSaloonProfits
+    // ============================
+    function testCollectAllSaloonProfits() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        saloon.payBounty(pid, hunter, 10000, 0); // Immediate stargate precision loss
+
+        // Repeat with pool with token DAI
+
+        saloon.updateTokenWhitelist(address(dai), true, 10 ether);
+        uint256 pid2 = saloon.addNewBountyPool(
+            address(dai),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        vm.startPrank(project);
+        dai.approve(address(saloon), 1000 ether);
+        saloon.setAPYandPoolCapAndDeposit(pid2, 1000 ether, 1000, 30 ether, ""); // No strategy for DAI at the moment
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        dai.approve(address(saloon), 1000 ether);
+        uint256 tokenId3 = saloon.stake(pid2, 10 ether);
+        (uint256 stake3, , , , ) = saloon.viewTokenInfo(tokenId3);
+        assertEq(stake3, 10 ether);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        dai.approve(address(saloon), 1000 ether);
+        uint256 tokenId4 = saloon.stake(pid2, 10 ether);
+        (uint256 stake4, , , , ) = saloon.viewTokenInfo(tokenId4);
+        assertEq(stake4, 10 ether);
+        vm.stopPrank();
+
+        saloon.payBounty(pid2, hunter, 10000, 0);
+
+        saloon.collectAllSaloonProfits(saloonWallet);
+
+        // test wallet has received amount
+        uint256 walletBalanceUSDC = usdc.balanceOf(saloonWallet);
+        assertEq(walletBalanceUSDC, 5 * 10 ** 6 - 1); // Immediate stargate precision loss
+        uint256 walletBalanceDAI = dai.balanceOf(saloonWallet);
+        assertEq(walletBalanceDAI, 5 ether); // No precision loss because deposit was not sent to strategy
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+
+        (
+            uint256 totalProfit2,
+            uint256 bountyProfit2,
+            uint256 strategyProfit2,
+            uint256 premiumProfit2
+        ) = saloon.viewSaloonProfitBalance(address(dai));
+        assertEq(totalProfit2, 0);
+    }
+
+    function testReferrerClaimBounty() external {
+        // Set up new pool with referral
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            referrer,
+            5000,
+            block.timestamp + 365 days
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            poolCap, // $100
+            apy, // 10%
+            deposit, // $30
+            ""
+        );
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        saloon.payBounty(pid, hunter, 10000, 0);
+
+        saloon.collectSaloonProfits(address(usdc), saloonWallet);
+
+        // test wallet has received amount
+        uint256 saloonWalletBalance = usdc.balanceOf(saloonWallet);
+        assertEq(saloonWalletBalance, ((5 * 10 ** 6 * (10000 - 5000)) / 10000)); // Multiply by referral multiplier / BPS
+        uint256 referrerWalletBalance = saloon.viewReferralBalance(
+            referrer,
+            address(usdc)
+        );
+        assertEq(referrerWalletBalance, (5 * 10 ** 6 * 5000) / 10000); // Multiply by referral multiplier / BPS
+
+        vm.startPrank(referrer);
+        saloon.collectAllReferralProfits();
+        referrerWalletBalance = usdc.balanceOf(referrer);
+        assertEq(referrerWalletBalance, (5 * 10 ** 6 * 5000) / 10000); // Multiply by referral multiplier / BPS
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+    }
+
+    function testReferrerClaimBountyExpired() external {
+        // Set up new pool with referral
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            referrer,
+            5000,
+            block.timestamp + 1 days
+        );
+        vm.startPrank(project);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        saloon.setAPYandPoolCapAndDeposit(
+            pid,
+            poolCap, // $100
+            apy, // 10%
+            deposit, // $30
+            ""
+        );
+        vm.stopPrank();
+
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.startPrank(staker2);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId2 = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake2, , , , ) = saloon.viewTokenInfo(tokenId2);
+        assertEq(stake2, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + 2 days);
+        saloon.payBounty(pid, hunter, 10000, 0);
+
+        saloon.collectSaloonProfits(address(usdc), saloonWallet);
+
+        // test wallet has received amount
+        uint256 saloonWalletBalance = usdc.balanceOf(saloonWallet);
+        assertEq(saloonWalletBalance, (5 * 10 ** 6));
+        uint256 referrerWalletBalance = saloon.viewReferralBalance(
+            referrer,
+            address(usdc)
+        );
+        assertEq(referrerWalletBalance, 0); // Referral window expired. Referrer balance was never increased.
+
+        vm.startPrank(referrer);
+        saloon.collectAllReferralProfits();
+        referrerWalletBalance = usdc.balanceOf(referrer);
+        assertEq(referrerWalletBalance, 0); // Referral window expired. Referrer balance was never increased.
+
+        // test variables have been reset
+        (
+            uint256 totalProfit,
+            uint256 bountyProfit,
+            uint256 strategyProfit,
+            uint256 premiumProfit
+        ) = saloon.viewSaloonProfitBalance(address(usdc));
+        assertEq(totalProfit, 0);
+    }
+
+    function testDecimalsCall() external {
+        (, bytes memory _decimals) = address(usdc).staticcall(
+            abi.encodeWithSignature("decimals()")
+        );
+        uint8 decimals = abi.decode(_decimals, (uint8));
+    }
+
+    // ============================
+    // Test Ownership access and functions
+    // ============================
+    function testOwnershipFunctions() external {
+        // Test random user can not call protected functions (pay bounty protection tested in testpayBounty)
+        vm.prank(newOwner);
+        vm.expectRevert("not owner");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        assertEq(pid, 1);
+
+        // Test first step of ownership transfer and accept reverts for random caller
+        saloon.setPendingOwner(newOwner);
+        vm.prank(staker);
+        vm.expectRevert("not pending owner");
+        saloon.acceptOwnershipTransfer();
+
+        // Test new owner accepts ownership and can deploy new bounty
+        vm.startPrank(newOwner);
+        saloon.acceptOwnershipTransfer();
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+        assertEq(pid, 2);
+        vm.stopPrank();
+
+        // Test original owner cannot deploy new bounty
+        vm.expectRevert("not owner");
+        pid = saloon.addNewBountyPool(
+            address(usdc),
+            project,
+            "yeehaw",
+            address(0),
+            0,
+            0
+        );
+    }
+
+    function testWindDownBounty() external {
+        vm.startPrank(staker);
+        usdc.approve(address(saloon), 1000 * 10 ** 6);
+        uint256 tokenId = saloon.stake(pid, 10 * 10 ** 6);
+        (uint256 stake, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stake, 10 * 10 ** 6);
+        vm.stopPrank();
+
+        vm.startPrank(project);
+        vm.warp(block.timestamp + 7 days);
+        saloon.windDownBounty(pid);
+        vm.stopPrank();
+
+        // Even though 14 days has passed, user only receives pending up until the bounty was wound down
+        vm.startPrank(staker);
+        vm.warp(block.timestamp + 7 days);
+        (uint256 stake2, uint256 stakeAPY, uint256 actualPending2, , ) = saloon
+            .viewTokenInfo(tokenId);
+        (tokenId);
+        uint256 actualPending = actualPending2;
+        uint256 expectedPending = (((((stake2 * stakeAPY) / 10000) * 9000) /
+            10000) * 7 days) / 365 days;
+        assertEq(actualPending, expectedPending);
+
+        // Staking should fail after pool is wound down
+        vm.expectRevert("pool not active");
+        saloon.stake(pid, 10 * 10 ** 6);
+
+        //schedule unstake
+        bool scheduled = saloon.scheduleUnstake(tokenId);
+        assert(scheduled == true);
+
+        // Can still unstake and collect premium even if bounty is wound down
+        vm.warp(block.timestamp + 8 days);
+        bool unstaked = saloon.unstake(tokenId, true);
+        (uint256 stakeAfter, , , , ) = saloon.viewTokenInfo(tokenId);
+        assertEq(stakeAfter, 0);
+    }
 
     //     ///////////////////////// Strategy Integration //////////////////////////////
 

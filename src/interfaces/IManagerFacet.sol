@@ -13,6 +13,12 @@ interface IManagerFacet {
         bool indexed whitelisted
     );
 
+    event NewPendingOwner(
+        address indexed pendingOwner,
+        address indexed newPendingOwner
+    );
+    event NewOwner(address indexed previousOwner, address indexed pendingOwner);
+
     function addNewBountyPool(
         address _token,
         address _projectWallet,
@@ -39,9 +45,9 @@ interface IManagerFacet {
 
     function extendReferralPeriod(uint256 _pid, uint256 _endTime) external;
 
-    function setStrategyFactory(address _strategyFactory) external;
-
     function setLibSaloonStorage() external;
+
+    function setStrategyFactory(address _strategyFactory) external;
 
     function startAssessmentPeriod(uint256 _pid) external;
 
@@ -50,4 +56,8 @@ interface IManagerFacet {
         bool _whitelisted,
         uint256 _minStakeAmount
     ) external returns (bool);
+
+    function setPendingOwner(address _newPendingOwner) external;
+
+    function acceptOwnershipTransfer() external;
 }

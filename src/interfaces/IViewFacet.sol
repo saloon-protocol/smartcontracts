@@ -1,4 +1,5 @@
 pragma solidity ^0.8.10;
+import "../Storage.sol";
 
 interface IViewFacet {
     function viewBountyInfo(
@@ -11,6 +12,10 @@ interface IViewFacet {
     function viewMinProjectDeposit(
         uint256 _pid
     ) external view returns (uint256);
+
+    function getAllTokensByOwner(
+        address _owner
+    ) external view returns (NFTInfo[] memory userTokens);
 
     function viewPoolAPY(uint256 _pid) external view returns (uint256);
 

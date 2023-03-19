@@ -6,6 +6,7 @@ import "./ISaloonProjectPortal.sol";
 import "./ISaloonBounty.sol";
 import "./ISaloonView.sol";
 import "./ISaloon.sol";
+import "../Storage.sol";
 
 interface ISaloonGlobal {
     // Info of each pool.
@@ -78,6 +79,12 @@ interface ISaloonGlobal {
         uint256 referralFee; // in BPS (10000)
         uint256 endTime;
     }
+
+    event NewPendingOwner(
+        address indexed pendingOwner,
+        address indexed newPendingOwner
+    );
+    event NewOwner(address indexed previousOwner, address indexed pendingOwner);
 
     event NewBountyDeployed(
         uint256 indexed pid,
@@ -178,6 +185,8 @@ interface ISaloonGlobal {
     function receiveStrategyYield(address _token, uint256 _amount) external;
 
     function acceptOwnershipTransfer() external;
+
+    function setPendingOwner(address _newPendingOwner) external;
 
     function activeStrategies(uint256) external view returns (bytes32);
 
@@ -314,7 +323,7 @@ interface ISaloonGlobal {
 
     function getAllTokensByOwner(
         address _owner
-    ) external view returns (ISaloon.NFTInfo[] memory userTokens);
+    ) external view returns (NFTInfo[] memory userTokens);
 
     function getCurrentAPY(
         uint256 _pid
