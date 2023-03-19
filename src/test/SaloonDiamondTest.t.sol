@@ -12,25 +12,13 @@ import "../BountyFacet.sol";
 import "../ViewFacet.sol";
 import "../Getters.sol";
 
-// import "../SaloonProjectPortal.sol";
-// import "../SaloonRelay.sol";
-// import "../SaloonView.sol";
-
-// import "../interfaces/IManagerFacet.sol";
-// import "../interfaces/ISaloonManager.sol";
-// import "../interfaces/ISaloonProjectPortal.sol";
-// import "../interfaces/ISaloonBounty.sol";
 import "../interfaces/ISaloonGlobal.sol";
 
 import "../StrategyFactory.sol";
-// import "../interfaces/ISaloon.sol";
-import "../SaloonCommon.sol";
-import "../SaloonStorage.sol";
 
 import "../interfaces/IStrategyFactory.sol";
 import "../interfaces/IDiamondCut.sol";
 import "../lib/Diamond.sol";
-// import "../lib/SaloonLib.sol";
 import "../lib/ERC20.sol";
 import "ds-test/test.sol";
 import "forge-std/Script.sol";

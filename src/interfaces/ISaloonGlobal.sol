@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "./ISaloonManager.sol";
-import "./ISaloonProjectPortal.sol";
-import "./ISaloonBounty.sol";
-import "./ISaloonView.sol";
-import "./ISaloon.sol";
 import "../Storage.sol";
 
 interface ISaloonGlobal {
@@ -156,24 +151,6 @@ interface ISaloonGlobal {
             uint256 timelimit
         );
 
-    function poolInfo(
-        uint256
-    )
-        external
-        view
-        returns (
-            ISaloon.GeneralInfo memory generalInfo,
-            ISaloon.DepositInfo memory depositInfo,
-            ISaloon.PremiumInfo memory premiumInfo,
-            ISaloon.TimelockInfo memory poolTimelock,
-            ISaloon.CurveInfo memory curveInfo,
-            ISaloon.ReferralInfo memory referralInfo,
-            uint256 freezeTime,
-            bool isActive
-        );
-
-    // function poolInfo() external view returns (PoolInfo[] memory);
-
     function owner() external view returns (address);
 
     function array(uint256) external view returns (uint256);
@@ -194,13 +171,7 @@ interface ISaloonGlobal {
 
     function initialize(address) external;
 
-    function initialize(
-        //SaloonRelay
-        ISaloonManager _saloonManager,
-        ISaloonProjectPortal _saloonProjectPortal,
-        ISaloonBounty _saloonBounty,
-        ISaloonView _saloonView
-    ) external;
+
 
     function calcRequiredPremiumBalancePerPeriod(
         uint256 _poolCap,
@@ -270,8 +241,6 @@ interface ISaloonGlobal {
     ) external returns (uint256 returnedAmount);
 
     function viewAllPoolInfo() external view returns (PoolInfo[] memory);
-
-    function saloonView() external view returns (ISaloonView);
 
     function addNewBountyPool(
         address _token,
@@ -480,18 +449,6 @@ interface ISaloonGlobal {
 
     function viewProjectWallet(uint256 _pid) external view returns (address);
 
-    function setImplementations(
-        ISaloonManager _saloonManager,
-        ISaloonProjectPortal _saloonProjectPortal,
-        ISaloonBounty _saloonBounty,
-        ISaloonView _saloonView
-    ) external;
-
-    function initManager(ISaloonManager _saloonManager) external;
-
-    function initProjectPortal(
-        ISaloonProjectPortal _saloonProjectPortal
-    ) external;
 
     function initSaloonBounty() external;
 }
