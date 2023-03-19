@@ -73,33 +73,24 @@ contract SaloonDiamondTest is DSTest, Script {
     function setUp() external {
         string memory rpc = vm.envString("POLYGON_RPC_URL");
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        uint256 forkId = vm.createFork(rpc);
-        vm.selectFork(forkId);
+        uint256 forkId = vm.createSelectFork(rpc);
+
         usdc = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
         address USDCHolder = address(
             0x9810762578aCCF1F314320CCa5B72506aE7D7630
         );
         vm.prank(USDCHolder);
-        usdc.transfer(address(this), 100000 * (10 ** 6));
-
-        // saloon.updateTokenWhitelist(address(usdc), true, 10 * 10**6);
+        ERC20(usdc).transfer(address(this), 100_000 * 1e6);
         usdc.transfer(project, 10000 * (10 ** 6));
         usdc.transfer(staker, 1000 * (10 ** 6));
         usdc.transfer(staker2, 1000 * (10 ** 6));
-
         dai = new ERC20("DAI", "DAI", 18);
         dai.mint(project, 500 ether);
         dai.mint(staker, 500 ether);
         dai.mint(staker2, 500 ether);
-
         vm.deal(project, 500 ether);
 
         deployer = address(this);
-        //Create implementations
-        // SaloonRelay saloonRelay = new SaloonRelay();
-        // saloonProjectPortal = new SaloonProjectPortal();
-        // saloonBounty = new SaloonBounty();
-        // saloonView = new SaloonView();
 
         getters = new GettersFacet();
         diamondCut = new DiamondCutFacet();
@@ -173,7 +164,7 @@ contract SaloonDiamondTest is DSTest, Script {
 
         ///////////////////// Deploy Facets ///////////////////////////////////
 
-        // Deploy/add manager facet
+        ///// Add Manager facet /////
         saloonManager = new ManagerFacet();
         managerFacet.facet = address(saloonManager);
         managerFacet.action = Diamond.Action.Add;
@@ -318,6 +309,8 @@ contract SaloonDiamondTest is DSTest, Script {
         StrategyFactory factory = new StrategyFactory();
         saloon.setStrategyFactory(address(factory));
         saloon.setLibSaloonStorage();
+        saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
+
         saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
 
         pid = saloon.addNewBountyPool(

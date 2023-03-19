@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import "../interfaces/ISaloon.sol";
+// import "../interfaces/ISaloon.sol";
 import "../StrategyFactory.sol";
 import "prb-math/UD60x18.sol";
 
@@ -14,7 +14,6 @@ import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 */
 library LibSaloon {
     struct LibSaloonStorage {
-        //TODO IMPLEMENT FUNCTIONS TO SET THIS TO DIFFERENT VALUES
         uint256 defaultAPY; // 1.06
         uint256 bps; // 10_000
         uint256 precision; // 1e18
@@ -22,12 +21,6 @@ library LibSaloon {
         uint256 period; // 1 weeks
         uint256 saloonFee; // 1000
     }
-    //     uint256  defaultAPY = 1.06 ether;
-    // uint256  bps = 10_000;
-    // uint256  precision = 1e18;
-    // uint256  year = 365 days;
-    // uint256  period = 1 weeks;
-    // uint256  saloonFee = 1000;
 
     bytes32 constant LIB_STORAGE_POSITION =
         0xb3489dd2b6aceffcd73eb3bc338c0fb7cf41e877855ec204580612eca103a15d; // keccak256("lib.saloon.storage") - 1;
