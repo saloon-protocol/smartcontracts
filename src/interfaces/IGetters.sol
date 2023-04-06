@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "../lib/PriorityQueue.sol";
-
 interface IGetters {
     /*//////////////////////////////////////////////////////////////
                             CUSTOM GETTERS
@@ -28,15 +26,13 @@ interface IGetters {
         view
         returns (uint256);
 
-    function isSecurityCouncilMember(address _address)
-        external
-        view
-        returns (bool);
+    function isSecurityCouncilMember(
+        address _address
+    ) external view returns (bool);
 
-    function getSecurityCouncilMemberLastApprovedProposalId(address _address)
-        external
-        view
-        returns (uint256);
+    function getSecurityCouncilMemberLastApprovedProposalId(
+        address _address
+    ) external view returns (uint256);
 
     /*//////////////////////////////////////////////////////////////
                             DIAMOND LOUPE
@@ -52,17 +48,15 @@ interface IGetters {
 
     function facets() external view returns (Facet[] memory);
 
-    function facetFunctionSelectors(address _facet)
-        external
-        view
-        returns (bytes4[] memory);
+    function facetFunctionSelectors(
+        address _facet
+    ) external view returns (bytes4[] memory);
 
     function facetAddresses() external view returns (address[] memory facets);
 
-    function facetAddress(bytes4 _selector)
-        external
-        view
-        returns (address facet);
+    function facetAddress(
+        bytes4 _selector
+    ) external view returns (address facet);
 
     function isFunctionFreezable(bytes4 _selector) external view returns (bool);
 }

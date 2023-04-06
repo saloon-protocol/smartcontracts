@@ -15,12 +15,14 @@ contract DiamondInit is Base {
     /// @param _owner address who can manage the contract
 
     /// @return Magic 32 bytes, which indicates that the contract logic is expected to be used as a diamond proxy initializer
-    function initialize(address _owner)
-        external
-        reentrancyGuardInitializer
-        returns (bytes32)
-    {
+    function initialize(
+        address _owner
+    ) external reentrancyGuardInitializer returns (bytes32) {
         s.owner = _owner;
+        s.diamondCutStorage.securityCouncilMembers[address(0x5EC1)] = true; // TODO NOTE Test address, change it before deployment
+        s.diamondCutStorage.securityCouncilMembers[address(0x5EC2)] = true; // TODO NOTE Test address, change it before deployment
+        s.upgradeNoticePeriod = 7 days;
+        s.approvalsForEmergencyUpgrade = 2;
 
         return Diamond.DIAMOND_INIT_SUCCESS_RETURN_VALUE;
     }

@@ -60,4 +60,8 @@ interface IManagerFacet {
     function setPendingOwner(address _newPendingOwner) external;
 
     function acceptOwnershipTransfer() external;
+
+    function setUpgradePeriodAndNumberOfApprovals() external;
+
+    function setSecurityCouncilMembers() external;
 }

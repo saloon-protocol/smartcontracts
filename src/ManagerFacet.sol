@@ -17,6 +17,22 @@ contract ManagerFacet is Base, IManagerFacet {
         s.strategyFactory = IStrategyFactory(_strategyFactory);
     }
 
+    // TODO add this to deployment
+    /// @dev Facet needs to be redeployed to change variables.
+    /// this enforces the upgrade notice period when owner tries to change them
+    function setUpgradePeriodAndNumberOfApprovals() external onlyOwner {
+        s.upgradeNoticePeriod = 7 days;
+        s.approvalsForEmergencyUpgrade = 2;
+    }
+
+    // TODO add this to deployment
+    /// @dev Facet needs to be redeployed to change variables.
+    /// this enforces the upgrade notice period when owner tries to change them
+    function setSecurityCouncilMembers() external onlyOwner {
+        s.diamondCutStorage.securityCouncilMembers[address(0x5EC1)] = true; // TODO NOTE Test address, change it before deployment
+        s.diamondCutStorage.securityCouncilMembers[address(0x5EC2)] = true; // TODO NOTE Test address, change it before deployment
+    }
+
     function setLibSaloonStorage() external onlyOwner {
         LibSaloon.LibSaloonStorage storage ss = LibSaloon.getLibSaloonStorage();
         ss.defaultAPY = 1.06 ether;

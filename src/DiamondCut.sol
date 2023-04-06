@@ -4,17 +4,20 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IDiamondCut.sol";
 import "./lib/Diamond.sol";
-import "./Config.sol"; //TODO PROBABLY REMOVE THIS and all it's dependencies!!
+// import "./Config.sol"; //TODO PROBABLY REMOVE THIS and all it's dependencies!!
 import "./Base.sol";
 
 /// @title DiamondCut contract responsible for the management of upgrades.
 /// @author Matter Labs
 contract DiamondCutFacet is Base, IDiamondCut {
-    constructor() {
-        // Caution check for config value.
-        // Should be greater than 0, otherwise zero approvals will be enough to make an instant upgrade!
-        assert(SECURITY_COUNCIL_APPROVALS_FOR_EMERGENCY_UPGRADE > 0);
-    }
+    // constructor() {// TODO REMOVE CONSTRUCTOR?
+    //     // Caution check for config value.
+    //     // Should be greater than 0, otherwise zero approvals will be enough to make an instant upgrade!
+    //     // require(
+    //     //     s.approvalsForEmergencyUpgrade > 0,
+    //     //     "security approvals not sufficient"
+    //     // ); TODO REMOVE THIS ??
+    // }
 
     /// @dev Starts the upgrade process. Only the current governor can propose an upgrade.
     /// @param _facetCuts The set of proposed changes to the facets (adding/replacement/removing)
@@ -25,8 +28,8 @@ contract DiamondCutFacet is Base, IDiamondCut {
     ) external onlyOwner {
         require(s.diamondCutStorage.proposedDiamondCutTimestamp == 0, "a3"); // proposal already exists
 
-        // NOTE: governor commits only to the `facetCuts` and `initAddress`, but not to the calldata on `initAddress` call.
-        // That means the governor can call `initAddress` with ANY calldata while executing the upgrade.
+        // NOTE: owner commits only to the `facetCuts` and `initAddress`, but not to the calldata on `initAddress` call.
+        // That means the owner can call `initAddress` with ANY calldata while executing the upgrade.
         s.diamondCutStorage.proposedDiamondCutHash = keccak256(
             abi.encode(_facetCuts, _initAddress)
         );
@@ -54,14 +57,14 @@ contract DiamondCutFacet is Base, IDiamondCut {
         Diamond.DiamondStorage storage diamondStorage = Diamond
             .getDiamondStorage();
 
-        bool approvedBySecurityCouncil = s //NOTE TODO Should probably remove this
+        bool approvedBySecurityCouncil = s //NOTE TODO Should remove or change this
             .diamondCutStorage
             .securityCouncilEmergencyApprovals >=
-            SECURITY_COUNCIL_APPROVALS_FOR_EMERGENCY_UPGRADE;
+            s.approvalsForEmergencyUpgrade;
 
         bool upgradeNoticePeriodPassed = block.timestamp >= //NOTE TODO Should remove or change this
             s.diamondCutStorage.proposedDiamondCutTimestamp +
-                UPGRADE_NOTICE_PERIOD; //UPGRADE_NOTICE_PERIOD curenntly = 0 seconds
+                s.upgradeNoticePeriod; //UPGRADE_NOTICE_PERIOD curenntly = 7 days
 
         require(approvedBySecurityCouncil || upgradeNoticePeriodPassed, "a6"); // notice period should expire
         require(approvedBySecurityCouncil || !diamondStorage.isFrozen, "f3");
@@ -115,6 +118,7 @@ contract DiamondCutFacet is Base, IDiamondCut {
         emit Unfreeze(s.diamondCutStorage.lastDiamondFreezeTimestamp);
     }
 
+    // TODO set securityCouncilMember to two separate Owner wallets????
     /// @notice Gives another approval for the instant upgrade (diamond cut) by the security council member
     /// @param _diamondCutHash The hash of the diamond cut that security council members want to approve. Needed to prevent unintentional approvals, including reorg attacks
     function approveEmergencyDiamondCutAsSecurityCouncilMember(
@@ -136,7 +140,7 @@ contract DiamondCutFacet is Base, IDiamondCut {
         require(
             s.diamondCutStorage.proposedDiamondCutHash == _diamondCutHash,
             "f1"
-        ); // proposed diamond cut do not match to the approved
+        ); // proposed diamond cut does not match to the approved
         uint256 securityCouncilEmergencyApprovals = s
             .diamondCutStorage
             .securityCouncilEmergencyApprovals;

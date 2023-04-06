@@ -99,6 +99,8 @@ struct DiamondCutStorage {
 /// NOTE: but NOT to modify already existing variables or change their order
 struct AppStorage {
     DiamondCutStorage diamondCutStorage;
+    uint256 upgradeNoticePeriod;
+    uint256 approvalsForEmergencyUpgrade;
     address owner;
     address pendingOwner;
     // Info of each pool.

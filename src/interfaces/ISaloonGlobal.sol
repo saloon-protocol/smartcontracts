@@ -171,8 +171,6 @@ interface ISaloonGlobal {
 
     function initialize(address) external;
 
-
-
     function calcRequiredPremiumBalancePerPeriod(
         uint256 _poolCap,
         uint256 _apy
@@ -301,6 +299,10 @@ interface ISaloonGlobal {
     function index() external view returns (uint256);
 
     function name() external view returns (string memory);
+
+    function setUpgradePeriodAndNumberOfApprovals() external;
+
+    function setSecurityCouncilMembers() external;
 
     function viewPendingPremium(
         uint256 _tokenId
@@ -448,7 +450,6 @@ interface ISaloonGlobal {
     function viewTotalStaked(uint256 _pid) external view returns (uint256);
 
     function viewProjectWallet(uint256 _pid) external view returns (address);
-
 
     function initSaloonBounty() external;
 }

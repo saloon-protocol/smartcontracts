@@ -36,6 +36,8 @@ contract SaloonDiamondTest is DSTest, Script {
     address saloonWallet = address(0x69);
     address deployer;
     address newOwner = address(0x5ad3);
+    address securityCouncilMember1 = address(0x5EC1);
+    address securityCouncilMember2 = address(0x5EC2);
 
     uint256 pid;
 
@@ -198,6 +200,12 @@ contract SaloonDiamondTest is DSTest, Script {
         managerFacet.selectors.push(
             IManagerFacet.acceptOwnershipTransfer.selector
         );
+        managerFacet.selectors.push(
+            IManagerFacet.setUpgradePeriodAndNumberOfApprovals.selector
+        );
+        managerFacet.selectors.push(
+            IManagerFacet.setSecurityCouncilMembers.selector
+        );
 
         proposeFacets.push(managerFacet);
         executeFacets.facetCuts.push(managerFacet);
@@ -293,7 +301,7 @@ contract SaloonDiamondTest is DSTest, Script {
         proposeFacets.push(viewFacet);
         executeFacets.facetCuts.push(viewFacet);
 
-        // Propose and Execute all facets
+        // Propose facets
         IDiamondCut(address(saloonProxy)).proposeDiamondCut(
             proposeFacets,
             address(0x0)
@@ -301,6 +309,20 @@ contract SaloonDiamondTest is DSTest, Script {
 
         executeFacets.initAddress = address(0x0);
         executeFacets.initCalldata = "";
+
+        // Approve facets for instant execution
+        vm.prank(securityCouncilMember1);
+        IDiamondCut(address(saloonProxy))
+            .approveEmergencyDiamondCutAsSecurityCouncilMember(
+                keccak256(abi.encode(proposeFacets, address(0x0)))
+            );
+        vm.prank(securityCouncilMember2);
+        IDiamondCut(address(saloonProxy))
+            .approveEmergencyDiamondCutAsSecurityCouncilMember(
+                keccak256(abi.encode(proposeFacets, address(0x0)))
+            );
+
+        // Execute addition of facets to diamond
         IDiamondCut(address(saloonProxy)).executeDiamondCutProposal(
             executeFacets
         );
@@ -308,6 +330,7 @@ contract SaloonDiamondTest is DSTest, Script {
         // Set variables and approve token
         StrategyFactory factory = new StrategyFactory();
         saloon.setStrategyFactory(address(factory));
+        saloon.setUpgradePeriodAndNumberOfApprovals();
         saloon.setLibSaloonStorage();
         saloon.updateTokenWhitelist(address(usdc), true, 10 * 10 ** 6);
 
