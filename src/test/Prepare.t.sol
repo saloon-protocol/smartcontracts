@@ -19,16 +19,18 @@ import "../StrategyFactory.sol";
 import "../interfaces/IStrategyFactory.sol";
 import "../interfaces/IDiamondCut.sol";
 import "../lib/Diamond.sol";
-import "../lib/ERC20.sol";
-import "ds-test/test.sol";
-import "forge-std/Script.sol";
-import "forge-std/Test.sol";
 
-contract Prepare_Test is DSTest, Script, Test {
+import "forge-std/Test.sol";
+import "forge-std/Script.sol";
+
+import "../lib/ERC20.sol";
+
+abstract contract Prepare_Test is Test, Script {
     bytes data = "";
 
-    ERC20 usdc;
-    ERC20 dai;
+    ERC20 internal usdc = new ERC20("USDC", "USDC", 6);
+    ERC20 internal dai = new ERC20("Dai Stablecoin", "DAI", 6);
+
     address project = address(0xDEF1);
     address hunter = address(0xD0);
     address staker = address(0x5ad);
@@ -73,7 +75,7 @@ contract Prepare_Test is DSTest, Script, Test {
     Diamond.FacetCut[] proposeFacets;
     Diamond.DiamondCutData executeFacets;
 
-    function setUp() external {
+    function setUp() public virtual {
         string memory rpc = vm.envString("POLYGON_RPC_URL");
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         uint256 forkId = vm.createSelectFork(rpc);
@@ -94,9 +96,18 @@ contract Prepare_Test is DSTest, Script, Test {
         vm.deal(project, 500 ether);
 
         //// Label Addresses /////// todo
+        vm.label({account: address(this), newLabel: "Owner"});
+        vm.label({account: address(usdc), newLabel: "USDC"});
+        vm.label({account: address(dai), newLabel: "DAI"});
+        vm.label({account: staker, newLabel: "Staker 1"});
+        vm.label({account: staker, newLabel: "Staker 2"});
 
         deployer = address(this);
 
+        deployProtocol();
+    }
+
+    function deployProtocol() public {
         getters = new GettersFacet();
         diamondCut = new DiamondCutFacet();
         DiamondInit diamondInit = new DiamondInit();
@@ -278,7 +289,6 @@ contract Prepare_Test is DSTest, Script, Test {
         bountyFacet.selectors.push(
             bytes4(keccak256("safeTransferFrom(address,address,uint256,bytes)"))
         );
-        // bountyFacet.selectors.push(IBountyFacet.safeTransferFrom.selector);
 
         bountyFacet.selectors.push(IBountyFacet.transferFrom.selector);
         bountyFacet.selectors.push(IBountyFacet.approve.selector);

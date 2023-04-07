@@ -162,7 +162,7 @@ contract ViewFacet is Base, IViewFacet {
         view
         returns (uint256 payout, uint256 apy, uint256 staked, uint256 poolCap)
     {
-        // payout = viewHackerPayout(_pid);
+        // payout = viewHackerPayout(_pid); // todo decide to keep or remove this
         staked = viewTotalStaked(_pid);
         apy = viewPoolAPY(_pid);
         poolCap = viewPoolCap(_pid);

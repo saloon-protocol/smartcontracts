@@ -126,7 +126,7 @@ contract StargateStrategy is IStrategy {
     /// @dev Add liquidity to stargate router => receive LP tokens => deposit LP tokens into stargate LPStaking
     function depositToStrategy() public onlyOwner returns (uint256) {
         uint256 tokenBalance = IERC20(depositToken).balanceOf(address(this));
-        USDC.approve(address(stargateRouter), tokenBalance);
+        USDC.approve(address(stargateRouter), tokenBalance); // TODO WHY DOES IT ONLY APROVE FOR USDC????
 
         stargateRouter.addLiquidity(depositPoolId, tokenBalance, address(this)); // 1 = Harcode for USDC LP
         uint256 lpBalanceAdded = stargateLPToken.balanceOf(address(this));

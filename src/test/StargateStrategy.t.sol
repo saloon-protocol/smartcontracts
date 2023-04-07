@@ -3,10 +3,10 @@ pragma solidity ^0.8.0;
 
 import "../StargateStrategy.sol";
 import "../lib/ERC20.sol";
-import "ds-test/test.sol";
 import "forge-std/Script.sol";
+import "forge-std/Test.sol";
 
-contract StargateStrategyTest is DSTest, Script {
+contract StargateStrategyTest is Test, Script {
     StargateStrategy stargateStrategy;
 
     ERC20 USDC = ERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
@@ -29,7 +29,7 @@ contract StargateStrategyTest is DSTest, Script {
 
         // USDC holder transfers address(this) 100 USDC for testing
         vm.prank(USDCHolder);
-        USDC.transfer(address(this), 100 * (10**6));
+        USDC.transfer(address(this), 100 * (10 ** 6));
     }
 
     function testAccessControl() external {
