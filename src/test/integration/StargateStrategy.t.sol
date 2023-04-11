@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../StargateStrategy.sol";
-import "../lib/ERC20.sol";
+import "../../StargateStrategy.sol";
+import "../../lib/ERC20.sol";
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 

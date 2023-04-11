@@ -25,6 +25,8 @@ import "forge-std/Script.sol";
 
 import "../lib/ERC20.sol";
 
+// import "../lib/LibSaloon.sol";
+
 abstract contract Prepare_Test is Test, Script {
     bytes data = "";
 
@@ -51,6 +53,7 @@ abstract contract Prepare_Test is Test, Script {
     uint256 constant PERIOD = 1 weeks;
     uint256 constant BPS = 10_000;
     uint256 constant PRECISION = 1e18;
+    uint constant DEFAULT_APY = 1.06 ether;
     uint256 constant saloonFee = 1000;
 
     DiamondProxy saloonProxy;
@@ -101,6 +104,7 @@ abstract contract Prepare_Test is Test, Script {
         vm.label({account: address(dai), newLabel: "DAI"});
         vm.label({account: staker, newLabel: "Staker 1"});
         vm.label({account: staker, newLabel: "Staker 2"});
+        vm.label({account: address(saloon), newLabel: "Saloon"});
 
         deployer = address(this);
 
